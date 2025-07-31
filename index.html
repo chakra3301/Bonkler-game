@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bonkler NFT Battle Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Header -->
+        <header class="game-header">
+            <div class="header-content">
+                <h1 class="game-title">
+                    <i class="fas fa-sword"></i>
+                    Bonkler Battle
+                </h1>
+                <div class="user-stats">
+                    <div class="stat">
+                        <i class="fas fa-coins"></i>
+                        <span id="coins">1000</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-star"></i>
+                        <span id="exp">0</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-trophy"></i>
+                        <span id="level">1</span>
+                    </div>
+                    <div class="stat">
+                        <button id="wallet-connect-btn" class="wallet-btn">
+                            <i class="fas fa-wallet"></i>
+                            Connect Wallet
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="game-nav">
+            <button class="nav-btn" data-screen="inventory">
+                <i class="fas fa-briefcase"></i>
+                Inventory
+            </button>
+            <button class="nav-btn active" data-screen="battle">
+                <i class="fas fa-sword"></i>
+                Battle
+            </button>
+            <button class="nav-btn" data-screen="shop">
+                <i class="fas fa-shopping-cart"></i>
+                Shop
+            </button>
+            <button class="nav-btn" data-screen="leaderboard">
+                <i class="fas fa-trophy"></i>
+                Leaderboard
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="game-main">
+            <!-- Inventory Screen -->
+            <div id="inventory-screen" class="screen active">
+                <div class="fighter-builder-container">
+                    <div class="builder-layout">
+                        <div class="left-column">
+                            <div class="builder-header">
+                                <h2>Build Your Fighter</h2>
+                                <p>Choose your initial fighter components. You can only build one fighter to start!</p>
+                            </div>
+                            <div class="builder-content">
+                                <div class="canvas-container">
+                                    <canvas id="fighter-canvas" width="600" height="900"></canvas>
+                                    <div class="canvas-overlay">
+                                        <div class="layer-info">
+                                            <span>Layer Order: Body → Armor → Hands → Offhand → Head → Pilot → Accessories</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="component-selector">
+                                    
+                                    <div class="component-category">
+                                        <h3>Accessories</h3>
+                                        <div class="component-navigator">
+                                            <button class="nav-arrow prev" data-category="accessory">‹</button>
+                                            <div class="component-display" id="accessory-display">
+                                                <div class="component-item selected">
+                                                    <span class="component-icon">🎩</span>
+                                                </div>
+                                            </div>
+                                            <button class="nav-arrow next" data-category="accessory">›</button>
+                                        </div>
+                                        <div class="component-info" id="accessory-info">
+                                            <span class="component-name">Select accessory</span>
+                                            <span class="component-stats"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="component-category">
+                                        <h3>Head</h3>
+                                        <div class="component-navigator">
+                                            <button class="nav-arrow prev" data-category="head">‹</button>
+                                            <div class="component-display" id="head-display">
+                                                <div class="component-item selected">
+                                                    <span class="component-icon">🎭</span>
+                                                </div>
+                                            </div>
+                                            <button class="nav-arrow next" data-category="head">›</button>
+                                        </div>
+                                        <div class="component-info" id="head-info">
+                                            <span class="component-name">Select a head</span>
+                                            <span class="component-stats"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="component-category">
+                                        <h3>Armor</h3>
+                                        <div class="component-navigator">
+                                            <button class="nav-arrow prev" data-category="armor">‹</button>
+                                            <div class="component-display" id="armor-display">
+                                                <div class="component-item selected">
+                                                    <span class="component-icon">🛡️</span>
+                                                </div>
+                                            </div>
+                                            <button class="nav-arrow next" data-category="armor">›</button>
+                                        </div>
+                                        <div class="component-info" id="armor-info">
+                                            <span class="component-name">Select armor</span>
+                                            <span class="component-stats"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="component-category">
+                                        <h3>Body</h3>
+                                        <div class="component-navigator">
+                                            <button class="nav-arrow prev" data-category="body">‹</button>
+                                            <div class="component-display" id="body-display">
+                                                <div class="component-item selected">
+                                                    <span class="component-icon">👔</span>
+                                                </div>
+                                            </div>
+                                            <button class="nav-arrow next" data-category="body">›</button>
+                                        </div>
+                                        <div class="component-info" id="body-info">
+                                            <span class="component-name">Select a body</span>
+                                            <span class="component-stats"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="component-category">
+                                        <h3>Hands</h3>
+                                        <div class="component-navigator">
+                                            <button class="nav-arrow prev" data-category="hands">‹</button>
+                                            <div class="component-display" id="hands-display">
+                                                <div class="component-item selected">
+                                                    <span class="component-icon">⚔️</span>
+                                                </div>
+                                            </div>
+                                            <button class="nav-arrow next" data-category="hands">›</button>
+                                        </div>
+                                        <div class="component-info" id="hands-info">
+                                            <span class="component-name">Select hands</span>
+                                            <span class="component-stats"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="component-category">
+                                        <h3>Offhand</h3>
+                                        <div class="component-navigator">
+                                            <button class="nav-arrow prev" data-category="offhand">‹</button>
+                                            <div class="component-display" id="offhand-display">
+                                                <div class="component-item selected">
+                                                    <span class="component-icon">💰</span>
+                                                </div>
+                                            </div>
+                                            <button class="nav-arrow next" data-category="offhand">›</button>
+                                        </div>
+                                        <div class="component-info" id="offhand-info">
+                                            <span class="component-name">Select offhand</span>
+                                            <span class="component-stats"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="component-category">
+                                        <h3>Pilot</h3>
+                                        <div class="component-navigator">
+                                            <button class="nav-arrow prev" data-category="pilot">‹</button>
+                                            <div class="component-display" id="pilot-display">
+                                                <div class="component-item selected">
+                                                    <span class="component-icon">👤</span>
+                                                </div>
+                                            </div>
+                                            <button class="nav-arrow next" data-category="pilot">›</button>
+                                        </div>
+                                        <div class="component-info" id="pilot-info">
+                                            <span class="component-name">Select a pilot</span>
+                                            <span class="component-stats"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="builder-controls">
+                                <button id="confirm-fighter-btn" class="confirm-btn">Confirm Fighter</button>
+                                <button id="randomize-fighter-btn" class="randomize-btn">Randomize</button>
+                            </div>
+                        </div>
+                        <div class="right-column">
+                            <div class="inventory-section">
+                                <div class="inventory-header">
+                                    <h3><i class="fas fa-briefcase"></i> Your Inventory</h3>
+                                    <div class="inventory-tabs">
+                                        <button class="inventory-tab active" data-tab="nfts">NFTs</button>
+                                        <button class="inventory-tab" data-tab="purchased">Purchased Items</button>
+                                    </div>
+                                </div>
+                                <div class="inventory-content">
+                                    <div id="inventory-nfts" class="inventory-tab-content active">
+                                        <div class="inventory-grid" id="inventory-nfts-grid">
+                                            <!-- User NFTs will be populated here -->
+                                        </div>
+                                    </div>
+                                    <div id="inventory-purchased" class="inventory-tab-content">
+                                        <div class="inventory-grid" id="inventory-purchased-grid">
+                                            <!-- Purchased items will be populated here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Battle Screen -->
+            <div id="battle-screen" class="screen">
+                <div class="battle-container">
+                    <div class="battle-header">
+                        <h2>Choose Your Battle</h2>
+                        <div class="battle-modes">
+                            <button class="battle-mode-btn active" data-mode="ai">AI Battle</button>
+                            <button class="battle-mode-btn" data-mode="pvp">PvP Battle</button>
+                        </div>
+                    </div>
+                    
+                    <div class="nft-selection">
+                        <h3>Select Your NFT</h3>
+                        <div id="nft-grid" class="nft-grid">
+                            <!-- NFTs will be populated here -->
+                        </div>
+                        <div class="nft-controls">
+                            <button id="load-more-nfts-btn" class="load-more-btn">
+                                <i class="fas fa-plus"></i>
+                                Load More NFTs
+                            </button>
+                            <span id="nft-count" class="nft-count">Loaded: 0 NFTs</span>
+                        </div>
+                    </div>
+
+                    <div class="battle-arena" id="battle-arena" style="display: none;">
+                        <div class="arena-header">
+                            <h3>Battle Arena</h3>
+                            <div class="battle-timer" id="battle-timer">30</div>
+                        </div>
+                        <div class="battle-field">
+                            <div class="battle-canvas-container">
+                                <canvas id="battle-canvas" width="800" height="400"></canvas>
+                            </div>
+                            <div class="battle-health-bars">
+                                <div class="player-health">
+                                    <div class="health-label">Player</div>
+                                    <div class="health-bar">
+                                        <div class="health-fill" id="player-health"></div>
+                                    </div>
+                                </div>
+                                <div class="vs-indicator">VS</div>
+                                <div class="enemy-health">
+                                    <div class="health-label">Enemy</div>
+                                    <div class="health-bar">
+                                        <div class="health-fill" id="enemy-health"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="battle-controls">
+                            <button class="battle-btn" id="attack-btn">Attack</button>
+                            <button class="battle-btn" id="special-btn">Special</button>
+                            <button class="battle-btn" id="defend-btn">Defend</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shop Screen -->
+            <div id="shop-screen" class="screen">
+                <div class="shop-container">
+                    <h2>Shop</h2>
+                    <div class="shop-categories">
+                        <button class="category-btn active" data-category="pilots">Pilots</button>
+                        <button class="category-btn" data-category="bodies">Bodies</button>
+                        <button class="category-btn" data-category="heads">Heads</button>
+                        <button class="category-btn" data-category="armors">Armors</button>
+                        <button class="category-btn" data-category="offhands">Offhands</button>
+                        <button class="category-btn" data-category="accessories">Accessories</button>
+                        <button class="category-btn" data-category="potions">Potions</button>
+                    </div>
+                    <div class="shop-items" id="shop-items">
+                        <!-- Shop items will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard Screen -->
+            <div id="leaderboard-screen" class="screen">
+                <div class="leaderboard-container">
+                    <h2>Leaderboard</h2>
+                    <div class="leaderboard-tabs">
+                        <button class="tab-btn active" data-tab="global">Global</button>
+                        <button class="tab-btn" data-tab="weekly">Weekly</button>
+                        <button class="tab-btn" data-tab="monthly">Monthly</button>
+                    </div>
+                    <div class="leaderboard-list" id="leaderboard-list">
+                        <!-- Leaderboard entries will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Hidden Images for Preloading -->
+        <img id="battle-bg-preload" src="battle-bg.png" style="display: none;" alt="Battle Background">
+        
+        <!-- Modals -->
+        <div id="modal-overlay" class="modal-overlay">
+            <div class="modal" id="modal">
+                <div class="modal-header">
+                    <h3 id="modal-title">Modal Title</h3>
+                    <button class="modal-close" id="modal-close">&times;</button>
+                </div>
+                <div class="modal-content" id="modal-content">
+                    <!-- Modal content will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Battle Result Modal -->
+        <div id="battle-result-modal" class="modal-overlay">
+            <div class="modal battle-result">
+                <div class="modal-header">
+                    <h3 id="result-title">Battle Result</h3>
+                </div>
+                <div class="modal-content">
+                    <div class="result-content" id="result-content">
+                        <!-- Battle result content -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html> 
