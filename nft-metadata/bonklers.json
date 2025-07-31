@@ -1,0 +1,82 @@
+{
+  "bonklers": [
+    {
+      "id": "bonkler_001",
+      "name": "Cyber Bonkler",
+      "description": "A futuristic bonkler with cyber enhancements",
+      "image": "https://example.com/bonkler_001.png",
+      "attributes": {
+        "pilot": "WOLFIE",
+        "body": "SONY-TV",
+        "head": "BONK",
+        "armor": "ArmorSteel",
+        "hands": "ENERGY-SWORD",
+        "offhand": "YEN",
+        "accessory": "HALO"
+      },
+      "stats": {
+        "attack": 75,
+        "defense": 60,
+        "health": 450,
+        "maxHealth": 450,
+        "level": 1
+      },
+      "rarity": "rare",
+      "tokenId": "1"
+    },
+    {
+      "id": "bonkler_002", 
+      "name": "Retro Bonkler",
+      "description": "A nostalgic bonkler with vintage components",
+      "image": "https://example.com/bonkler_002.png",
+      "attributes": {
+        "pilot": "TIVO",
+        "body": "RILAKKUMA",
+        "head": "ALIEN-BONK",
+        "armor": "ArmorBronze",
+        "hands": "GOLDEN-AXE",
+        "offhand": "GAME-AND-WATCH",
+        "accessory": "DROID"
+      },
+      "stats": {
+        "attack": 65,
+        "defense": 70,
+        "health": 500,
+        "maxHealth": 500,
+        "level": 1
+      },
+      "rarity": "epic",
+      "tokenId": "2"
+    },
+    {
+      "id": "bonkler_003",
+      "name": "Mystic Bonkler", 
+      "description": "A magical bonkler with mystical powers",
+      "image": "https://example.com/bonkler_003.png",
+      "attributes": {
+        "pilot": "REI",
+        "body": "DARK-MAGICIAN-GIRL",
+        "head": "SPIRIT",
+        "armor": "ArmorJade",
+        "hands": "BLADE-OF-THE-IMMORTAL",
+        "offhand": "REMILIA-CREST",
+        "accessory": "BK"
+      },
+      "stats": {
+        "attack": 85,
+        "defense": 55,
+        "health": 400,
+        "maxHealth": 400,
+        "level": 1
+      },
+      "rarity": "legendary",
+      "tokenId": "3"
+    }
+  ],
+  "metadata": {
+    "collection": "Bonkler Battle Game",
+    "description": "Unique bonklers for the ultimate battle game",
+    "external_url": "https://bonkler-game.com",
+    "image": "https://example.com/collection.png"
+  }
+} 

@@ -4,34 +4,65 @@ class GameState {
         this.coins = 1000;
         this.exp = 0;
         this.level = 1;
-        this.selectedNFT = null;
-        this.battleMode = 'ai';
-        this.currentBattle = null;
         this.nfts = [];
-
-        this.fighterBuilt = false;
         this.userNFTs = [];
         this.purchasedItems = [];
-        this.currentFighter = {
-            pilot: null,
-            body: null,
-            head: null,
-            armor: null,
-            hands: null,
-            offhand: null,
-            accessory: null
-        };
-        this.canvas = null;
-        this.ctx = null;
-        
-        // Battle animation properties
-        this.battleCanvas = null;
-        this.battleCtx = null;
-        this.playerFighter = null;
-        this.enemyFighter = null;
+        this.selectedNFT = null;
+        this.currentFighter = {};
+        this.fighterBuilt = false;
+        this.battleMode = 'ai';
+        this.componentAssets = {};
         this.battleBackground = null;
+        this.currentBattle = null;
+        this.battleTimer = null;
+        this.battleInterval = null;
+        this.battleAnimation = null;
+        this.battleLog = [];
+    }
+
+    // Battle Log Methods
+    addBattleLogEntry(message, type = 'battle-event') {
+        const logContent = document.getElementById('battle-log-content');
+        if (!logContent) return;
+
+        const logEntry = document.createElement('div');
+        logEntry.className = `log-entry ${type}`;
+        logEntry.textContent = message;
         
-        this.init();
+        logContent.appendChild(logEntry);
+        
+        // Auto-scroll to bottom
+        logContent.scrollTop = logContent.scrollHeight;
+        
+        // Store in battle log array
+        this.battleLog.push({ message, type, timestamp: Date.now() });
+        
+        // Limit log entries to prevent memory issues
+        if (this.battleLog.length > 50) {
+            this.battleLog.shift();
+            if (logContent.children.length > 50) {
+                logContent.removeChild(logContent.firstChild);
+            }
+        }
+    }
+
+    clearBattleLog() {
+        const logContent = document.getElementById('battle-log-content');
+        if (logContent) {
+            logContent.innerHTML = '<div class="log-entry battle-event">Battle log cleared.</div>';
+        }
+        this.battleLog = [];
+    }
+
+    initializeBattleLog() {
+        const clearBtn = document.getElementById('clear-log-btn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => this.clearBattleLog());
+        }
+        
+        // Clear any existing log
+        this.clearBattleLog();
+        this.addBattleLogEntry('Battle arena ready! Select your fighter.', 'battle-event');
     }
 
     preloadBattleBackground() {
@@ -1075,6 +1106,9 @@ class GameState {
         // Initialize battle canvas
         this.initBattleCanvas();
         
+        // Initialize battle log
+        this.initializeBattleLog();
+        
         // Create enemy fighter
         this.enemyFighter = this.createRandomEnemy();
         this.playerFighter = {
@@ -1097,6 +1131,11 @@ class GameState {
 
         // Show battle arena
         document.getElementById('battle-arena').style.display = 'block';
+        
+        // Add battle start log entry
+        this.addBattleLogEntry(`Battle started! ${this.playerFighter.name} vs ${this.enemyFighter.name}`, 'battle-event');
+        this.addBattleLogEntry(`Your fighter: ${this.playerFighter.attack} ATK, ${this.playerFighter.defense} DEF`, 'player-action');
+        this.addBattleLogEntry(`Enemy fighter: ${this.enemyFighter.attack} ATK, ${this.enemyFighter.defense} DEF`, 'enemy-action');
         
         // Initial render
         this.renderBattle();
@@ -1473,6 +1512,9 @@ class GameState {
         const damage = Math.floor(this.currentBattle.player.attack * (0.8 + Math.random() * 0.4));
         this.currentBattle.enemy.health = Math.max(0, this.currentBattle.enemy.health - damage);
         
+        this.addBattleLogEntry(`You attack the enemy!`, 'player-action');
+        this.addBattleLogEntry(`Dealt ${damage} damage!`, 'damage');
+        
         // Animate the attack
         this.animateAttack(this.currentBattle.player, this.currentBattle.enemy, true);
         
@@ -1484,9 +1526,11 @@ class GameState {
             this.currentBattle.enemy.health = 0;
             this.updateCharacterDisplay('enemy', this.currentBattle.enemy);
             this.showBattleEffect('enemy-death', 0);
+            this.addBattleLogEntry(`Enemy defeated!`, 'battle-event');
             setTimeout(() => this.endBattle('victory'), 2000);
         } else {
             this.currentBattle.turn = 'enemy';
+            this.addBattleLogEntry(`Enemy's turn...`, 'enemy-action');
             setTimeout(() => this.enemyTurn(), 1500);
         }
     }
@@ -1496,6 +1540,9 @@ class GameState {
 
         const damage = Math.floor(this.currentBattle.player.attack * (1.2 + Math.random() * 0.6));
         this.currentBattle.enemy.health = Math.max(0, this.currentBattle.enemy.health - damage);
+        
+        this.addBattleLogEntry(`You use a special attack!`, 'player-action');
+        this.addBattleLogEntry(`Dealt ${damage} damage!`, 'special');
         
         // Special attack with enhanced visual effects
         this.animateSpecialAttack(this.currentBattle.player, this.currentBattle.enemy, true);
@@ -1508,9 +1555,11 @@ class GameState {
             this.currentBattle.enemy.health = 0;
             this.updateCharacterDisplay('enemy', this.currentBattle.enemy);
             this.showBattleEffect('enemy-death', 0);
+            this.addBattleLogEntry(`Enemy defeated!`, 'battle-event');
             setTimeout(() => this.endBattle('victory'), 2000);
         } else {
             this.currentBattle.turn = 'enemy';
+            this.addBattleLogEntry(`Enemy's turn...`, 'enemy-action');
             setTimeout(() => this.enemyTurn(), 1500);
         }
     }
@@ -1518,11 +1567,15 @@ class GameState {
     performDefend() {
         if (!this.currentBattle || this.currentBattle.turn !== 'player') return;
 
+        this.addBattleLogEntry(`You take a defensive stance!`, 'player-action');
+        this.addBattleLogEntry(`Defense increased for next turn!`, 'defend');
+        
         // Reduce incoming damage for next turn
         this.currentBattle.player.defense *= 1.5;
         this.showBattleEffect('defend', 0);
         
         this.currentBattle.turn = 'enemy';
+        this.addBattleLogEntry(`Enemy's turn...`, 'enemy-action');
         setTimeout(() => this.enemyTurn(), 1000);
     }
 
@@ -1541,20 +1594,24 @@ class GameState {
         if (action === 'attack') {
             damage = Math.floor(this.currentBattle.enemy.attack * (0.8 + Math.random() * 0.4));
             console.log('Enemy attack damage:', damage);
+            this.addBattleLogEntry(`Enemy attacks!`, 'enemy-action');
         } else if (action === 'special') {
             damage = Math.floor(this.currentBattle.enemy.attack * (1.2 + Math.random() * 0.6));
             console.log('Enemy special damage:', damage);
+            this.addBattleLogEntry(`Enemy uses a special attack!`, 'enemy-action');
         }
         
         // Always show some effect for enemy actions
         if (action === 'defend') {
             // Enemy defends - no damage but show effect
             console.log('Enemy defends');
+            this.addBattleLogEntry(`Enemy takes a defensive stance!`, 'enemy-action');
             this.showBattleEffect('enemy-defend', 0);
         } else if (damage > 0) {
             // Enemy attacks
             console.log('Enemy attacks for', damage, 'damage');
             this.currentBattle.player.health = Math.max(0, this.currentBattle.player.health - damage);
+            this.addBattleLogEntry(`You take ${damage} damage!`, 'damage');
             
             // Animate enemy attack based on action type
             if (action === 'special') {
@@ -1613,6 +1670,15 @@ class GameState {
 
     endBattle(result) {
         this.disableBattleControls();
+        
+        // Add battle end log entry
+        if (result === 'victory') {
+            this.addBattleLogEntry(`Victory! You defeated the enemy!`, 'battle-event');
+        } else if (result === 'defeat') {
+            this.addBattleLogEntry(`Defeat! You were defeated by the enemy!`, 'battle-event');
+        } else {
+            this.addBattleLogEntry(`Battle ended in a draw!`, 'battle-event');
+        }
         
         // Hide battle arena
         document.getElementById('battle-arena').style.display = 'none';

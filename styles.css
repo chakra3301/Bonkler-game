@@ -1422,3 +1422,155 @@ body {
 .death {
     animation: death 2s ease-in-out forwards;
 } 
+
+/* Battle Log */
+.battle-log {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    margin-top: 20px;
+    max-height: 200px;
+    overflow: hidden;
+}
+
+.battle-log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: linear-gradient(135deg, #2d1b69, #4a1b8a);
+    border-bottom: 1px solid #ffd700;
+}
+
+.battle-log-header h4 {
+    margin: 0;
+    color: #ffd700;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.clear-log-btn {
+    background: rgba(255, 215, 0, 0.2);
+    border: 1px solid #ffd700;
+    color: #ffd700;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.clear-log-btn:hover {
+    background: rgba(255, 215, 0, 0.3);
+    transform: scale(1.05);
+}
+
+.battle-log-content {
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.battle-log-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.battle-log-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.battle-log-content::-webkit-scrollbar-thumb {
+    background: #ffd700;
+    border-radius: 4px;
+}
+
+.battle-log-content::-webkit-scrollbar-thumb:hover {
+    background: #ffed4e;
+}
+
+.log-entry {
+    color: #ffffff;
+    font-size: 14px;
+    margin-bottom: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeIn 0.3s ease-in;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+.log-entry.player-action {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+.log-entry.enemy-action {
+    color: #f44336;
+    font-weight: 600;
+}
+
+.log-entry.battle-event {
+    color: #ffd700;
+    font-weight: 600;
+}
+
+.log-entry.damage {
+    color: #ff6b6b;
+    font-weight: 700;
+}
+
+.log-entry.heal {
+    color: #4CAF50;
+    font-weight: 700;
+}
+
+.log-entry.defend {
+    color: #2196F3;
+    font-weight: 600;
+}
+
+.log-entry.special {
+    color: #9C27B0;
+    font-weight: 700;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive design for battle log */
+@media (max-width: 768px) {
+    .battle-log {
+        margin-top: 15px;
+        max-height: 150px;
+    }
+    
+    .battle-log-content {
+        max-height: 100px;
+    }
+    
+    .log-entry {
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+    
+    .battle-log-header h4 {
+        font-size: 14px;
+    }
+    
+    .clear-log-btn {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+} 
