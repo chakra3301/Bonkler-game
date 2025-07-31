@@ -531,9 +531,14 @@ class GameState {
     }
 
     setupEventListeners() {
+        console.log('Setting up event listeners...');
+        
         // Navigation
-        document.querySelectorAll('.nav-btn').forEach(btn => {
+        const navButtons = document.querySelectorAll('.nav-btn');
+        console.log('Found navigation buttons:', navButtons.length);
+        navButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
+                console.log('Navigation button clicked:', e.target.dataset.screen);
                 this.switchScreen(e.target.dataset.screen);
             });
         });
@@ -966,17 +971,31 @@ class GameState {
     }
 
     switchScreen(screenName) {
+        console.log('Switching to screen:', screenName);
+        
         // Update navigation buttons
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        document.querySelector(`[data-screen="${screenName}"]`).classList.add('active');
+        const targetNavBtn = document.querySelector(`[data-screen="${screenName}"]`);
+        if (targetNavBtn) {
+            targetNavBtn.classList.add('active');
+            console.log('Updated navigation button');
+        } else {
+            console.error('Navigation button not found for screen:', screenName);
+        }
 
         // Update screens
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
         });
-        document.getElementById(`${screenName}-screen`).classList.add('active');
+        const targetScreen = document.getElementById(`${screenName}-screen`);
+        if (targetScreen) {
+            targetScreen.classList.add('active');
+            console.log('Updated screen display');
+        } else {
+            console.error('Screen not found:', screenName);
+        }
         
         // Note: Users can now access inventory even after building a fighter
     }
@@ -2109,7 +2128,19 @@ class GameState {
 
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', async () => {
-    window.gameState = new GameState();
+    try {
+        console.log('Initializing Bonkler game...');
+        window.gameState = new GameState();
+        await window.gameState.init();
+        console.log('Game initialized successfully!');
+    } catch (error) {
+        console.error('Error initializing game:', error);
+        // Show error message to user
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: red; color: white; padding: 20px; z-index: 9999; border: 2px solid black;';
+        errorDiv.innerHTML = 'Game failed to load. Please refresh the page.';
+        document.body.appendChild(errorDiv);
+    }
 });
 
 // Add CSS for damage animation
