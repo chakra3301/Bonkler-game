@@ -947,12 +947,7 @@ class GameState {
         });
         document.getElementById(`${screenName}-screen`).classList.add('active');
         
-        // Special handling for inventory screen (previously fighter-builder)
-        if (screenName === 'inventory' && this.fighterBuilt) {
-            this.showModal('Fighter Already Built', 'You have already built your fighter! You can only build one fighter to start.');
-            this.switchScreen('battle');
-            return;
-        }
+        // Note: Users can now access inventory even after building a fighter
     }
 
     setBattleMode(mode) {
@@ -1015,8 +1010,8 @@ class GameState {
     }
 
     populateNFTs() {
-        if (this.nfts.length === 0 && !this.fighterBuilt) {
-            // Show inventory instead of default NFTs
+        if (this.nfts.length === 0) {
+            // Show inventory if no NFTs are available
             this.switchScreen('inventory');
             return;
         }
