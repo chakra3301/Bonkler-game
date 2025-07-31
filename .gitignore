@@ -1,5 +1,7 @@
 # NFT metadata directory (too large for git)
-nft-metadata/
+nft-metadata/output-jsons/*.json
+# But allow sample files
+!nft-metadata/output-jsons/sample-*.json
 
 # Node modules (if any)
 node_modules/
