@@ -1038,6 +1038,9 @@ class GameState {
         this.ctx.fillStyle = '#f0f0f0';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
+        // Draw NFT preview image
+        this.drawNFTPreview(nft);
+        
         // Draw NFT info
         this.ctx.fillStyle = '#000000';
         this.ctx.font = '16px Arial';
@@ -1046,6 +1049,104 @@ class GameState {
         this.ctx.font = '12px Arial';
         this.ctx.fillText(`Attack: ${nft.attack} | Defense: ${nft.defense}`, this.canvas.width / 2, 50);
         this.ctx.fillText('Select components from the right panel to customize', this.canvas.width / 2, 70);
+    }
+
+    drawNFTPreview(nft) {
+        // Create a simple NFT preview based on the token ID
+        const tokenId = nft.tokenId || 0;
+        
+        // Draw a robot head based on the token ID
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        
+        // Head
+        this.ctx.fillStyle = '#4A90E2';
+        this.ctx.fillRect(centerX - 40, centerY - 60, 80, 80);
+        
+        // Eyes
+        this.ctx.fillStyle = '#FF4444';
+        this.ctx.fillRect(centerX - 25, centerY - 45, 15, 15);
+        this.ctx.fillRect(centerX + 10, centerY - 45, 15, 15);
+        
+        // Antenna
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.fillRect(centerX - 5, centerY - 80, 10, 20);
+        this.ctx.fillStyle = '#FF4444';
+        this.ctx.fillRect(centerX - 3, centerY - 85, 6, 6);
+        
+        // Mouth
+        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.fillRect(centerX - 20, centerY - 15, 40, 8);
+        this.ctx.fillStyle = '#000000';
+        for (let i = 0; i < 4; i++) {
+            this.ctx.fillRect(centerX - 15 + (i * 8), centerY - 12, 4, 2);
+        }
+        
+        // Add some variation based on token ID
+        if (tokenId % 2 === 0) {
+            // Add horns
+            this.ctx.fillStyle = '#8B4513';
+            this.ctx.fillRect(centerX - 35, centerY - 70, 8, 15);
+            this.ctx.fillRect(centerX + 27, centerY - 70, 8, 15);
+        }
+        
+        if (tokenId % 3 === 0) {
+            // Add visor
+            this.ctx.fillStyle = '#000000';
+            this.ctx.fillRect(centerX - 30, centerY - 50, 60, 8);
+        }
+    }
+
+    drawNFTPreviewOnCanvas(canvasId, nft) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const tokenId = nft.tokenId || 0;
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, 60, 60);
+        
+        // Draw a smaller robot head for inventory
+        const centerX = 30;
+        const centerY = 30;
+        
+        // Head
+        ctx.fillStyle = '#4A90E2';
+        ctx.fillRect(centerX - 20, centerY - 25, 40, 40);
+        
+        // Eyes
+        ctx.fillStyle = '#FF4444';
+        ctx.fillRect(centerX - 12, centerY - 18, 8, 8);
+        ctx.fillRect(centerX + 4, centerY - 18, 8, 8);
+        
+        // Antenna
+        ctx.fillStyle = '#FFD700';
+        ctx.fillRect(centerX - 3, centerY - 35, 6, 10);
+        ctx.fillStyle = '#FF4444';
+        ctx.fillRect(centerX - 2, centerY - 38, 4, 3);
+        
+        // Mouth
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(centerX - 10, centerY - 5, 20, 4);
+        ctx.fillStyle = '#000000';
+        for (let i = 0; i < 2; i++) {
+            ctx.fillRect(centerX - 8 + (i * 4), centerY - 4, 2, 1);
+        }
+        
+        // Add some variation based on token ID
+        if (tokenId % 2 === 0) {
+            // Add horns
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(centerX - 18, centerY - 30, 4, 8);
+            ctx.fillRect(centerX + 14, centerY - 30, 4, 8);
+        }
+        
+        if (tokenId % 3 === 0) {
+            // Add visor
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(centerX - 15, centerY - 20, 30, 4);
+        }
     }
 
     updateBuilderComponentDisplay() {
@@ -2646,12 +2747,15 @@ class GameState {
             
             item.innerHTML = `
                 <div class="item-icon">
-                    <div style="font-size: 48px; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">🤖</div>
+                    <canvas id="nft-preview-${index}" width="60" height="60" style="width: 60px; height: 60px;"></canvas>
                 </div>
                 <div class="item-name">${nft.name}</div>
                 <div class="item-description">NFT #${nft.tokenId}</div>
                 <div class="item-price">Attack: ${nft.attack} | Defense: ${nft.defense}</div>
             `;
+            
+            // Draw NFT preview on the canvas
+            this.drawNFTPreviewOnCanvas(`nft-preview-${index}`, nft);
             
             item.addEventListener('click', () => {
                 // Remove previous selection
