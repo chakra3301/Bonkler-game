@@ -130,24 +130,53 @@ class GameState {
     }
 
     async init() {
+        // Start loading screen
+        this.startLoadingScreen();
+        
+        // Load game data
+        this.updateLoadingProgress(10, 'Loading game data...');
         this.loadGameData();
+        
+        // Setup event listeners
+        this.updateLoadingProgress(20, 'Setting up game controls...');
         this.setupEventListeners();
-        await this.initFighterBuilder(); // Wait for component assets to load
-        await this.loadNFTBonklers(); // Load NFT bonklers
-        this.reprocessNFTsWithAssets(); // Process all NFTs with loaded assets
-        this.populateNFTs(); // Populate NFTs after everything is loaded
+        
+        // Load component assets
+        this.updateLoadingProgress(30, 'Loading fighter components...');
+        await this.initFighterBuilder();
+        
+        // Load NFT bonklers
+        this.updateLoadingProgress(50, 'Loading NFT collection...');
+        await this.loadNFTBonklers();
+        
+        // Process NFTs with assets
+        this.updateLoadingProgress(70, 'Processing NFT data...');
+        this.reprocessNFTsWithAssets();
+        
+        // Populate UI elements
+        this.updateLoadingProgress(85, 'Building user interface...');
+        this.populateNFTs();
         this.populateShop();
         this.populateInventory();
         this.populateLeaderboard();
         this.updateUI();
         
         // Preload battle background
+        this.updateLoadingProgress(95, 'Preparing battle arena...');
         this.preloadBattleBackground();
         
-        // Check if fighter is already built
-        if (this.fighterBuilt) {
-            this.switchScreen('battle');
-        }
+        // Complete loading
+        this.updateLoadingProgress(100, 'Game ready!');
+        
+        // Hide loading screen and show game
+        setTimeout(() => {
+            this.hideLoadingScreen();
+            
+            // Check if fighter is already built
+            if (this.fighterBuilt) {
+                this.switchScreen('battle');
+            }
+        }, 1000);
     }
 
     loadGameData() {
@@ -3107,6 +3136,95 @@ class GameState {
 
     closeModal() {
         document.getElementById('modal-overlay').classList.remove('active');
+    }
+
+    // Loading Screen Methods
+    startLoadingScreen() {
+        this.loadingProgress = 0;
+        this.assetIndex = 0;
+        this.assetImages = [
+            { src: 'PILOT/WOLFIE.png', text: 'Loading pilot characters...' },
+            { src: 'BODIES/ANOTHER-FREAKING-MACHINE.png', text: 'Loading body components...' },
+            { src: 'ARMORS/ArmorAdamantine.png', text: 'Loading armor sets...' },
+            { src: 'HANDS/AGHANIM-SCEPTER.png', text: 'Loading weapons...' },
+            { src: 'OFFHAND/48-LAWS-OF-POWER.png', text: 'Loading offhand items...' },
+            { src: 'ACCESSORIES/HALO.png', text: 'Loading accessories...' },
+            { src: 'HEADS/BONK.png', text: 'Loading head components...' },
+            { src: 'store%20pilot/ALIEN-MILADY.png', text: 'Loading store assets...' },
+            { src: 'store%20hands/AGHANIM-SCEPTER.png', text: 'Loading store weapons...' },
+            { src: 'store%20accessories/BK.png', text: 'Loading store accessories...' }
+        ];
+        
+        this.cycleAssetPreview();
+    }
+
+    updateLoadingProgress(progress, text) {
+        this.loadingProgress = progress;
+        
+        // Update loading bar
+        const loadingBarFill = document.getElementById('loading-bar-fill');
+        const loadingText = document.getElementById('loading-text');
+        const loadingTip = document.getElementById('loading-tip');
+        
+        if (loadingBarFill) {
+            loadingBarFill.style.width = `${progress}%`;
+        }
+        
+        if (loadingText) {
+            loadingText.textContent = `${progress}%`;
+        }
+        
+        if (loadingTip) {
+            loadingTip.textContent = text;
+        }
+    }
+
+    cycleAssetPreview() {
+        if (this.assetIndex >= this.assetImages.length) {
+            this.assetIndex = 0;
+        }
+        
+        const asset = this.assetImages[this.assetIndex];
+        const previewImg = document.getElementById('asset-preview-img');
+        const previewText = document.getElementById('asset-preview-text');
+        
+        if (previewImg && previewText) {
+            // Show image
+            previewImg.src = asset.src;
+            previewImg.style.display = 'block';
+            previewText.textContent = asset.text;
+            
+            // Hide image after 2 seconds and show next
+            setTimeout(() => {
+                previewImg.style.display = 'none';
+                this.assetIndex++;
+                if (this.loadingProgress < 100) {
+                    this.cycleAssetPreview();
+                }
+            }, 2000);
+        }
+        
+        // Continue cycling if still loading
+        if (this.loadingProgress < 100) {
+            setTimeout(() => this.cycleAssetPreview(), 3000);
+        }
+    }
+
+    hideLoadingScreen() {
+        const loadingScreen = document.getElementById('loading-screen');
+        const gameContainer = document.getElementById('game-container');
+        
+        if (loadingScreen) {
+            loadingScreen.style.opacity = '0';
+            loadingScreen.style.transition = 'opacity 0.5s ease';
+            
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                if (gameContainer) {
+                    gameContainer.style.display = 'block';
+                }
+            }, 500);
+        }
     }
 }
 

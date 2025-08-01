@@ -9,7 +9,34 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div id="game-container">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-title">
+                <i class="fas fa-sword"></i>
+                Bonkler Battle
+            </div>
+            <div class="loading-subtitle">Loading Game Assets...</div>
+            
+            <div class="asset-preview">
+                <img id="asset-preview-img" src="" alt="Asset Preview" style="display: none;">
+                <div id="asset-preview-text">Initializing...</div>
+            </div>
+            
+            <div class="loading-bar-container">
+                <div class="loading-bar">
+                    <div class="loading-bar-fill" id="loading-bar-fill"></div>
+                </div>
+                <div class="loading-text" id="loading-text">0%</div>
+            </div>
+            
+            <div class="loading-tips">
+                <div class="tip" id="loading-tip">Preparing battle arena...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="game-container" style="display: none;">
         <!-- Header -->
         <header class="game-header">
             <div class="header-content">
