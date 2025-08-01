@@ -1029,6 +1029,7 @@ class GameState {
     }
 
     selectNFTForBuilder(nft) {
+        console.log('selectNFTForBuilder called with:', nft);
         this.selectedNFT = nft;
         
         // Update builder display
@@ -1037,8 +1038,10 @@ class GameState {
             builderHeader.textContent = `Customize: ${nft.name}`;
         }
         
-        // Set builder components to NFT's actual components
-        this.builderComponents = { ...nft.components };
+        // Build components from NFT metadata
+        const nftComponents = this.buildComponentsFromNFTMetadata(nft);
+        this.builderComponents = nftComponents;
+        console.log('Built components from metadata:', nftComponents);
         
         // Update component display to show NFT's components
         this.updateBuilderComponentDisplayForNFT(nft);
@@ -1047,6 +1050,143 @@ class GameState {
         this.renderNFTAsBase(nft);
         
         this.showModal('NFT Selected', `You can now customize ${nft.name} with your purchased items!`);
+    }
+
+    buildComponentsFromNFTMetadata(nft) {
+        const components = {};
+        
+        console.log('NFT structure:', nft);
+        console.log('NFT attributes:', nft.attributes);
+        console.log('NFT components:', nft.components);
+        
+        // Map NFT attributes to game components
+        if (nft.attributes && Array.isArray(nft.attributes)) {
+            nft.attributes.forEach(attr => {
+                const traitType = attr.trait_type;
+                const value = attr.value;
+                
+                // Map trait types to component categories
+                const categoryMap = {
+                    'PILOT': 'pilot',
+                    'BODIES': 'body', 
+                    'HEADS': 'head',
+                    'ARMORS': 'armor',
+                    'HANDS': 'hands',
+                    'OFFHAND': 'offhand',
+                    'ACCESSORIES': 'accessory'
+                };
+                
+                const category = categoryMap[traitType];
+                if (category) {
+                    // Find the corresponding asset in our component assets
+                    const assets = this.componentAssets[category] || [];
+                    
+                    // Try to find asset by name (exact match)
+                    let asset = assets.find(a => a.name === value);
+                    
+                    // If not found, try case-insensitive exact match
+                    if (!asset) {
+                        asset = assets.find(a => a.name.toLowerCase() === value.toLowerCase());
+                    }
+                    
+                    // If still not found, try partial match
+                    if (!asset) {
+                        asset = assets.find(a => 
+                            a.name.toLowerCase().includes(value.toLowerCase()) ||
+                            value.toLowerCase().includes(a.name.toLowerCase())
+                        );
+                    }
+                    
+                    // If still not found, try removing common prefixes/suffixes
+                    if (!asset) {
+                        const cleanValue = value.replace(/^(Armor|Pilot|Body|Head|Hand|Offhand|Accessory)/i, '');
+                        asset = assets.find(a => 
+                            a.name.toLowerCase().includes(cleanValue.toLowerCase()) ||
+                            cleanValue.toLowerCase().includes(a.name.toLowerCase())
+                        );
+                    }
+                    
+                    // If still not found, try specific mappings for known mismatches
+                    if (!asset) {
+                        const specificMappings = {
+                            'BONK': 'BONK',
+                            'EVIL-BONK': 'EVIL-BONK',
+                            'ALIEN-BONK': 'ALIEN-BONK',
+                            'HAMTARO': 'HAMTARO',
+                            'KASANE-TETO': 'KASANE-TETO',
+                            'BINKY': 'BINKY',
+                            'ALIEN-MILADY': 'ALIEN-MILADY',
+                            'BEAUTY-BEAST-BUNNY': 'BEAUTY-BEAST-BUNNY',
+                            'REI': 'REI',
+                            'SPRITE-AUTOGRAPH': 'SPRITE-AUTOGRAPH',
+                            'YMO-TOUR': 'YMO-TOUR',
+                            'RILAKKUMA': 'RILAKKUMA',
+                            'TEKKEN-KING': 'TEKKEN-KING',
+                            'JADE-CABBAGE': 'JADE-CABBAGE',
+                            'VENDING-MACHINE': 'VENDING-MACHINE',
+                            'SUIT': 'SUIT',
+                            'SONY-TV': 'SONY-TV',
+                            'GUAM': 'GUAM',
+                            'RED-AND-BLUE-CHAIR': 'RED-AND-BLUE-CHAIR',
+                            'ArmorCoal': 'ArmorCoal',
+                            'ArmorBronze-Trim': 'ArmorBronze-Trim',
+                            'ArmorMithril': 'ArmorMithril',
+                            'ArmorPhantom': 'ArmorPhantom',
+                            'ArmorBlack': 'ArmorBlack',
+                            'ArmorHandycam': 'ArmorHandycam',
+                            'ArmorAdamantine': 'ArmorAdamantine',
+                            'EVOLVED-ANTENNA': 'EVOLVED-ANTENNA',
+                            'PORSCHE-SUSPENSION': 'PORSCHE-SUSPENSION',
+                            'GOLDEN-AXE': 'GOLDEN-AXE',
+                            'AGHANIM-SCEPTER': 'AGHANIM-SCEPTER',
+                            'WATER-PISTOL': 'WATER-PISTOL',
+                            'NEWJEANS-HAMMER': 'NEWJEANS-HAMMER',
+                            'BLUDGEONING-ANGEL': 'BLUDGEONING-ANGEL',
+                            'ARMED-THREAT': 'ARMED-THREAT',
+                            'AMERICAN-FLAG': 'AMERICAN-FLAG',
+                            'POCKET-PET': 'POCKET-PET',
+                            'REMILIA-FILMS': 'REMILIA-FILMS',
+                            'YEN': 'YEN',
+                            'PALETTE': 'PALETTE',
+                            'SUBMARINE-CABLE': 'SUBMARINE-CABLE',
+                            'DAIHATSU-MIDGET': 'DAIHATSU-MIDGET',
+                            'DWARF-FORTRESS-GREEK-BEDROOM-BLUEPRINT': 'DWARF-FORTRESS-GREEK-BEDROOM-BLUEPRINT',
+                            'RAVER-CAP': 'RAVER-CAP',
+                            'HALO': 'HALO',
+                            'HIKKIKOMORI': 'HIKKIKOMORI'
+                        };
+                        
+                        const mappedValue = specificMappings[value];
+                        if (mappedValue) {
+                            asset = assets.find(a => a.name === mappedValue);
+                        }
+                    }
+                    
+                    if (asset) {
+                        components[category] = asset;
+                        console.log(`Found asset for ${category}:`, asset.name);
+                    } else {
+                        console.log(`No asset found for ${category}: ${value}`);
+                        // Create a fallback component with basic stats
+                        components[category] = {
+                            name: value,
+                            type: category,
+                            attack: 5,
+                            defense: 5,
+                            image: null
+                        };
+                    }
+                }
+            });
+        }
+        
+        // If no attributes found, try to use existing components
+        if (Object.keys(components).length === 0 && nft.components) {
+            console.log('No attributes found, using existing components');
+            return nft.components;
+        }
+        
+        return components;
     }
 
     renderNFTAsBase(nft) {
@@ -1059,8 +1199,8 @@ class GameState {
         this.ctx.fillStyle = '#f0f0f0';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Draw actual NFT components
-        this.renderNFTComponents(nft);
+        // Draw actual NFT components using the built components
+        this.renderNFTComponentsFromBuilder();
         
         // Draw NFT info
         this.ctx.fillStyle = '#000000';
@@ -1073,7 +1213,12 @@ class GameState {
     }
 
     renderNFTComponents(nft) {
-        if (!this.ctx || !nft || !nft.components) return;
+        if (!this.ctx || !nft || !nft.components) {
+            console.log('renderNFTComponents: Missing ctx, nft, or components');
+            return;
+        }
+
+        console.log('Rendering NFT components:', nft.name, nft.components);
 
         // Render layers in order: body → armor → hands → offhand → head → pilot → accessories
         const layerOrder = ['body', 'armor', 'hands', 'offhand', 'head', 'pilot', 'accessory'];
@@ -1081,20 +1226,70 @@ class GameState {
         const centerX = this.canvas.width / 2;
         const centerY = this.canvas.height / 2;
         
+        let renderedComponents = 0;
+        
         layerOrder.forEach(layer => {
             const component = nft.components[layer];
+            console.log(`Checking ${layer}:`, component);
+            
             if (component && component.image && component.image.complete && component.image.naturalWidth > 0) {
+                console.log(`Rendering ${layer} image:`, component.name);
                 const scaledWidth = component.image.width * scale;
                 const scaledHeight = component.image.height * scale;
                 const drawX = centerX - scaledWidth / 2;
                 const drawY = centerY - scaledHeight / 2;
                 
                 this.ctx.drawImage(component.image, drawX, drawY, scaledWidth, scaledHeight);
+                renderedComponents++;
             } else if (component && component.name) {
+                console.log(`Drawing placeholder for ${layer}:`, component.name);
                 // Draw a placeholder for components without images
                 this.drawComponentPlaceholder(this.ctx, component.name, this.canvas.width, this.canvas.height, scale);
+                renderedComponents++;
             }
         });
+        
+        console.log(`Rendered ${renderedComponents} components for ${nft.name}`);
+    }
+
+    renderNFTComponentsFromBuilder() {
+        if (!this.ctx || !this.builderComponents) {
+            console.log('renderNFTComponentsFromBuilder: Missing ctx or builderComponents');
+            return;
+        }
+
+        console.log('Rendering builder components:', this.builderComponents);
+
+        // Render layers in order: body → armor → hands → offhand → head → pilot → accessories
+        const layerOrder = ['body', 'armor', 'hands', 'offhand', 'head', 'pilot', 'accessory'];
+        const scale = 0.4; // Larger scale for builder preview
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        
+        let renderedComponents = 0;
+        
+        layerOrder.forEach(layer => {
+            const component = this.builderComponents[layer];
+            console.log(`Checking ${layer}:`, component);
+            
+            if (component && component.image && component.image.complete && component.image.naturalWidth > 0) {
+                console.log(`Rendering ${layer} image:`, component.name);
+                const scaledWidth = component.image.width * scale;
+                const scaledHeight = component.image.height * scale;
+                const drawX = centerX - scaledWidth / 2;
+                const drawY = centerY - scaledHeight / 2;
+                
+                this.ctx.drawImage(component.image, drawX, drawY, scaledWidth, scaledHeight);
+                renderedComponents++;
+            } else if (component && component.name) {
+                console.log(`Drawing placeholder for ${layer}:`, component.name);
+                // Draw a placeholder for components without images
+                this.drawComponentPlaceholder(this.ctx, component.name, this.canvas.width, this.canvas.height, scale);
+                renderedComponents++;
+            }
+        });
+        
+        console.log(`Rendered ${renderedComponents} components from builder`);
     }
 
     drawNFTPreview(nft) {
@@ -1210,7 +1405,7 @@ class GameState {
         const categories = ['pilot', 'body', 'armor', 'hands', 'offhand', 'accessory'];
         
         categories.forEach(category => {
-            const nftComponent = nft.components[category];
+            const nftComponent = this.builderComponents[category];
             if (nftComponent) {
                 this.updateComponentDisplayForNFT(category, nftComponent);
             } else {
@@ -1263,10 +1458,12 @@ class GameState {
         const displayElement = document.querySelector(`.component-display[data-category="${category}"]`);
         if (!displayElement) return;
         
+        console.log(`Updating display for ${category}:`, nftComponent);
+        
         // Display the NFT's component
         displayElement.innerHTML = `
             <div class="component-item selected" data-index="0">
-                <img src="${this.getComponentImagePath(nftComponent)}" alt="${nftComponent.name}">
+                <img src="${nftComponent.path}" alt="${nftComponent.name}">
                 <div class="component-info">
                     <div class="component-name">${nftComponent.name}</div>
                     <div class="component-stats">
