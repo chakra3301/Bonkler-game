@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CHINA"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "EVIL-BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBronze"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "SONY-CD-PLAYER"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BALLOON"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "FINAL-FANTASY"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "SNOOPY-PLUSH"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #907"
+}

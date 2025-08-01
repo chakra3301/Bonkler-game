@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "HDR-ROOM"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorTerminator"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "HARAJUKU-MOTOROLA"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "GOLDEN-AXE"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "48-LAWS-OF-POWER"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "SPRITE-AUTOGRAPH"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #91"
+}

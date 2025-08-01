@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "AKIKO-YANO-TADAIMA"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "WHITE"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBronze"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "FRAGILE-HEARTS"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "ENERGY-SWORD"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "CARLO-BUGATTI-CHAIR"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "DANCING-MAN-EMOJI"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #456"
+}

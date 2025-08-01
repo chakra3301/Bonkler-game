@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "RED"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorMithril-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "SONY-TABLET"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BLADE-OF-THE-IMMORTAL"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "BEAT-HAPPENING"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "HAMTARO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #550"
+}

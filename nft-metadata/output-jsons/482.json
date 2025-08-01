@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SHOCHIKU-COMPANY"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorSteel-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "SONY-TV"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "WINGED-STAFF-GOLD"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "HAND-CLOCK"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "SPRITE-AUTOGRAPH"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #482"
+}

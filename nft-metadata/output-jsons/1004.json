@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CARD"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBronze-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "DARK-MAGICIAN-GIRL"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "AMERICAN-FLAG"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "REMILIA-ENGINEERING"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "DR-KAWASHIMA"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1004"
+}

@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "BANK-NOTES"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HALO"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorTerminator-Recolor"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "RED-AND-BLUE-CHAIR"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "PORSCHE-SUSPENSION"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "SUPER-LOVER-WATCH"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "BINKY"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1266"
+}

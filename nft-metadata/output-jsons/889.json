@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CHERNOBYL"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBlack"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "CHINESE-SPRITE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "EVOLVED-ANTENNA"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "AMEX-PLATINUM"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "SPRITE-AUTOGRAPH"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #889"
+}

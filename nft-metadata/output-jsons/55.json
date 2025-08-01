@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "GALLERY"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorComme-Des-Garcons-Homme-Plus-FW18-Dover-Street-Market-Installation-Dinosaur-Bones"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "LEGO-SKELETON"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "PHONE-FLAIL"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "GUTENBERG-BIBLE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "DR-KAWASHIMA"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #55"
+}

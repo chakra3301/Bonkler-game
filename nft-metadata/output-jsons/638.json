@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "KINGS-FIELD"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorHarajuku-Sticker"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "VENDING-MACHINE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "AMERICAN-FLAG"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "HAND-CLOCK"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "OKSHIA-MIKAN-UWASA-FRUIT-JUICER"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #638"
+}

@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SUPER-MONKEY-BALL-2"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorCoal"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "HARAJUKU-MOTOROLA"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "STYGIAN-REAVER"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "REMILIA-CREST"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "MINIFIG"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1461"
+}

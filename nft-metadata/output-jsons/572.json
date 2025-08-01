@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "MOON-LANDING"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBlack-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "RUG-PULL"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "STYGIAN-REAVER"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "REMILIA-ENGINEERING"
+        },
+        {
+            "trait_type": "OVERLAYS",
+            "value": "LIMITED-EDITION"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "DR-KAWASHIMA"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #572"
+}

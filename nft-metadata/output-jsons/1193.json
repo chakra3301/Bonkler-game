@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "HOTEL-IN-PRAGUE"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorTerminator"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "SONY-TABLET"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BLADE-OF-THE-IMMORTAL"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "REMILIA-CREST"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "MAPLE-STORY"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1193"
+}

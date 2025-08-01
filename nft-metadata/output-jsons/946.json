@@ -1,0 +1,43 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SUNSET"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBlack"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "ANOTHER-FREAKING-MACHINE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "WINGED-STAFF-GOLD"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "G-SHOCK"
+        },
+        {
+            "trait_type": "OVERLAYS",
+            "value": "LIMITED-EDITION"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "ROVER"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #946"
+}

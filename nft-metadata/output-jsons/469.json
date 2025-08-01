@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "BANK-NOTES"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorGlory"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "LEGO-SKELETON"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "STYGIAN-REAVER"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "ADVENTURE-OF-COOKIE-AND-CREAM"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "REI"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #469"
+}

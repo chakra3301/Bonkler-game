@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CHINA"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBronze-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "JADE-CABBAGE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "ENERGY-SWORD"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "RAYMAN-M-STEAL-SHIELD"
+        },
+        {
+            "trait_type": "OVERLAYS",
+            "value": "LIMITED-EDITION-V2"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "BLACK-FROST"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #926"
+}

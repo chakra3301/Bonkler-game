@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "COCA-Y-COLA"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBronze"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "NOCTUA-HEATSINK"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "ATARASHIKI-MURA"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "REMILIA-ENGINEERING"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "ZATSUNE-MIKU"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #481"
+}

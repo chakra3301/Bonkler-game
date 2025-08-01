@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "RED"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorTerminator"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "BRG-VOL1"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "ENERGY-SWORD"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "BEAT-HAPPENING"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "STUART"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #48"
+}

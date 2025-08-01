@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "HOTEL-IN-PRAGUE"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "EVIL-BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorTerminator"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "ANOTHER-FREAKING-MACHINE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "PORSCHE-SUSPENSION"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "HAND-CLOCK"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "GUITAR-BEAR"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1470"
+}

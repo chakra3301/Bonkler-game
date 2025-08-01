@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "GALLERY"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorMithril-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "SONY-TABLET"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "AGHANIM-SCEPTER"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "RAYMAN-M-STEAL-SHIELD"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "KASANE-TETO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1430"
+}

@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "TALL-GRASS"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorHarajuku-Sticker"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "BURNER-PHONE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "STYGIAN-REAVER"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "CARLO-BUGATTI-CHAIR"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "GUITAR-BEAR"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1444"
+}

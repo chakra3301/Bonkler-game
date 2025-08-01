@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "MOON-LANDING"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorSteel-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "HARAJUKU-MOTOROLA"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "K'NEX"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "BEYBLADE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "MEW"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #61"
+}

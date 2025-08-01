@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "THE-HOLE"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorWhite"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "SUIT"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BIONICLE-AXE"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "HAND-CLOCK"
+        },
+        {
+            "trait_type": "OVERLAYS",
+            "value": "LIMITED-EDITION"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "SHAKOKI-DOGU"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1137"
+}

@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "THE-HOLE"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorGlory"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "RUG-PULL"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "CATTLE-GUN"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "SHOOTING-STAR"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "SPRITE-AUTOGRAPH"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1138"
+}

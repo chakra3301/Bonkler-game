@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "COCA-Y-COLA"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "EVIL-BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HALO"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBlack"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "SUIT"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "NEWJEANS-HAMMER"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "POCKET-PET"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "ALIEN-MILADY"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #5"
+}

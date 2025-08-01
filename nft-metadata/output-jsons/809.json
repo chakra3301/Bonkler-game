@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "COCA-Y-COLA"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorTerminator"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "JUDD-CHAIR"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BOOM-MIC"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "CLOVER"
+        },
+        {
+            "trait_type": "OVERLAYS",
+            "value": "LIMITED-EDITION-V2"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "HAMTARO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #809"
+}

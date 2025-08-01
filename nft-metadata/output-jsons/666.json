@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SOUR-GRAPES"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBlack"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "LEGO-SKELETON"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "ENERGY-SWORD"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "RAYMAN-M-STEAL-SHIELD"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "STUART"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #666"
+}

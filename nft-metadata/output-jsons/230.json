@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CACTUS"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorCoal"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "JADE-CABBAGE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BIONICLE-AXE"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "POCKET-PET"
+        },
+        {
+            "trait_type": "OVERLAYS",
+            "value": "LIMITED-EDITION"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "PIKMIN"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #230"
+}

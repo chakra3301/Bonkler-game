@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CARD"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HALO"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorAdamantine"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "BURNER-PHONE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BOOM-MIC"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "CARLO-BUGATTI-CHAIR"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "OKSHIA-MIKAN-UWASA-FRUIT-JUICER"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #726"
+}

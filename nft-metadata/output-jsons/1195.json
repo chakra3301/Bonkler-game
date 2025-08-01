@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CARD"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorPhantom"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "REI-LIGHTER"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "ANCIENT-GODSWORD"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "KETAMINE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "HAMTARO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1195"
+}

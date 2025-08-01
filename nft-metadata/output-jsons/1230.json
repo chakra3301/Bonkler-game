@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "THE-HOLE"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HALO"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorDragon"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "CHINESE-SPRITE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "APE-ESCAPE-NET"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "FBI-BADGE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "KASANE-TETO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1230"
+}

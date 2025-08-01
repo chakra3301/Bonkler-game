@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "GALLERY"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "DROID"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorCoal"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "BEETLE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BALLOON"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "AMEX-PLATINUM"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "ZATSUNE-MIKU"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1080"
+}

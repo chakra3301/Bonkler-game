@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "GALLERY"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "SPIRIT"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HALO"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorHarajuku-Sticker"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "CHINESE-SPRITE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "DREAMCAST-FISHING-CONTROLLER"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "BEETLE-GAME"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "KASANE-TETO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1029"
+}

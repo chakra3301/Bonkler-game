@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "MOON-LANDING"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "WHITE"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorTerminator-Recolor"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "HARAJUKU-MOTOROLA"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "PORSCHE-SUSPENSION"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "48-LAWS-OF-POWER"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "BLACK-FROST"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #313"
+}

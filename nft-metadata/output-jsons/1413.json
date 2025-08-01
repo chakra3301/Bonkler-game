@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "KINGS-FIELD"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorComme-Des-Garcons-Homme-Plus-FW18-Dover-Street-Market-Installation-Dinosaur-Bones"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "BRG-VOL1"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "AMERICAN-FLAG"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "SUPER-LOVER-WATCH"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "KASANE-TETO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1413"
+}

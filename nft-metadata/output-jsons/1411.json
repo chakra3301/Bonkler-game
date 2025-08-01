@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SUNSET"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorJade"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "CHINESE-SPRITE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "SLY-COOPER-CANE"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "TEDDY-BEAR-ANNIVERSARY"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "WOLFIE"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1411"
+}

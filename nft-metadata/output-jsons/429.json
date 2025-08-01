@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SUPER-MONKEY-BALL-2"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorTerminator"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "CHINESE-SPRITE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BLADE-OF-THE-IMMORTAL"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "FOOBAR"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "CHARLIE'S-DOG"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #429"
+}

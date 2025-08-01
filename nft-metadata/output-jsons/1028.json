@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "ATHENS"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorMithril-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "SUIT"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BOOM-MIC"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "RAYMAN-M-STEAL-SHIELD"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "TIVO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1028"
+}

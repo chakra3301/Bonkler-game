@@ -1,0 +1,43 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "HDR-ROOM"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorHandycam"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "DARK-MAGICIAN-GIRL"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "RIBBON-STAFF"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "FBI-BADGE"
+        },
+        {
+            "trait_type": "OVERLAYS",
+            "value": "LIMITED-EDITION-V2"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "MEW"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1377"
+}

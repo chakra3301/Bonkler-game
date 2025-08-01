@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "GALLERY"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorMithril-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "BURGER-BONK-LASER"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "STYGIAN-REAVER"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "FBI-BADGE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "KASANE-TETO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #529"
+}

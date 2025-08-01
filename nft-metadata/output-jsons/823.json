@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "DUNGEON"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorJade"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "JADE-CABBAGE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "ANCIENT-GODSWORD"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "48-LAWS-OF-POWER"
+        },
+        {
+            "trait_type": "OVERLAYS",
+            "value": "LIMITED-EDITION-V2"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "PIKMIN"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #823"
+}

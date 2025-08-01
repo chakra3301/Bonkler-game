@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "DUNGEON"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorMithril-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "LEGO-SKELETON"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BIONICLE-AXE"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "TEDDY-BEAR-ANNIVERSARY"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "MEW"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #654"
+}

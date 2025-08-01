@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "HDR-ROOM"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorJade"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "BURNER-PHONE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "AMERICAN-FLAG"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "VAX-PASS"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "PIKMIN"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #321"
+}

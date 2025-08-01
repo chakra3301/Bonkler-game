@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "THE-HOLE"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "DROID"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBronze"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "REI-LIGHTER"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BOOM-MIC"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "SUPER-LOVER-WATCH"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "TIVO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #119"
+}

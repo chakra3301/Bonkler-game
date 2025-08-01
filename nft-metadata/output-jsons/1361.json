@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CONICAL"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HALO"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorAdamantine"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "RILAKKUMA"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BLADE-OF-THE-IMMORTAL"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "VAX-PASS"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "BLACK-FROST"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1361"
+}

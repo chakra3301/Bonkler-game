@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "BONK-STREET"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorSteel-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "VALET-CHAIR"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "EVOLVED-ANTENNA"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "YEN"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "SPRITE-AUTOGRAPH"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #224"
+}

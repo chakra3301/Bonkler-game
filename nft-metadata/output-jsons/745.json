@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "BANK-NOTES"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorWhite"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "NOCTUA-HEATSINK"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "ANCIENT-GODSWORD"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "NAUTILUS"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "SPRITE-AUTOGRAPH"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #745"
+}

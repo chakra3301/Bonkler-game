@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CHINA"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "SPIRIT"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorHandycam"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "ANOTHER-FREAKING-MACHINE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "WATER-PISTOL"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "FOOBAR"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "GUITAR-BEAR"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1175"
+}

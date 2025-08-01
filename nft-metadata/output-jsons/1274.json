@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "AKIKO-YANO-TADAIMA"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorAdamantine"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "RUMMIKUB"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "IKEBANA"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "FOOBAR"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "DANCING-MAN-EMOJI"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1274"
+}

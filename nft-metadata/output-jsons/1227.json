@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "ATHENS"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorWhite"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "RUMMIKUB"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BOOM-MIC"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "COOKIE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "MILADY"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1227"
+}

@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SHOCHIKU-COMPANY"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorTerminator"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "BRG-VOL1"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "VELVET-CROWE"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "REMILIA-CREST"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "REI"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #328"
+}

@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CONICAL"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorHarajuku-Sticker"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "SONY-POCKET-STATION"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "STYGIAN-REAVER"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "RX-78"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "BEAUTY-BEAST-BUNNY"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #671"
+}

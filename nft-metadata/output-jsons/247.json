@@ -1,0 +1,43 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "DUNGEON"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorComme-Des-Garcons-Homme-Plus-FW18-Dover-Street-Market-Installation-Dinosaur-Bones"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "LEGO-SKELETON"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "INSANITY-CATALYST"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "BEYBLADE"
+        },
+        {
+            "trait_type": "OVERLAYS",
+            "value": "LIMITED-EDITION"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "SPRITE-AUTOGRAPH"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #247"
+}

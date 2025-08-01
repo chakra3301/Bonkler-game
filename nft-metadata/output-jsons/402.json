@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "KIMI-NIN-MUNE"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorTerminator-Recolor"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "SONY-CD-PLAYER"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "SKYLANDER-SWORD"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "HAND-CLOCK"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "SHAKOKI-DOGU"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #402"
+}

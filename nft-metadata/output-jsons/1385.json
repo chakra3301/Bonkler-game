@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SHOCHIKU-COMPANY"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorJade"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "GUAM"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "DREAMCAST-FISHING-CONTROLLER"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "RX-78"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "NEKO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1385"
+}

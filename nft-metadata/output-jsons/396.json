@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "COCA-Y-COLA"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "DROID"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBronze-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "RUG-PULL"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BLADE-OF-THE-IMMORTAL"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "QUAD-DAMAGE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "BONK-BAT"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #396"
+}

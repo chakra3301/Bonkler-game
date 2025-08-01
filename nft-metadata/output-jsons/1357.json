@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SONIC"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorHandycam"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "RED-AND-BLUE-CHAIR"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "PORSCHE-SUSPENSION"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "TEDDY-BEAR-ANNIVERSARY"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "BEAUTY-BEAST-BUNNY"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1357"
+}

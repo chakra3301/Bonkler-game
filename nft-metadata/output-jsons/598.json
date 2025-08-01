@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "FLATLAND"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "DROID"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorJade"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "SONY-POCKET-STATION"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "SLY-COOPER-CANE"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "VAX-PASS"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "MAPLE-STORY"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #598"
+}

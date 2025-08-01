@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CHERNOBYL"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorSteel-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "RUMMIKUB"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "AMERICAN-FLAG"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "SUBMARINE-CABLE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "STUART"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1020"
+}

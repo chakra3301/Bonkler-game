@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SOUR-GRAPES"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HALO"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorPhantom"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "BURGER-BONK-LASER"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "INSANITY-CATALYST"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "DWARF-FORTRESS-GREEK-BEDROOM-BLUEPRINT"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "HAMTARO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #283"
+}

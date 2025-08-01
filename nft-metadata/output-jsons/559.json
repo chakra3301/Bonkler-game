@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "GALLERY"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorTerminator-Recolor"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "ORION-CAN"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "IKEBANA"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "BREIFCASE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "WOLFIE"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #559"
+}

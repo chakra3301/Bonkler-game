@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CHERNOBYL"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorTerminator-Recolor"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "DARK-MAGICIAN-GIRL"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "K'NEX"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "AMEX-PLATINUM"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "PIKMIN"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #343"
+}

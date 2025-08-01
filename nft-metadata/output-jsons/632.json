@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SOUR-GRAPES"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorWhite-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "REI-LIGHTER"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "WATER-PISTOL"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "QUAD-DAMAGE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "REI"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #632"
+}

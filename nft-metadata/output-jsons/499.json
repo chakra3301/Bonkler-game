@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SUNSET"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "DROID"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorMithril-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "VALET-CHAIR"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "EVOLVED-ANTENNA"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "CLOVER"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "STUART"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #499"
+}

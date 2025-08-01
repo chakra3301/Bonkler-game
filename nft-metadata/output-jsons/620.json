@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SOUR-GRAPES"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorHandycam"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "RUG-PULL"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "ATARASHIKI-MURA"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "BEETLE-GAME"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "BINKY"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #620"
+}

@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "KIMI-NIN-MUNE"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HALO"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorWhite-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "JACOB-JENSEN"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "K'NEX"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "GAME-AND-WATCH"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "REI"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1486"
+}

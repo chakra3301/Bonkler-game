@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CONICAL"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorWhite-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "COSMIC-RAY-DETECTORS"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "SKYLANDER-SWORD"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "FBI-BADGE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "BLACK-FROST"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1108"
+}

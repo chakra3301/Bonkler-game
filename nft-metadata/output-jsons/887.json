@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "GALLERY"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorJade"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "BRG-VOL1"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "SKYLANDER-SWORD"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "SUPER-LOVER-WATCH"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "MINIFIG"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #887"
+}

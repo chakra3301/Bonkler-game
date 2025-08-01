@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CONICAL"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "EVIL-BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorDragon"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "PELICAN-TERMINAL"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "SLY-COOPER-CANE"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "REMILIA-CREST"
+        },
+        {
+            "trait_type": "OVERLAYS",
+            "value": "LIMITED-EDITION-V2"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "MILADY"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #430"
+}

@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "FOREVER-SUNFLOWER"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "EVIL-BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBlack"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "FIRE-BONKER-LASER"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "JORDAN"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "KETAMINE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "CHARLIE'S-DOG"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #303"
+}

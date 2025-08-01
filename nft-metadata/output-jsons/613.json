@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "MOON-LANDING"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorJade"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "DARK-MAGICIAN-GIRL"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "ANCIENT-GODSWORD"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "G-SHOCK"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "NEKO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #613"
+}

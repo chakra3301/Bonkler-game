@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "FOREVER-SUNFLOWER"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "WHITE"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBronze"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "SONY-TV"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "SLY-COOPER-CANE"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "GAME-AND-WATCH"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "MILADY"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1312"
+}

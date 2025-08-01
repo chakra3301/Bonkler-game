@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "BONK-STREET"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "DROID"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorHarajuku-Sticker"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "RUG-PULL"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "K'NEX"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "BEYBLADE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "BINKY"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #306"
+}

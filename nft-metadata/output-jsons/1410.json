@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "GALLERY"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "SPIRIT"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorHarajuku-Sticker"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "YMO-TOUR"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "K'NEX"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "YEN"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "GUITAR-BEAR"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1410"
+}

@@ -1,0 +1,43 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "KINGS FIELD"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "Evil BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "N/A"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "N/A"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "Bonkler #55"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "N/A"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "N/A"
+        },
+        {
+            "trait_type": "OVERLAYS",
+            "value": "N/A"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "N/A"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1551"
+}

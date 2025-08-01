@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "HOTEL-IN-PRAGUE"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "DROID"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBronze"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "BEETLE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "EVOLVED-ANTENNA"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "RAYMAN-M-STEAL-SHIELD"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "MAPLE-STORY"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #475"
+}

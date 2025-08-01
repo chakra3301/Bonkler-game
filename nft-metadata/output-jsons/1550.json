@@ -1,0 +1,43 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CONICAL"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HALO"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorDragon"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "BURNER-PHONE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "ATARASHIKI-MURA"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "QUAD-DAMAGE"
+        },
+        {
+            "trait_type": "OVERLAYS",
+            "value": "LIMITED-EDITION"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "BLACK-FROST"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1550"
+}

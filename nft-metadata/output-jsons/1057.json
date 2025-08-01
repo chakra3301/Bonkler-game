@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "MOON-LANDING"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorPhantom"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "PELICAN-TERMINAL"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "STYGIAN-REAVER"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "FINAL-FANTASY"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "DANCING-MAN-EMOJI"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1057"
+}

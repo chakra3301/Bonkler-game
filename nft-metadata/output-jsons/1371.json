@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SUNSET"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorHarajuku-Sticker"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "BEETLE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "AGHANIM-SCEPTER"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "CLOVER"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "CHARLIE'S-DOG"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1371"
+}

@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "CONICAL"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HALO"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorSteel-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "SONY-CD-PLAYER"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BALLOON"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "G-SHOCK"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "SNOOPY-PLUSH"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1515"
+}

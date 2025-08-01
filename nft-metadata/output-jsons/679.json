@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "HOTEL-IN-PRAGUE"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBronze-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "BURGER-BONK-LASER"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "SIR-FETCH'D"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "SHOOTING-STAR"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "WOLFIE"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #679"
+}

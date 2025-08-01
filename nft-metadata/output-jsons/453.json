@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "FOREVER-SUNFLOWER"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "WHITE"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "DROID"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorMithril-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "ORION-CAN"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "PORSCHE-SUSPENSION"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "BEETLE-GAME"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "ALIEN-MILADY"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #453"
+}

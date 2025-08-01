@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "DUNGEON"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorTerminator-Recolor"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "FIRE-BONKER-LASER"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "NEWJEANS-HAMMER"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "GAME-AND-WATCH"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "TIVO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1360"
+}

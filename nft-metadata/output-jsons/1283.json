@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "HDR-ROOM"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "RAVER-CAP"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorHandycam"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "TEKKEN-KING"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "IKEBANA"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "NAUTILUS"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "DANCING-MAN-EMOJI"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1283"
+}

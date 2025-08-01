@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "SUPER-MONKEY-BALL-2"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBlack-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "YMO-TOUR"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "WATER-PISTOL"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "POCKET-PET"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "REI"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #411"
+}

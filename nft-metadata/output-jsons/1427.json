@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "KINGS-FIELD"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "EVIL-BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HALO"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorCoal"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "TEKKEN-KING"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BALLOON"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "48-LAWS-OF-POWER"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "MEW"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1427"
+}

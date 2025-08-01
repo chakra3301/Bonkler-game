@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "FLATLAND"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorSteel"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "DARK-MAGICIAN-GIRL"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "IKEBANA"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "TOKYO-MANHOLE-COVER"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "WOLFIE"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #378"
+}

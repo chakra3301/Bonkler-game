@@ -204,7 +204,6 @@
                             </div>
                             <div class="builder-controls">
                                 <button id="confirm-fighter-btn" class="confirm-btn">Confirm Fighter</button>
-                                <button id="randomize-fighter-btn" class="randomize-btn">Randomize</button>
                             </div>
                         </div>
                         <div class="right-column">
@@ -214,6 +213,7 @@
                                     <div class="inventory-tabs">
                                         <button class="inventory-tab active" data-tab="nfts">NFTs</button>
                                         <button class="inventory-tab" data-tab="purchased">Purchased Items</button>
+                                        <button class="inventory-tab" data-tab="skills">Skills</button>
                                     </div>
                                 </div>
                                 <div class="inventory-content">
@@ -225,6 +225,22 @@
                                     <div id="inventory-purchased" class="inventory-tab-content">
                                         <div class="inventory-grid" id="inventory-purchased-grid">
                                             <!-- Purchased items will be populated here -->
+                                        </div>
+                                    </div>
+                                    <div id="inventory-skills" class="inventory-tab-content">
+                                        <div class="skills-container">
+                                            <div class="equipped-skills">
+                                                <h4>Equipped Skills (0/6)</h4>
+                                                <div class="skills-grid" id="equipped-skills-grid">
+                                                    <!-- Equipped skills will be populated here -->
+                                                </div>
+                                            </div>
+                                            <div class="available-skills">
+                                                <h4>Available Skills</h4>
+                                                <div class="skills-grid" id="available-skills-grid">
+                                                    <!-- Available skills will be populated here -->
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -285,9 +301,12 @@
                             </div>
                         </div>
                         <div class="battle-controls">
-                            <button class="battle-btn" id="attack-btn">Attack</button>
-                            <button class="battle-btn" id="special-btn">Special</button>
+                            <button class="battle-btn" id="slash-btn">Slash</button>
+                            <button class="battle-btn" id="power-up-btn">Power-up</button>
                             <button class="battle-btn" id="defend-btn">Defend</button>
+                            <button class="battle-btn" id="dodge-btn">Dodge</button>
+                            <button class="battle-btn special-btn" id="special-btn" style="display: none;">Special</button>
+                            <button class="battle-btn bonkler-beam-btn" id="bonkler-beam-btn" style="display: none;">Beam</button>
                         </div>
                         <div class="battle-log">
                             <div class="battle-log-header">
@@ -309,11 +328,11 @@
                     <div class="shop-categories">
                         <button class="category-btn active" data-category="pilots">Pilots</button>
                         <button class="category-btn" data-category="bodies">Bodies</button>
-                        <button class="category-btn" data-category="heads">Heads</button>
                         <button class="category-btn" data-category="armors">Armors</button>
+                        <button class="category-btn" data-category="hands">Hands</button>
                         <button class="category-btn" data-category="offhands">Offhands</button>
                         <button class="category-btn" data-category="accessories">Accessories</button>
-                        <button class="category-btn" data-category="potions">Potions</button>
+                        <button class="category-btn" data-category="skills">Skills</button>
                     </div>
                     <div class="shop-items" id="shop-items">
                         <!-- Shop items will be populated here -->

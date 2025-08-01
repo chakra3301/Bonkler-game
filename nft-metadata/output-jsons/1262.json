@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "COCA-Y-COLA"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorWhite-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "VENDING-MACHINE"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "ENERGY-SWORD"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "SHOOTING-STAR"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "MEW"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1262"
+}

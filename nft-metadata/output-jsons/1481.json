@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "DUNGEON"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "WHITE"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "DROID"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBronze-Trim"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "HARAJUKU-MOTOROLA"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "BLUDGEONING-ANGEL"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "DAIHATSU-MIDGET"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "NEKO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1481"
+}

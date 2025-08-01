@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "BRITNEY"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorMithril"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "SONY-CD-PLAYER"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "PHONE-FLAIL"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "TORNADO-2"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "TIVO"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1386"
+}

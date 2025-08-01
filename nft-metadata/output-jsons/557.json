@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "KINGS-FIELD"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "SPIRIT"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorBronze"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "RILAKKUMA"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "AGHANIM-SCEPTER"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "COOKIE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "ROVER"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #557"
+}

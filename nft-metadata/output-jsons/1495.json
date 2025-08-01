@@ -1,0 +1,39 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "TALL-GRASS"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ACCESSORIES",
+            "value": "HIKKIKOMORI"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorComme-Des-Garcons-Homme-Plus-FW18-Dover-Street-Market-Installation-Dinosaur-Bones"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "TEKKEN-KING"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "INSANITY-CATALYST"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "PALETTE"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "SHAKOKI-DOGU"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1495"
+}

@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "FLATLAND"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "BONK"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorPhantom"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "PELICAN-TERMINAL"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "PHONE-FLAIL"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "POCKET-PET"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "ROVER"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #348"
+}

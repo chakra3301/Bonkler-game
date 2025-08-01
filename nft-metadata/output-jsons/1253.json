@@ -1,0 +1,35 @@
+{
+    "attributes": [
+        {
+            "trait_type": "BACKGROUNDS",
+            "value": "FLATLAND"
+        },
+        {
+            "trait_type": "HEADS",
+            "value": "SPIRIT"
+        },
+        {
+            "trait_type": "ARMORS",
+            "value": "ArmorMithril"
+        },
+        {
+            "trait_type": "BODIES",
+            "value": "PELICAN-TERMINAL"
+        },
+        {
+            "trait_type": "HANDS",
+            "value": "ATARASHIKI-MURA"
+        },
+        {
+            "trait_type": "OFFHAND",
+            "value": "BEETLE-GAME"
+        },
+        {
+            "trait_type": "PILOT",
+            "value": "ZATSUNE-MIKU"
+        }
+    ],
+    "description": "Mecha bonks inspired by bonkler",
+    "symbol": "BONKLER",
+    "name": "BONKLER #1253"
+}

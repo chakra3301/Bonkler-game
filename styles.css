@@ -232,15 +232,92 @@ body {
     display: block;
 }
 
+.skills-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.equipped-skills, .available-skills {
+    background: #c0c0c0;
+    border: 2px outset #ffffff;
+    padding: 15px;
+}
+
+.equipped-skills h4, .available-skills h4 {
+    margin: 0 0 15px 0;
+    color: #000000;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.skill-item {
+    background: #d4d0c8;
+    border: 2px outset #ffffff;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: none;
+}
+
+.skill-item:hover {
+    background: #e0dcd4;
+}
+
+.skill-item.equipped {
+    background: #c0c0c0;
+    border: 2px inset #808080;
+}
+
+.skill-icon {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.skill-name {
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    color: #000000;
+}
+
+.equip-btn, .unequip-btn {
+    background: #c0c0c0;
+    border: 2px outset #ffffff;
+    color: #000000;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+    font-size: 10px;
+    transition: none;
+}
+
+.equip-btn:hover, .unequip-btn:hover {
+    background: #d4d0c8;
+}
+
+.equip-btn:active, .unequip-btn:active {
+    border: 2px inset #ffffff;
+    background: #a0a0a0;
+}
+
 .inventory-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 8px;
-    max-height: 200px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 16px;
+    max-height: 400px;
     overflow-y: auto;
-    padding: 8px;
-    background: #ffffff;
-    border: 2px inset #808080;
 }
 
 .inventory-item {
@@ -507,7 +584,7 @@ body {
     margin-top: 8px;
 }
 
-.confirm-btn, .randomize-btn {
+.confirm-btn {
     background: #c0c0c0;
     border: 2px outset #ffffff;
     color: #000000;
@@ -519,21 +596,13 @@ body {
     transition: none;
 }
 
-.confirm-btn:hover, .randomize-btn:hover {
+.confirm-btn:hover {
     background: #d4d0c8;
 }
 
-.confirm-btn:active, .randomize-btn:active {
+.confirm-btn:active {
     border: 2px inset #ffffff;
     background: #a0a0a0;
-}
-
-.confirm-btn {
-    background: #c0c0c0;
-}
-
-.randomize-btn {
-    background: #c0c0c0;
 }
 
 /* Battle Screen */
@@ -677,28 +746,7 @@ body {
     font-weight: bold;
 }
 
-.rarity-badge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: bold;
-    color: white;
-}
 
-.rarity-badge.rare {
-    background: #4a90e2;
-}
-
-.rarity-badge.epic {
-    background: #9b59b6;
-}
-
-.rarity-badge.legendary {
-    background: #f39c12;
-}
 
 .nft-description {
     font-size: 10px;
@@ -876,21 +924,26 @@ body {
 }
 
 .battle-controls {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 16px;
+    background: #c0c0c0;
+    border: 2px outset #ffffff;
+    padding: 8px;
 }
 
 .battle-btn {
     background: #c0c0c0;
     border: 2px outset #ffffff;
     color: #000000;
-    padding: 8px 16px;
+    padding: 8px 12px;
     cursor: pointer;
     font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: bold;
-    font-size: 11px;
+    font-size: 10px;
     transition: none;
+    text-align: center;
 }
 
 .battle-btn:hover {
@@ -900,6 +953,34 @@ body {
 .battle-btn:active {
     border: 2px inset #ffffff;
     background: #a0a0a0;
+}
+
+.special-btn {
+    background: #ff6600 !important;
+    color: #ffffff !important;
+    font-weight: bold;
+}
+
+.special-btn:hover {
+    background: #ff8800 !important;
+}
+
+.special-btn:active {
+    background: #cc5500 !important;
+}
+
+.bonkler-beam-btn {
+    background: #ff0000 !important;
+    color: #ffffff !important;
+    font-weight: bold;
+}
+
+.bonkler-beam-btn:hover {
+    background: #ff3333 !important;
+}
+
+.bonkler-beam-btn:active {
+    background: #cc0000 !important;
 }
 
 .battle-btn:disabled {
@@ -990,6 +1071,108 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 30px;
+}
+
+/* Target accessory images specifically */
+.item-icon img[src*="Store%20accessories/"] {
+    width: 120px !important;
+    height: 120px !important;
+    background: transparent !important;
+    border: none !important;
+    object-fit: cover !important;
+}
+
+/* Remove white background from accessory item containers */
+.shop-item:has(img[src*="Store%20accessories/"]) .item-icon {
+    background: transparent !important;
+    border: none !important;
+    width: 120px !important;
+    height: 120px !important;
+}
+
+/* Target offhand images specifically */
+.item-icon img[src*="OFFHAND%20store/"] {
+    width: 120px !important;
+    height: 120px !important;
+    background: transparent !important;
+    border: none !important;
+    object-fit: cover !important;
+}
+
+/* Remove white background from offhand item containers */
+.shop-item:has(img[src*="OFFHAND%20store/"]) .item-icon {
+    background: transparent !important;
+    border: none !important;
+    width: 120px !important;
+    height: 120px !important;
+}
+
+/* Target pilot images specifically */
+.item-icon img[src*="store%20pilot/"] {
+    width: 120px !important;
+    height: 120px !important;
+    background: transparent !important;
+    border: none !important;
+    object-fit: cover !important;
+}
+
+/* Remove white background from pilot item containers */
+.shop-item:has(img[src*="store%20pilot/"]) .item-icon {
+    background: transparent !important;
+    border: none !important;
+    width: 120px !important;
+    height: 120px !important;
+}
+
+/* Target body images specifically */
+.item-icon img[src*="BODIES/"] {
+    width: 120px !important;
+    height: 120px !important;
+    background: transparent !important;
+    border: none !important;
+    object-fit: cover !important;
+}
+
+/* Remove white background from body item containers */
+.shop-item:has(img[src*="BODIES/"]) .item-icon {
+    background: transparent !important;
+    border: none !important;
+    width: 120px !important;
+    height: 120px !important;
+}
+
+/* Target armor images specifically */
+.item-icon img[src*="ARMORS/"] {
+    width: 120px !important;
+    height: 120px !important;
+    background: transparent !important;
+    border: none !important;
+    object-fit: cover !important;
+}
+
+/* Remove white background from armor item containers */
+.shop-item:has(img[src*="ARMORS/"]) .item-icon {
+    background: transparent !important;
+    border: none !important;
+    width: 120px !important;
+    height: 120px !important;
+}
+
+/* Target hand images specifically */
+.item-icon img[src*="store%20hands/"] {
+    width: 120px !important;
+    height: 120px !important;
+    background: transparent !important;
+    border: none !important;
+    object-fit: cover !important;
+}
+
+/* Remove white background from hand item containers */
+.shop-item:has(img[src*="store%20hands/"]) .item-icon {
+    background: transparent !important;
+    border: none !important;
+    width: 120px !important;
+    height: 120px !important;
 }
 
 .item-name {
@@ -1543,6 +1726,16 @@ body {
 
 .log-entry.special {
     color: #800080;
+    font-weight: bold;
+}
+
+.log-entry.power-up {
+    color: #ff6600;
+    font-weight: bold;
+}
+
+.log-entry.dodge {
+    color: #0066cc;
     font-weight: bold;
 }
 
