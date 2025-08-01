@@ -1218,10 +1218,6 @@ class GameState {
         this.canvas = document.getElementById('fighter-canvas');
         this.ctx = this.canvas.getContext('2d');
         
-        // Initialize inventory canvas
-        this.inventoryCanvas = document.getElementById('inventory-canvas');
-        this.inventoryCtx = this.inventoryCanvas.getContext('2d');
-        
         this.componentIndices = {
             pilot: 0,
             body: 0,
@@ -1245,7 +1241,6 @@ class GameState {
         
         await this.loadComponentAssets();
         this.setupBuilderNFTSelection();
-        this.drawEmptyInventoryCanvas();
     }
 
     async loadComponentAssets() {
@@ -1602,9 +1597,6 @@ class GameState {
         
         // Render the NFT as base
         this.renderNFTAsBase(nft);
-        
-        // Update inventory canvas preview
-        this.updateInventoryCanvasPreview(nft);
         
         this.showModal('NFT Selected', `You can now customize ${nft.name} with your purchased items!`);
     }
@@ -2237,57 +2229,6 @@ class GameState {
         this.ctx.font = '14px Arial';
         this.ctx.fillText('Select an NFT from your inventory to customize', this.canvas.width / 2, 130);
         this.ctx.fillText('You can only use items you have purchased', this.canvas.width / 2, 150);
-    }
-
-    drawEmptyInventoryCanvas() {
-        if (!this.inventoryCtx) return;
-        
-        // Clear canvas
-        this.inventoryCtx.clearRect(0, 0, this.inventoryCanvas.width, this.inventoryCanvas.height);
-        
-        // Draw instructions
-        this.inventoryCtx.fillStyle = '#000000';
-        this.inventoryCtx.font = '14px MS Sans Serif';
-        this.inventoryCtx.textAlign = 'center';
-        this.inventoryCtx.fillText('Select an NFT to preview', this.inventoryCanvas.width / 2, this.inventoryCanvas.height / 2);
-    }
-
-    updateInventoryCanvasPreview(nft) {
-        if (!this.inventoryCtx) return;
-        
-        // Clear canvas
-        this.inventoryCtx.clearRect(0, 0, this.inventoryCanvas.width, this.inventoryCanvas.height);
-        
-        // Render NFT preview on inventory canvas
-        this.renderNFTPreviewOnInventoryCanvas(nft);
-        
-        // Update canvas info
-        const canvasInfo = document.querySelector('.inventory-canvas-info p');
-        if (canvasInfo) {
-            canvasInfo.textContent = nft.name;
-        }
-    }
-
-    renderNFTPreviewOnInventoryCanvas(nft) {
-        if (!this.inventoryCtx) return;
-        
-        const canvasWidth = this.inventoryCanvas.width;
-        const canvasHeight = this.inventoryCanvas.height;
-        
-        // Calculate scale to fit in inventory canvas
-        const scale = Math.min(canvasWidth / 300, canvasHeight / 400) * 0.8;
-        
-        // Center the preview
-        const centerX = canvasWidth / 2;
-        const centerY = canvasHeight / 2;
-        
-        // Render NFT components
-        if (nft.components) {
-            this.renderFighterPreviewForInventory(this.inventoryCtx, nft.components, centerX, centerY, scale);
-        } else {
-            // Draw placeholder if no components
-            this.drawInventoryPlaceholder(this.inventoryCtx);
-        }
     }
 
 
@@ -4040,8 +3981,11 @@ class GameState {
         if (nextBtn) nextBtn.disabled = page === this.totalCarouselPages - 1;
     }
 
-    renderFighterPreviewForInventory(ctx, components, centerX = 30, centerY = 30, scale = 0.8) {
+    renderFighterPreviewForInventory(ctx, components) {
         if (!ctx) return;
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, 60, 60);
         
         // Render layers in order: body → armor → hands → offhand → head → pilot → accessories (last drawn = top layer)
         const layerOrder = ['body', 'armor', 'hands', 'offhand', 'head', 'pilot', 'accessory'];
@@ -4051,11 +3995,12 @@ class GameState {
         layerOrder.forEach(layer => {
             const component = components[layer];
             if (component && component.image && component.image.complete && component.image.naturalWidth > 0) {
-                // Calculate scaled dimensions
+                // Scale and center the image for inventory preview (make smaller)
+                const scale = Math.min(60 / component.image.width, 60 / component.image.height) * 0.8; // 80% of available space
                 const scaledWidth = component.image.width * scale;
                 const scaledHeight = component.image.height * scale;
-                const x = centerX - scaledWidth / 2;
-                const y = centerY - scaledHeight / 2;
+                const x = (60 - scaledWidth) / 2;
+                const y = (60 - scaledHeight) / 2;
                 
                 ctx.drawImage(component.image, x, y, scaledWidth, scaledHeight);
                 hasValidComponents = true;
