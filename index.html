@@ -93,52 +93,62 @@
             <!-- Inventory Screen -->
             <div id="inventory-screen" class="screen active">
                 <div class="inventory-container">
-                    <div class="inventory-header">
-                        <h2>Your Inventory</h2>
-                        <p>Select an NFT to customize or view your items</p>
-                    </div>
-                    
-                    <!-- Inventory Tabs -->
-                    <div class="inventory-tabs">
-                        <button class="inventory-tab-btn active" data-tab="nfts">NFTs</button>
-                        <button class="inventory-tab-btn" data-tab="skills">Skills</button>
-                    </div>
-                    
-                    <!-- NFT Carousel Section -->
-                    <div class="nft-carousel-section">
-                        <h3>Your NFTs</h3>
-                        <div class="carousel-container">
-                            <button class="carousel-btn prev" id="nft-prev-btn">‹</button>
-                            <div class="carousel-viewport">
-                                <div class="carousel-track" id="nft-carousel-track">
-                                    <!-- NFT cards will be populated here -->
-                                </div>
-                            </div>
-                            <button class="carousel-btn next" id="nft-next-btn">›</button>
-                        </div>
-                        <div class="carousel-indicators" id="nft-carousel-indicators">
-                            <!-- Page indicators will be populated here -->
-                        </div>
-                    </div>
-                    
-                    <!-- Skills Section -->
-                    <div class="skills-section" style="display: none;">
-                        <h3>Your Skills</h3>
-                        <div class="skills-container">
-                            <div class="available-skills">
-                                <h4>Available Skills</h4>
-                                <div class="skills-grid" id="available-skills-grid">
-                                    <!-- Available skills will be populated here -->
-                                </div>
-                            </div>
-                            <div class="equipped-skills">
-                                <h4>Equipped Skills (6 max)</h4>
-                                <div class="skills-grid" id="equipped-skills-grid">
-                                    <!-- Equipped skills will be populated here -->
-                                </div>
+                    <div class="inventory-left">
+                        <div class="inventory-canvas-container">
+                            <canvas id="inventory-canvas" width="300" height="400"></canvas>
+                            <div class="inventory-canvas-info">
+                                <p>Select an NFT to preview</p>
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="inventory-right">
+                        <div class="inventory-header">
+                            <h2>Your Inventory</h2>
+                            <p>Select an NFT to customize or view your items</p>
+                        </div>
+                        
+                        <!-- Inventory Tabs -->
+                        <div class="inventory-tabs">
+                            <button class="inventory-tab-btn active" data-tab="nfts">NFTs</button>
+                            <button class="inventory-tab-btn" data-tab="skills">Skills</button>
+                        </div>
+                        
+                        <!-- NFT Carousel Section -->
+                        <div class="nft-carousel-section">
+                            <h3>Your NFTs</h3>
+                            <div class="carousel-container">
+                                <button class="carousel-btn prev" id="nft-prev-btn">‹</button>
+                                <div class="carousel-viewport">
+                                    <div class="carousel-track" id="nft-carousel-track">
+                                        <!-- NFT cards will be populated here -->
+                                    </div>
+                                </div>
+                                <button class="carousel-btn next" id="nft-next-btn">›</button>
+                            </div>
+                            <div class="carousel-indicators" id="nft-carousel-indicators">
+                                <!-- Page indicators will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Skills Section -->
+                        <div class="skills-section" style="display: none;">
+                            <h3>Your Skills</h3>
+                            <div class="skills-container">
+                                <div class="available-skills">
+                                    <h4>Available Skills</h4>
+                                    <div class="skills-grid" id="available-skills-grid">
+                                        <!-- Available skills will be populated here -->
+                                    </div>
+                                </div>
+                                <div class="equipped-skills">
+                                    <h4>Equipped Skills (6 max)</h4>
+                                    <div class="skills-grid" id="equipped-skills-grid">
+                                        <!-- Equipped skills will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     
                     <!-- Builder Section (hidden by default) -->
                     <div class="fighter-builder-container" style="display: none;">
