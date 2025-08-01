@@ -182,6 +182,9 @@ class GameState {
         // Complete loading
         this.updateLoadingProgress(100, 'Game ready!');
         
+        // Start AppKit state monitoring
+        this.startAppKitMonitoring();
+        
         // Hide loading screen and show game
         setTimeout(() => {
             this.hideLoadingScreen();
@@ -541,6 +544,16 @@ class GameState {
 
     async connectWallet() {
         try {
+            // Use Reown AppKit for wallet connection
+            if (window.appkitModal) {
+                console.log('Opening Reown AppKit modal...');
+                window.appkitModal.open();
+                return;
+            }
+
+            // Fallback to traditional methods if AppKit is not available
+            console.log('AppKit not available, using fallback methods');
+            
             // Try Wallet Standard first (supports all major wallets)
             if (navigator.wallets) {
                 try {
@@ -866,7 +879,11 @@ class GameState {
 
     async disconnectWallet() {
         try {
-            if (this.wallet && this.isConnected) {
+            // Use AppKit disconnect if available
+            if (window.appkitModal) {
+                await window.appkitModal.disconnect();
+                console.log('Disconnected via AppKit');
+            } else if (this.wallet && this.isConnected) {
                 await this.wallet.disconnect();
             }
             
@@ -876,9 +893,7 @@ class GameState {
             this.userNFTs = [];
             
             // Update wallet button
-            const walletBtn = document.getElementById('wallet-connect-btn');
-            walletBtn.innerHTML = `<i class="fas fa-wallet"></i> Connect Wallet`;
-            walletBtn.disabled = false;
+            this.updateWalletButton();
             
             // Refresh displays
             this.populateInventory();
@@ -896,7 +911,21 @@ class GameState {
 
     updateWalletButton() {
         const walletBtn = document.getElementById('wallet-connect-btn');
-        if (this.isConnected && this.publicKey) {
+        
+        // Check AppKit state first
+        if (window.appkitState && window.appkitState.isConnected && window.appkitState.publicKey) {
+            this.isConnected = window.appkitState.isConnected;
+            this.publicKey = window.appkitState.publicKey;
+            this.wallet = window.appkitState.wallet;
+            
+            walletBtn.innerHTML = `<i class="fas fa-wallet"></i> ${this.publicKey.slice(0, 4)}...${this.publicKey.slice(-4)}`;
+            walletBtn.disabled = false;
+            
+            // Load NFTs if not already loaded
+            if (this.userNFTs.length === 0) {
+                this.loadUserNFTs(this.publicKey);
+            }
+        } else if (this.isConnected && this.publicKey) {
             walletBtn.innerHTML = `<i class="fas fa-wallet"></i> ${this.publicKey.slice(0, 4)}...${this.publicKey.slice(-4)}`;
             walletBtn.disabled = false;
         } else {
@@ -4248,6 +4277,45 @@ class GameState {
                 }
             }, 500);
         }
+    }
+
+    startAppKitMonitoring() {
+        // Monitor AppKit state changes
+        setInterval(() => {
+            if (window.appkitState) {
+                const wasConnected = this.isConnected;
+                const wasPublicKey = this.publicKey;
+                
+                // Update local state from AppKit
+                if (window.appkitState.isConnected && window.appkitState.publicKey) {
+                    this.isConnected = window.appkitState.isConnected;
+                    this.publicKey = window.appkitState.publicKey;
+                    this.wallet = window.appkitState.wallet;
+                    
+                    // If newly connected, load NFTs
+                    if (!wasConnected && this.isConnected) {
+                        console.log('AppKit wallet connected:', this.publicKey);
+                        this.loadUserNFTs(this.publicKey);
+                        this.saveGameData();
+                    }
+                } else if (wasConnected && !window.appkitState.isConnected) {
+                    // If disconnected, clear state
+                    console.log('AppKit wallet disconnected');
+                    this.isConnected = false;
+                    this.publicKey = null;
+                    this.wallet = null;
+                    this.userNFTs = [];
+                    this.saveGameData();
+                }
+                
+                // Update UI if state changed
+                if (wasConnected !== this.isConnected || wasPublicKey !== this.publicKey) {
+                    this.updateWalletButton();
+                    this.populateInventory();
+                    this.populateNFTs();
+                }
+            }
+        }, 1000); // Check every second
     }
 }
 
