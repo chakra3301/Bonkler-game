@@ -171,11 +171,11 @@ class GameState {
         // Hide loading screen and show game
         setTimeout(() => {
             this.hideLoadingScreen();
-            
-            // Check if fighter is already built
-            if (this.fighterBuilt) {
-                this.switchScreen('battle');
-            }
+        
+        // Check if fighter is already built
+        if (this.fighterBuilt) {
+            this.switchScreen('battle');
+        }
         }, 1000);
     }
 
@@ -1098,6 +1098,9 @@ class GameState {
                 const drawY = centerY - scaledHeight / 2;
                 
                 this.ctx.drawImage(component.image, drawX, drawY, scaledWidth, scaledHeight);
+            } else if (component && component.name) {
+                // Draw a placeholder for components without images
+                this.drawComponentPlaceholder(this.ctx, component.name, this.canvas.width, this.canvas.height, scale);
             }
         });
     }
@@ -1421,8 +1424,9 @@ class GameState {
     // NFT Management
     reprocessNFTsWithAssets() {
         console.log('Re-processing NFTs with loaded assets...');
-        // Re-process all NFTs with the now-loaded component assets
-        this.nfts.forEach(nft => {
+        
+        // Process all NFTs with the now-loaded component assets
+        const processNFT = (nft) => {
             if (nft.components) {
                 // Re-process each component to get proper images
                 Object.keys(nft.components).forEach(category => {
@@ -1437,7 +1441,13 @@ class GameState {
                     }
                 });
             }
-        });
+        };
+        
+        // Process main NFTs
+        this.nfts.forEach(processNFT);
+        
+        // Process user NFTs
+        this.userNFTs.forEach(processNFT);
         
         // Re-populate the NFT display
         this.populateNFTs();
@@ -2169,7 +2179,7 @@ class GameState {
 
     performSpecial() {
         if (!this.currentBattle || this.currentBattle.turn !== 'player') return;
-        
+
         // Check if player is level 5 or higher
         if (this.level < 5) {
             this.addBattleLogEntry(`Special attack requires level 5!`, 'battle-event');
@@ -2214,7 +2224,7 @@ class GameState {
 
     performBonklerBeam() {
         if (!this.currentBattle || this.currentBattle.turn !== 'player') return;
-        
+
         // Check if player is level 10 or higher
         if (this.level < 10) {
             this.addBattleLogEntry(`Bonkler Beam requires level 10!`, 'battle-event');
@@ -2232,9 +2242,9 @@ class GameState {
         if (hitRoll > 0.65) {
             this.addBattleLogEntry(`Bonkler Beam missed!`, 'battle-event');
             this.battleState.bonklerBeamUses--;
-            this.currentBattle.turn = 'enemy';
-            this.addBattleLogEntry(`Enemy's turn...`, 'enemy-action');
-            setTimeout(() => this.enemyTurn(), 1000);
+        this.currentBattle.turn = 'enemy';
+        this.addBattleLogEntry(`Enemy's turn...`, 'enemy-action');
+        setTimeout(() => this.enemyTurn(), 1000);
             return;
         }
         
@@ -2817,8 +2827,8 @@ class GameState {
             canvas.style.border = '1px solid #000';
             canvas.style.background = '#ffffff';
             
-            // Render NFT on canvas
-            this.renderNFTPreviewOnCanvas(canvas, nft);
+            // Render NFT on canvas using the same logic as battle selection
+            this.renderFighterPreviewForInventory(canvas.getContext('2d'), nft.components || {});
             
             item.innerHTML = `
                 <div class="item-icon">
@@ -2865,8 +2875,81 @@ class GameState {
                 const drawY = (canvas.height - scaledHeight) / 2;
                 
                 ctx.drawImage(component.image, drawX, drawY, scaledWidth, scaledHeight);
+            } else if (component && component.name) {
+                // Draw a placeholder for components without images
+                this.drawComponentPlaceholder(ctx, component.name, canvas.width, canvas.height, scale);
             }
         });
+    }
+
+    renderFighterPreviewForInventory(ctx, components) {
+        if (!ctx) return;
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, 60, 60);
+        
+        // Render layers in order: body → armor → hands → offhand → head → pilot → accessories (last drawn = top layer)
+        const layerOrder = ['body', 'armor', 'hands', 'offhand', 'head', 'pilot', 'accessory'];
+        
+        let hasValidComponents = false;
+        
+        layerOrder.forEach(layer => {
+            const component = components[layer];
+            if (component && component.image && component.image.complete && component.image.naturalWidth > 0) {
+                // Scale and center the image for inventory preview (make smaller)
+                const scale = Math.min(60 / component.image.width, 60 / component.image.height) * 0.8; // 80% of available space
+                const scaledWidth = component.image.width * scale;
+                const scaledHeight = component.image.height * scale;
+                const x = (60 - scaledWidth) / 2;
+                const y = (60 - scaledHeight) / 2;
+                
+                ctx.drawImage(component.image, x, y, scaledWidth, scaledHeight);
+                hasValidComponents = true;
+            }
+        });
+        
+        // If no valid components found, draw a placeholder
+        if (!hasValidComponents) {
+            this.drawInventoryPlaceholder(ctx);
+        }
+    }
+
+    drawInventoryPlaceholder(ctx) {
+        // Draw a simple placeholder character for inventory
+        ctx.fillStyle = '#cccccc';
+        ctx.fillRect(20, 30, 20, 30); // Body
+        
+        ctx.fillStyle = '#999999';
+        ctx.fillRect(22, 20, 16, 12); // Head
+        
+        ctx.fillStyle = '#666666';
+        ctx.fillRect(18, 35, 5, 10); // Left arm
+        ctx.fillRect(37, 35, 5, 10); // Right arm
+        
+        // Add some basic features
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(25, 25, 2, 2); // Left eye
+        ctx.fillRect(33, 25, 2, 2); // Right eye
+        ctx.fillRect(29, 30, 2, 1); // Mouth
+    }
+
+    drawComponentPlaceholder(ctx, componentName, canvasWidth, canvasHeight, scale) {
+        const centerX = canvasWidth / 2;
+        const centerY = canvasHeight / 2;
+        const size = 30 * scale;
+        
+        // Draw a simple placeholder
+        ctx.fillStyle = '#cccccc';
+        ctx.fillRect(centerX - size/2, centerY - size/2, size, size);
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(centerX - size/2, centerY - size/2, size, size);
+        
+        // Draw component name
+        ctx.fillStyle = '#000000';
+        ctx.font = `${8 * scale}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText(componentName.substring(0, 8), centerX, centerY + size/2 + 8 * scale);
     }
 
     populateInventoryPurchased() {
@@ -3188,7 +3271,7 @@ class GameState {
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         console.log('Initializing Bonkler game...');
-        window.gameState = new GameState();
+    window.gameState = new GameState();
         await window.gameState.init();
         console.log('Game initialized successfully!');
     } catch (error) {
