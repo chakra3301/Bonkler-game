@@ -1037,19 +1037,11 @@ class GameState {
             builderHeader.textContent = `Customize: ${nft.name}`;
         }
         
-        // Clear previous components
-        this.builderComponents = {
-            pilot: null,
-            body: null,
-            head: null,
-            armor: null,
-            hands: null,
-            offhand: null,
-            accessory: null
-        };
+        // Set builder components to NFT's actual components
+        this.builderComponents = { ...nft.components };
         
-        // Update component display to show only purchased items
-        this.updateBuilderComponentDisplay();
+        // Update component display to show NFT's components
+        this.updateBuilderComponentDisplayForNFT(nft);
         
         // Render the NFT as base
         this.renderNFTAsBase(nft);
@@ -1213,6 +1205,21 @@ class GameState {
         });
     }
 
+    updateBuilderComponentDisplayForNFT(nft) {
+        // Update each component category to show NFT's actual components
+        const categories = ['pilot', 'body', 'armor', 'hands', 'offhand', 'accessory'];
+        
+        categories.forEach(category => {
+            const nftComponent = nft.components[category];
+            if (nftComponent) {
+                this.updateComponentDisplayForNFT(category, nftComponent);
+            } else {
+                // Show empty state for missing components
+                this.updateComponentDisplayForBuilder(category, []);
+            }
+        });
+    }
+
     getPurchasedItemsByType(type) {
         if (!this.purchasedItems) return [];
         return this.purchasedItems.filter(item => item.type === type);
@@ -1250,6 +1257,32 @@ class GameState {
         
         if (prevArrow) prevArrow.disabled = this.componentIndices[category] <= 0;
         if (nextArrow) nextArrow.disabled = this.componentIndices[category] >= availableItems.length - 1;
+    }
+
+    updateComponentDisplayForNFT(category, nftComponent) {
+        const displayElement = document.querySelector(`.component-display[data-category="${category}"]`);
+        if (!displayElement) return;
+        
+        // Display the NFT's component
+        displayElement.innerHTML = `
+            <div class="component-item selected" data-index="0">
+                <img src="${this.getComponentImagePath(nftComponent)}" alt="${nftComponent.name}">
+                <div class="component-info">
+                    <div class="component-name">${nftComponent.name}</div>
+                    <div class="component-stats">
+                        ${nftComponent.attack ? `Attack: +${nftComponent.attack}` : ''}
+                        ${nftComponent.defense ? `Defense: +${nftComponent.defense}` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Disable navigation arrows since this is the NFT's component
+        const prevArrow = document.querySelector(`.nav-arrow[data-category="${category}"][data-direction="prev"]`);
+        const nextArrow = document.querySelector(`.nav-arrow[data-category="${category}"][data-direction="next"]`);
+        
+        if (prevArrow) prevArrow.disabled = true;
+        if (nextArrow) nextArrow.disabled = true;
     }
 
     getComponentImagePath(item) {
@@ -2950,7 +2983,11 @@ class GameState {
         }
         
         // Update component display for the selected NFT
-        this.updateBuilderComponentDisplay();
+        if (this.selectedNFT) {
+            this.updateBuilderComponentDisplayForNFT(this.selectedNFT);
+        } else {
+            this.updateBuilderComponentDisplay();
+        }
         
         // Render the selected NFT in the builder
         if (this.selectedNFT) {
