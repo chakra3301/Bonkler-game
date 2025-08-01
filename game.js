@@ -506,11 +506,8 @@ class GameState {
 
     initializeSolanaConnection() {
         try {
-            // Use more reliable RPC endpoints
-            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            const rpcEndpoint = isLocalhost 
-                ? 'http://api.mainnet-beta.solana.com' 
-                : 'https://rpc.ankr.com/solana'; // Use Ankr RPC for production (more reliable)
+            // Use the most reliable public RPC endpoint
+            const rpcEndpoint = 'https://api.mainnet-beta.solana.com';
             
             this.connection = new solanaWeb3.Connection(
                 rpcEndpoint,
@@ -523,17 +520,10 @@ class GameState {
     }
 
     async tryAlternativeRPC() {
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        
-        const rpcEndpoints = isLocalhost ? [
-            'http://api.mainnet-beta.solana.com',
-            'http://solana-api.projectserum.com',
-            'http://rpc.ankr.com/solana'
-        ] : [
-            'https://rpc.ankr.com/solana', // Ankr RPC first (more reliable)
-            'https://solana.public-rpc.com',
-            'https://solana-api.projectserum.com',
-            'https://api.mainnet-beta.solana.com' // Official RPC last (often rate-limited)
+        // Use a curated list of working public RPC endpoints
+        const rpcEndpoints = [
+            'https://api.mainnet-beta.solana.com',
+            'https://solana-api.projectserum.com'
         ];
 
         for (const endpoint of rpcEndpoints) {
@@ -706,31 +696,52 @@ class GameState {
         } catch (error) {
             console.error('Error loading user NFTs:', error);
             
-            // Try alternative RPC endpoints before falling back to demo mode
-            console.log('Primary RPC failed, trying alternative endpoints...');
-            const rpcSuccess = await this.tryAlternativeRPC();
+            // Check if this is a rate limit or API key error
+            const isRateLimitError = error.message && (
+                error.message.includes('403') || 
+                error.message.includes('API key') || 
+                error.message.includes('rate limit') ||
+                error.message.includes('Access forbidden')
+            );
             
-            if (rpcSuccess) {
-                // Retry loading NFTs with new connection
-                try {
-                    console.log('Alternative RPC connected, retrying NFT loading...');
-                    await this.loadUserNFTs(publicKey);
-                    return;
-                } catch (retryError) {
-                    console.error('Retry failed:', retryError);
+            if (isRateLimitError) {
+                // Skip RPC retry for rate limit errors and go straight to demo mode
+                console.log('Rate limit detected, skipping RPC retry and using demo mode');
+                await this.loadTestNFTs(publicKey);
+                
+                const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+                const message = isProduction 
+                    ? 'Public RPC endpoints are currently rate-limited. Using demo NFTs for testing. Your real NFTs will be available when RPC access is restored.'
+                    : 'RPC rate limits detected. Using demo NFTs for testing. In production with proper hosting, you would see your actual NFTs.';
+                
+                this.showModal('Demo Mode', message);
+            } else {
+                // Try alternative RPC endpoints for other types of errors
+                console.log('Primary RPC failed, trying alternative endpoints...');
+                const rpcSuccess = await this.tryAlternativeRPC();
+                
+                if (rpcSuccess) {
+                    // Retry loading NFTs with new connection
+                    try {
+                        console.log('Alternative RPC connected, retrying NFT loading...');
+                        await this.loadUserNFTs(publicKey);
+                        return;
+                    } catch (retryError) {
+                        console.error('Retry failed:', retryError);
+                    }
                 }
+                
+                // If all RPC endpoints fail, fall back to demo mode
+                console.log('All RPC endpoints failed, falling back to demo NFTs');
+                await this.loadTestNFTs(publicKey);
+                
+                const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+                const message = isProduction 
+                    ? 'RPC connection issues detected. Using demo NFTs for testing. Your real NFTs will be available when RPC access is restored.'
+                    : 'Connection issues detected. Using demo NFTs for testing. In production with proper hosting, you would see your actual NFTs.';
+                
+                this.showModal('Demo Mode', message);
             }
-            
-            // If all RPC endpoints fail, fall back to demo mode
-            console.log('All RPC endpoints failed, falling back to demo NFTs');
-            await this.loadTestNFTs(publicKey);
-            
-            const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-            const message = isProduction 
-                ? 'RPC connection issues detected. Using demo NFTs for testing. Your real NFTs will be available when RPC access is restored.'
-                : 'Connection issues detected. Using demo NFTs for testing. In production with proper hosting, you would see your actual NFTs.';
-            
-            this.showModal('Demo Mode', message);
         }
     }
 
