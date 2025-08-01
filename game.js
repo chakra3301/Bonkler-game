@@ -503,15 +503,40 @@ class GameState {
 
     initializeSolanaConnection() {
         try {
-            // Initialize Solana connection to mainnet
+            // Initialize Solana connection to mainnet with a more reliable RPC endpoint
             this.connection = new solanaWeb3.Connection(
-                'https://api.mainnet-beta.solana.com',
+                'https://solana-mainnet.rpc.extrnode.com',
                 'confirmed'
             );
             console.log('Solana connection initialized');
         } catch (error) {
             console.error('Failed to initialize Solana connection:', error);
         }
+    }
+
+    async tryAlternativeRPC() {
+        const rpcEndpoints = [
+            'https://solana-mainnet.rpc.extrnode.com',
+            'https://api.mainnet-beta.solana.com',
+            'https://solana-api.projectserum.com',
+            'https://rpc.ankr.com/solana'
+        ];
+
+        for (const endpoint of rpcEndpoints) {
+            try {
+                console.log(`Trying RPC endpoint: ${endpoint}`);
+                const testConnection = new solanaWeb3.Connection(endpoint, 'confirmed');
+                await testConnection.getSlot(); // Test the connection
+                this.connection = testConnection;
+                console.log(`Successfully connected to: ${endpoint}`);
+                return true;
+            } catch (error) {
+                console.warn(`Failed to connect to ${endpoint}:`, error.message);
+            }
+        }
+        
+        console.error('All RPC endpoints failed');
+        return false;
     }
 
     async connectWallet() {
@@ -627,7 +652,29 @@ class GameState {
 
         } catch (error) {
             console.error('Error loading user NFTs:', error);
-            this.showModal('Error Loading NFTs', 'Failed to load your NFTs. Please try again.');
+            
+            // If RPC error, try alternative endpoints
+            if (error.message && (error.message.includes('403') || error.message.includes('429'))) {
+                console.log('RPC endpoint blocked, trying alternative endpoints');
+                const rpcSuccess = await this.tryAlternativeRPC();
+                
+                if (rpcSuccess) {
+                    // Retry loading NFTs with new connection
+                    try {
+                        await this.loadUserNFTs(publicKey);
+                        return;
+                    } catch (retryError) {
+                        console.error('Retry failed:', retryError);
+                    }
+                }
+                
+                // If all RPC endpoints fail, load test NFTs
+                console.log('All RPC endpoints failed, loading test NFTs');
+                await this.loadTestNFTs(publicKey);
+                this.showModal('RPC Limited', 'Blockchain access limited. Loaded test NFTs for demonstration.');
+            } else {
+                this.showModal('Error Loading NFTs', 'Failed to load your NFTs. Please try again.');
+            }
         }
     }
 
