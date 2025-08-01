@@ -12,38 +12,44 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    background: #c0c0c0;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    font-family: 'Orbitron', monospace;
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    border: 2px solid #000;
 }
 
 .loading-content {
     text-align: center;
-    color: white;
+    color: #000;
     max-width: 600px;
     padding: 40px;
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
 .loading-title {
-    font-size: 3rem;
-    font-weight: 900;
+    font-size: 2.5rem;
+    font-weight: bold;
     margin-bottom: 10px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    animation: glow 2s ease-in-out infinite alternate;
+    color: #000;
+    text-shadow: none;
+    animation: none;
 }
 
 .loading-title i {
     margin-right: 15px;
-    color: #FFD700;
+    color: #000;
 }
 
 .loading-subtitle {
-    font-size: 1.2rem;
+    font-size: 1rem;
     margin-bottom: 40px;
-    opacity: 0.8;
+    color: #000;
+    opacity: 1;
 }
 
 .asset-preview {
@@ -53,21 +59,23 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    background: #ffffff;
+    border: 2px inset #c0c0c0;
+    padding: 20px;
 }
 
 .asset-preview img {
     max-width: 100px;
     max-height: 100px;
-    border-radius: 8px;
-    border: 2px solid #FFD700;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    border: 1px solid #000;
     margin-bottom: 10px;
+    background: #ffffff;
 }
 
 #asset-preview-text {
-    font-size: 1rem;
-    opacity: 0.9;
-    font-weight: 500;
+    font-size: 0.9rem;
+    color: #000;
+    font-weight: normal;
 }
 
 .loading-bar-container {
@@ -77,50 +85,40 @@
 .loading-bar {
     width: 100%;
     height: 20px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 10px;
-    overflow: hidden;
-    border: 2px solid rgba(255,255,255,0.3);
+    background: #ffffff;
+    border: 2px inset #c0c0c0;
     margin-bottom: 10px;
+    overflow: hidden;
 }
 
 .loading-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #FFD700, #FFA500);
+    background: #008080;
     width: 0%;
     transition: width 0.3s ease;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(255,215,0,0.5);
+    border: none;
+    box-shadow: none;
 }
 
 .loading-text {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #FFD700;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #000;
 }
 
 .loading-tips {
     margin-top: 30px;
-    font-size: 0.9rem;
-    opacity: 0.7;
+    font-size: 0.8rem;
+    color: #000;
+    opacity: 1;
 }
 
 .tip {
-    animation: fadeInOut 3s ease-in-out infinite;
-}
-
-@keyframes glow {
-    from {
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,215,0,0.3);
-    }
-    to {
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.6);
-    }
-}
-
-@keyframes fadeInOut {
-    0%, 100% { opacity: 0.7; }
-    50% { opacity: 1; }
+    animation: none;
+    background: #ffffff;
+    border: 1px inset #c0c0c0;
+    padding: 8px;
+    margin: 5px 0;
 }
 
 /* Hide game container initially */
