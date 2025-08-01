@@ -63,6 +63,7 @@
                             Connect Wallet
                         </button>
                     </div>
+
                 </div>
             </div>
         </header>
@@ -367,6 +368,14 @@
     <!-- Wallet Standard Support -->
     <script src="https://unpkg.com/@solana/wallet-standard-features@latest/lib/index.iife.min.js"></script>
     <script src="https://unpkg.com/@solana/wallet-adapter-base@latest/lib/index.iife.min.js"></script>
+    <!-- Buffer polyfill for browser compatibility -->
+    <script src="https://unpkg.com/buffer@6.0.3/index.js"></script>
+    <script>
+        // Make Buffer available globally
+        if (typeof window !== 'undefined' && window.buffer) {
+            window.Buffer = window.buffer.Buffer;
+        }
+    </script>
     <script src="game.js"></script>
 </body>
 </html> 

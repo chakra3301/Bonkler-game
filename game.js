@@ -42,6 +42,17 @@ class GameState {
         this.bonklerCollectionMint = 'YOUR_COLLECTION_MINT_ADDRESS'; // Replace with actual collection mint
         this.bonklerProgramId = 'YOUR_PROGRAM_ID'; // Replace with actual program ID
         
+        // Leaderboard data
+        this.leaderboardData = [];
+        this.playerStats = {
+            wins: 0,
+            losses: 0,
+            totalExp: 0,
+            highestLevel: 1,
+            battlesWon: 0,
+            battlesLost: 0
+        };
+        
         // Initialize shop data
         this.shopData = {
             skills: [
@@ -172,7 +183,7 @@ class GameState {
         this.populateNFTs();
         this.populateShop();
         this.populateInventory();
-        this.populateLeaderboard();
+        this.updateLeaderboard();
         this.updateUI();
         
         // Preload battle background
@@ -201,29 +212,95 @@ class GameState {
         const savedData = localStorage.getItem('bonklerGameData');
         if (savedData) {
             const data = JSON.parse(savedData);
-            this.coins = data.coins || 1000;
-            this.exp = data.exp || 0;
-            this.level = data.level || 1;
-            this.nfts = data.nfts || [];
-            this.fighterBuilt = data.fighterBuilt || false;
-            this.currentFighter = data.currentFighter || {
-                pilot: null,
-                body: null,
-                head: null,
-                armor: null,
-                hands: null,
-                offhand: null,
-                accessory: null
-            };
-            this.userNFTs = data.userNFTs || [];
-            this.purchasedItems = data.purchasedItems || [];
-            this.equippedSkills = data.equippedSkills || ['Slash', 'Power-up', 'Defend', 'Dodge'];
-            this.availableSkills = data.availableSkills || [];
             
-            // Load wallet state
-            this.publicKey = data.publicKey || null;
-            this.isConnected = data.isConnected || false;
+            // Only load progress if user has a connected wallet
+            if (data.publicKey && data.isConnected) {
+                console.log('Loading saved progress for wallet:', data.publicKey);
+                this.coins = data.coins || 1000;
+                this.exp = data.exp || 0;
+                this.level = data.level || 1;
+                this.nfts = data.nfts || [];
+                this.fighterBuilt = data.fighterBuilt || false;
+                this.currentFighter = data.currentFighter || {
+                    pilot: null,
+                    body: null,
+                    head: null,
+                    armor: null,
+                    hands: null,
+                    offhand: null,
+                    accessory: null
+                };
+                this.userNFTs = data.userNFTs || [];
+                this.purchasedItems = data.purchasedItems || [];
+                this.equippedSkills = data.equippedSkills || ['Slash', 'Power-up', 'Defend', 'Dodge'];
+                this.availableSkills = data.availableSkills || [];
+                
+                // Load wallet state
+                this.publicKey = data.publicKey;
+                this.isConnected = data.isConnected;
+            } else {
+                console.log('No connected wallet found, starting fresh');
+                this.resetToFreshStart();
+            }
+        } else {
+            console.log('No saved data found, starting fresh');
+            this.resetToFreshStart();
         }
+    }
+    
+    resetToFreshStart() {
+        // Reset all game state to fresh start
+        this.coins = 0;
+        this.exp = 0;
+        this.level = 1;
+        this.nfts = [];
+        this.userNFTs = [];
+        this.purchasedItems = [];
+        this.fighterBuilt = false;
+        this.currentFighter = {
+            pilot: null,
+            body: null,
+            head: null,
+            armor: null,
+            hands: null,
+            offhand: null,
+            accessory: null
+        };
+        this.equippedSkills = ['Slash', 'Power-up', 'Defend', 'Dodge'];
+        this.availableSkills = [];
+        this.publicKey = null;
+        this.isConnected = false;
+        
+        // Reset player stats
+        this.playerStats = {
+            wins: 0,
+            losses: 0,
+            totalExp: 0,
+            highestLevel: 1,
+            battlesWon: 0,
+            battlesLost: 0
+        };
+        
+        console.log('Game reset to fresh start');
+    }
+    
+    clearAllCachedData() {
+        // Clear all localStorage data
+        localStorage.removeItem('bonklerGameData');
+        localStorage.removeItem('bonkler_player_stats');
+        localStorage.removeItem('bonkler_leaderboard');
+        
+        // Reset game state
+        this.resetToFreshStart();
+        
+        // Update UI
+        this.updateUI();
+        this.populateInventory();
+        this.populateNFTs();
+        this.updateLeaderboard();
+        
+        console.log('All cached data cleared');
+        this.showModal('Data Cleared', 'All cached data has been cleared. The game has been reset to a fresh start.');
     }
 
     saveGameData() {
@@ -619,72 +696,150 @@ class GameState {
         }
     }
 
-    async loadUserNFTs(publicKey) {
-        console.log('Loading Bonkler NFTs for wallet:', publicKey);
+        async loadUserNFTs(publicKey) {
+        console.log('🔄 Loading Bonkler NFTs for wallet:', publicKey);
         
-        if (!this.connection || !publicKey) {
-            console.error('No Solana connection or public key');
+        if (!publicKey) {
+            console.error('No public key provided');
             return;
         }
 
         try {
-            // Get all token accounts for the user
-            const tokenAccounts = await this.connection.getParsedTokenAccountsByOwner(
-                new solanaWeb3.PublicKey(publicKey),
-                {
-                    programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
-                }
-            );
+            // Use Helius API to get NFTs
+            const HELIUS_API_KEY = '681f390e-8fce-4246-85f7-1e515cd5894c';
+            const HELIUS_RPC = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
 
-            console.log('Found token accounts:', tokenAccounts.value.length);
+            console.log('📡 Fetching NFTs from Helius...');
 
-            let loadedCount = 0;
-            this.userNFTs = []; // Clear existing user NFTs
-
-            // Debug: Log all token accounts
-            console.log('All token accounts:', tokenAccounts.value.map(ta => ({
-                mint: ta.account.data.parsed.info.mint,
-                balance: ta.account.data.parsed.info.tokenAmount.uiAmount,
-                decimals: ta.account.data.parsed.info.tokenAmount.decimals
-            })));
-
-            // Filter for Bonkler NFTs (you'll need to replace with your actual collection mint)
-            for (const tokenAccount of tokenAccounts.value) {
-                const accountInfo = tokenAccount.account.data.parsed.info;
-                const mint = accountInfo.mint;
-                const balance = accountInfo.tokenAmount.uiAmount;
-
-                console.log(`Checking token: ${mint}, balance: ${balance}`);
-
-                // Check if this is a Bonkler NFT (balance > 0 and matches collection)
-                if (balance > 0) {
-                    try {
-                        // Get NFT metadata
-                        const metadata = await this.getNFTMetadata(mint);
-                        console.log(`Metadata for ${mint}:`, metadata);
-                        
-                        if (metadata && this.isBonklerNFT(metadata)) {
-                            console.log(`Found Bonkler NFT: ${mint}`);
-                            const gameBonkler = this.convertNFTToGameFormat(metadata, mint);
-                            gameBonkler.isUserNFT = true;
-                            gameBonkler.owner = publicKey;
-                            gameBonkler.mint = mint;
-                            this.userNFTs.push(gameBonkler);
-                            loadedCount++;
-                        } else {
-                            console.log(`Not a Bonkler NFT: ${mint}, metadata:`, metadata);
+            const res = await fetch(HELIUS_RPC, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    jsonrpc: '2.0',
+                    id: '1',
+                    method: 'getAssetsByOwner',
+                    params: {
+                        ownerAddress: publicKey,
+                        page: 1,
+                        limit: 1000,
+                        displayOptions: {
+                            showUnverifiedCollections: true
                         }
-                    } catch (error) {
-                        console.warn(`Failed to load NFT ${mint}:`, error);
                     }
+                })
+            });
+
+            const data = await res.json();
+
+            if (!data.result || !data.result.items || data.result.items.length === 0) {
+                console.warn('⚠️ No NFTs found for wallet:', publicKey);
+                await this.loadTestNFTs(publicKey);
+                this.showModal('Test Mode', 'No NFTs found in your wallet. Loaded test NFTs for demonstration.');
+                return;
+            }
+
+            const allNFTs = data.result.items;
+            console.log(`📦 Found ${allNFTs.length} total NFTs`);
+
+            // Filter for Bonkler NFTs by name or collection address
+            const bonklerNFTs = allNFTs.filter(nft => {
+                const name = nft.content?.metadata?.name?.toLowerCase() || '';
+                const symbol = nft.content?.metadata?.symbol?.toLowerCase() || '';
+                
+                // Check for Bonkler collection address
+                const bonklerCollectionMint = 'HCx8AwY9ivtVNVT6rrht2StyMZgDE3yA3vGtmoRuoaeM';
+                const isBonklerCollection = nft.grouping?.some(group => 
+                    group.group_value === bonklerCollectionMint
+                );
+                
+                // Check for Bonkler terms in name/symbol
+                const hasBonklerTerms = name.includes('bonkler') || symbol.includes('bonkler');
+                
+                console.log(`Checking NFT: ${name} (${symbol}) - Collection: ${isBonklerCollection}, Terms: ${hasBonklerTerms}`);
+                
+                return isBonklerCollection || hasBonklerTerms;
+            });
+
+            console.log(`✅ Found ${bonklerNFTs.length} Bonkler NFTs`);
+
+            // Convert to game format
+            this.userNFTs = []; // Clear existing user NFTs
+            let loadedCount = 0;
+
+            for (const nft of bonklerNFTs) {
+                try {
+                    console.log(`🎮 Converting NFT: ${nft.content?.metadata?.name}`);
+                    
+                    // Extract NFT number from the name (e.g., "BONKLER #581" -> "581")
+                    const nftName = nft.content?.metadata?.name || '';
+                    const nftNumberMatch = nftName.match(/#(\d+)/);
+                    const nftNumber = nftNumberMatch ? nftNumberMatch[1] : null;
+                    
+                    console.log(`Extracted NFT number: ${nftNumber}`);
+                    
+                    // Load metadata from JSON file
+                    let metadata = null;
+                    if (nftNumber) {
+                        try {
+                            const response = await fetch(`nft-metadata/output-jsons/${nftNumber}.json`);
+                            if (response.ok) {
+                                metadata = await response.json();
+                                console.log(`✅ Loaded metadata for NFT #${nftNumber}:`, metadata);
+                            } else {
+                                console.log(`❌ No metadata file found for NFT #${nftNumber}`);
+                            }
+                        } catch (error) {
+                            console.log(`❌ Failed to load metadata for NFT #${nftNumber}:`, error);
+                        }
+                    }
+                    
+                    // Convert to game format with proper attributes
+                    const gameBonkler = {
+                        id: nft.id,
+                        name: nft.content?.metadata?.name || 'Unknown Bonkler',
+                        level: 1,
+                        attack: 50,
+                        defense: 30,
+                        exp: 0,
+                        rarity: 'Common',
+                        components: {},
+                        attributes: metadata?.attributes || [],
+                        isUserNFT: true,
+                        owner: publicKey,
+                        mint: nft.id
+                    };
+                    
+                    // Build components from metadata attributes
+                    if (metadata && metadata.attributes) {
+                        console.log(`Building components from metadata for NFT #${nftNumber}`);
+                        this.buildComponentsFromAttributes(gameBonkler, metadata.attributes);
+                    } else {
+                        console.log('No metadata found, creating fallback components');
+                        gameBonkler.components = {
+                            head: { name: 'BONK', path: 'HEADS/BONK.png', image: null },
+                            body: { name: 'RILAKKUMA', path: 'BODIES/RILAKKUMA.png', image: null },
+                            armor: { name: 'ArmorBronze', path: 'ARMORS/ArmorBronze.png', image: null },
+                            hands: { name: 'GOLDEN-AXE', path: 'HANDS/GOLDEN-AXE.png', image: null },
+                            offhand: { name: 'REMILIA-FILMS', path: 'OFFHAND/REMILIA-FILMS.png', image: null },
+                            pilot: { name: 'KASANE-TETO', path: 'PILOT/KASANE-TETO.png', image: null }
+                        };
+                        
+                        // Try to load the fallback component images
+                        this.loadFallbackComponentImages(gameBonkler.components);
+                    }
+                    
+                    this.userNFTs.push(gameBonkler);
+                    loadedCount++;
+                } catch (error) {
+                    console.warn(`Failed to convert NFT ${nft.id}:`, error);
                 }
             }
 
-            console.log(`Loaded ${loadedCount} Bonkler NFTs for wallet ${publicKey}`);
+            console.log(`🎯 Loaded ${loadedCount} Bonkler NFTs for wallet ${publicKey}`);
 
-            // Refresh inventory display
+            // Refresh displays
             this.populateInventory();
-            this.populateNFTs(); // Update battle screen too
+            this.populateNFTs();
 
             if (loadedCount > 0) {
                 this.showModal('NFTs Loaded', `Successfully loaded ${loadedCount} of your Bonkler NFTs!`);
@@ -695,25 +850,10 @@ class GameState {
             }
 
         } catch (error) {
-            console.error('Error loading user NFTs:', error);
+            console.error('❌ Error loading user NFTs:', error);
             
-            // Try alternative RPC endpoints (including Helius) before falling back to demo mode
-            console.log('Primary RPC failed, trying alternative endpoints...');
-            const rpcSuccess = await this.tryAlternativeRPC();
-            
-            if (rpcSuccess) {
-                // Retry loading NFTs with new connection
-                try {
-                    console.log('Alternative RPC connected, retrying NFT loading...');
-                    await this.loadUserNFTs(publicKey);
-                    return;
-                } catch (retryError) {
-                    console.error('Retry failed:', retryError);
-                }
-            }
-            
-            // If all RPC endpoints fail, fall back to demo mode
-            console.log('All RPC endpoints failed, falling back to demo NFTs');
+            // Fall back to demo NFTs
+            console.log('Falling back to demo NFTs');
             await this.loadTestNFTs(publicKey);
             
             const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
@@ -742,6 +882,10 @@ class GameState {
             if (accountInfo) {
                 // Parse metadata (this is a simplified version)
                 const metadata = this.parseMetadata(accountInfo.data);
+                if (metadata) {
+                    // Add the mint to the metadata for collection checking
+                    metadata.mint = mint;
+                }
                 return metadata;
             }
         } catch (error) {
@@ -751,19 +895,43 @@ class GameState {
     }
 
     parseMetadata(data) {
-        // Simplified metadata parsing
-        // In production, you'd want to use a proper metadata parser
+        // Simplified metadata parsing for browser environment
         try {
-            // This is a basic implementation - you might want to use a library like @metaplex-foundation/mpl-token-metadata
-            const name = this.extractString(data, 1);
-            const symbol = this.extractString(data, 1 + name.length + 4);
-            const uri = this.extractString(data, 1 + name.length + 4 + symbol.length + 4);
+            // Ensure Buffer is available
+            if (typeof Buffer === 'undefined') {
+                console.warn('Buffer not available, skipping metadata parsing');
+                return null;
+            }
+            
+            // Convert Uint8Array to Buffer if needed
+            const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
+            
+            // Basic metadata structure parsing
+            let offset = 1; // Skip version byte
+            
+            // Read name length and name
+            const nameLength = buffer.readUInt32LE(offset);
+            offset += 4;
+            const name = buffer.toString('utf8', offset, offset + nameLength);
+            offset += nameLength;
+            
+            // Read symbol length and symbol
+            const symbolLength = buffer.readUInt32LE(offset);
+            offset += 4;
+            const symbol = buffer.toString('utf8', offset, offset + symbolLength);
+            offset += symbolLength;
+            
+            // Read URI length and URI
+            const uriLength = buffer.readUInt32LE(offset);
+            offset += 4;
+            const uri = buffer.toString('utf8', offset, offset + uriLength);
             
             return {
                 name,
                 symbol,
                 uri,
-                mint: data.slice(0, 32).toString('hex')
+                mint: buffer.slice(0, 32).toString('hex'),
+                collection: null // Will be populated if found in metadata
             };
         } catch (error) {
             console.warn('Failed to parse metadata:', error);
@@ -772,8 +940,9 @@ class GameState {
     }
 
     extractString(data, offset) {
-        const length = data.readUInt32LE(offset);
-        return data.slice(offset + 4, offset + 4 + length).toString('utf8');
+        const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
+        const length = buffer.readUInt32LE(offset);
+        return buffer.toString('utf8', offset + 4, offset + 4 + length);
     }
 
     isBonklerNFT(metadata) {
@@ -786,6 +955,9 @@ class GameState {
         
         console.log(`Checking if Bonkler NFT: name="${name}", symbol="${symbol}", collection="${collection}"`);
         
+        // Check for Bonkler collection mint
+        const bonklerCollectionMint = 'HCx8AwY9ivtVNVT6rrht2StyMZgDE3yA3vGtmoRuoaeM';
+        
         // More flexible detection - check for various Bonkler-related terms
         const bonklerTerms = ['bonkler', 'bonk', 'bonkler battle', 'bonkler game'];
         
@@ -796,7 +968,14 @@ class GameState {
             }
         }
         
-        // If no specific terms found, check if it's an NFT with a reasonable name
+        // Check if the mint matches the Bonkler collection
+        if (metadata.mint && metadata.mint.toLowerCase() === bonklerCollectionMint.toLowerCase()) {
+            console.log('Found Bonkler NFT by collection mint');
+            return true;
+        }
+        
+        // For now, accept any NFT with valid metadata as potential Bonkler
+        // This is more permissive for testing
         if (name && symbol && name.length > 0 && symbol.length > 0) {
             console.log('Treating as potential Bonkler NFT based on metadata structure');
             return true;
@@ -885,10 +1064,8 @@ class GameState {
                 await this.wallet.disconnect();
             }
             
-            this.publicKey = null;
-            this.wallet = null;
-            this.isConnected = false;
-            this.userNFTs = [];
+            // Clear all game data when disconnecting
+            this.resetToFreshStart();
             
             // Update wallet button
             this.updateWalletButton();
@@ -897,9 +1074,10 @@ class GameState {
             this.populateInventory();
             this.populateNFTs();
             
+            // Save the cleared state
             this.saveGameData();
             
-            this.showModal('Wallet Disconnected', 'Successfully disconnected from wallet.');
+            this.showModal('Wallet Disconnected', 'Successfully disconnected from wallet. All progress has been cleared.');
             
         } catch (error) {
             console.error('Error disconnecting wallet:', error);
@@ -1026,6 +1204,8 @@ class GameState {
                 this.connectWallet();
             }
         });
+
+
 
         // Load more NFTs
         document.getElementById('load-more-nfts-btn').addEventListener('click', () => {
@@ -1558,6 +1738,164 @@ class GameState {
         return components;
     }
 
+    buildComponentsFromAttributes(gameBonkler, attributes) {
+        // Build components from NFT attributes
+        const components = {};
+        
+        if (attributes && Array.isArray(attributes)) {
+            console.log('Building components from attributes:', attributes);
+            
+            attributes.forEach(attr => {
+                const traitType = attr.trait_type;
+                const value = attr.value;
+                
+                console.log(`Processing attribute: ${traitType} = ${value}`);
+                
+                // Map trait types to component categories
+                const categoryMap = {
+                    'PILOT': 'pilot',
+                    'BODIES': 'body', 
+                    'HEADS': 'head',
+                    'ARMORS': 'armor',
+                    'HANDS': 'hands',
+                    'OFFHAND': 'offhand',
+                    'ACCESSORIES': 'accessory'
+                };
+                
+                const category = categoryMap[traitType];
+                if (category) {
+                    console.log(`Mapping ${traitType} to ${category}`);
+                    
+                    // Find the corresponding asset in our component assets
+                    const assets = this.componentAssets[category] || [];
+                    console.log(`Available assets for ${category}:`, assets.map(a => a.name));
+                    
+                    // Try to find asset by name (exact match)
+                    let asset = assets.find(a => a.name === value);
+                    
+                    // If not found, try case-insensitive exact match
+                    if (!asset) {
+                        asset = assets.find(a => a.name.toLowerCase() === value.toLowerCase());
+                    }
+                    
+                    // If still not found, try partial match
+                    if (!asset) {
+                        asset = assets.find(a => 
+                            a.name.toLowerCase().includes(value.toLowerCase()) ||
+                            value.toLowerCase().includes(a.name.toLowerCase())
+                        );
+                    }
+                    
+                    // If still not found, try removing common prefixes/suffixes
+                    if (!asset) {
+                        const cleanValue = value.replace(/^(Armor|Pilot|Body|Head|Hand|Offhand|Accessory)/i, '');
+                        asset = assets.find(a => 
+                            a.name.toLowerCase().includes(cleanValue.toLowerCase()) ||
+                            cleanValue.toLowerCase().includes(a.name.toLowerCase())
+                        );
+                    }
+                    
+                    // If still not found, try specific mappings for known mismatches
+                    if (!asset) {
+                        const specificMappings = {
+                            'BONK': 'BONK',
+                            'EVIL-BONK': 'EVIL-BONK',
+                            'ALIEN-BONK': 'ALIEN-BONK',
+                            'HAMTARO': 'HAMTARO',
+                            'KASANE-TETO': 'KASANE-TETO',
+                            'BINKY': 'BINKY',
+                            'ALIEN-MILADY': 'ALIEN-MILADY',
+                            'BEAUTY-BEAST-BUNNY': 'BEAUTY-BEAST-BUNNY',
+                            'REI': 'REI',
+                            'SPRITE-AUTOGRAPH': 'SPRITE-AUTOGRAPH',
+                            'YMO-TOUR': 'YMO-TOUR',
+                            'RILAKKUMA': 'RILAKKUMA',
+                            'TEKKEN-KING': 'TEKKEN-KING',
+                            'JADE-CABBAGE': 'JADE-CABBAGE',
+                            'VENDING-MACHINE': 'VENDING-MACHINE',
+                            'SUIT': 'SUIT',
+                            'SONY-TV': 'SONY-TV',
+                            'GUAM': 'GUAM',
+                            'RED-AND-BLUE-CHAIR': 'RED-AND-BLUE-CHAIR',
+                            'ArmorCoal': 'ArmorCoal',
+                            'ArmorBronze-Trim': 'ArmorBronze-Trim',
+                            'ArmorMithril': 'ArmorMithril',
+                            'ArmorPhantom': 'ArmorPhantom',
+                            'ArmorBlack': 'ArmorBlack',
+                            'ArmorHandycam': 'ArmorHandycam',
+                            'ArmorAdamantine': 'ArmorAdamantine',
+                            'EVOLVED-ANTENNA': 'EVOLVED-ANTENNA',
+                            'PORSCHE-SUSPENSION': 'PORSCHE-SUSPENSION',
+                            'GOLDEN-AXE': 'GOLDEN-AXE',
+                            'AGHANIM-SCEPTER': 'AGHANIM-SCEPTER',
+                            'WATER-PISTOL': 'WATER-PISTOL',
+                            'NEWJEANS-HAMMER': 'NEWJEANS-HAMMER',
+                            'BLUDGEONING-ANGEL': 'BLUDGEONING-ANGEL',
+                            'ARMED-THREAT': 'ARMED-THREAT',
+                            'AMERICAN-FLAG': 'AMERICAN-FLAG',
+                            'POCKET-PET': 'POCKET-PET',
+                            'REMILIA-FILMS': 'REMILIA-FILMS',
+                            'YEN': 'YEN',
+                            'PALETTE': 'PALETTE',
+                            'SUBMARINE-CABLE': 'SUBMARINE-CABLE',
+                            'DAIHATSU-MIDGET': 'DAIHATSU-MIDGET',
+                            'DWARF-FORTRESS-GREEK-BEDROOM-BLUEPRINT': 'DWARF-FORTRESS-GREEK-BEDROOM-BLUEPRINT',
+                            'RAVER-CAP': 'RAVER-CAP',
+                            'HALO': 'HALO',
+                            'HIKKIKOMORI': 'HIKKIKOMORI'
+                        };
+                        
+                        const mappedValue = specificMappings[value];
+                        if (mappedValue) {
+                            asset = assets.find(a => a.name === mappedValue);
+                        }
+                    }
+                    
+                    if (asset) {
+                        console.log(`✅ Found asset for ${traitType}: ${asset.name}`);
+                        components[category] = {
+                            name: asset.name,
+                            path: asset.path,
+                            image: asset.image
+                        };
+                    } else {
+                        console.log(`❌ No asset found for ${traitType}: ${value}`);
+                        // Create a placeholder component
+                        components[category] = {
+                            name: value,
+                            path: `${category.toUpperCase()}/${value}.png`,
+                            image: null
+                        };
+                    }
+                } else {
+                    console.log(`⚠️ Unknown trait type: ${traitType}`);
+                }
+            });
+        } else {
+            console.log('No attributes found, using existing components');
+        }
+        
+        console.log('Built components from attributes:', components);
+        gameBonkler.components = components;
+    }
+
+    loadFallbackComponentImages(components) {
+        // Load images for fallback components
+        Object.entries(components).forEach(([category, component]) => {
+            if (component.path && !component.image) {
+                const img = new Image();
+                img.onload = () => {
+                    component.image = img;
+                    console.log(`✅ Loaded fallback image for ${category}: ${component.name}`);
+                };
+                img.onerror = () => {
+                    console.log(`❌ Failed to load fallback image for ${category}: ${component.path}`);
+                };
+                img.src = component.path;
+            }
+        });
+    }
+
     renderNFTAsBase(nft) {
         if (!this.ctx) return;
         
@@ -2036,6 +2374,7 @@ class GameState {
             btn.classList.remove('active');
         });
         document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+        this.currentLeaderboardTab = tab;
         this.populateLeaderboard(tab);
     }
 
@@ -3046,10 +3385,27 @@ class GameState {
             coinReward = 25 + (this.currentBattle.enemy.level * 5);
             this.addExp(expReward);
             this.addCoins(coinReward);
+            
+            // Update player stats
+            this.playerStats.wins++;
+            this.playerStats.battlesWon++;
+            this.playerStats.totalExp += expReward;
+            if (this.level > this.playerStats.highestLevel) {
+                this.playerStats.highestLevel = this.level;
+            }
         } else if (result === 'defeat') {
             expReward = 10;
             this.addExp(expReward);
+            
+            // Update player stats
+            this.playerStats.losses++;
+            this.playerStats.battlesLost++;
+            this.playerStats.totalExp += expReward;
         }
+        
+        // Save player stats and update leaderboard
+        this.savePlayerStats();
+        this.updateLeaderboard();
         
         // Show battle result
         this.showBattleResult(result, expReward, coinReward);
@@ -4024,25 +4380,99 @@ class GameState {
     }
 
     // Leaderboard System
+    savePlayerStats() {
+        if (!this.publicKey) return;
+        
+        const playerData = {
+            walletAddress: this.publicKey,
+            name: this.publicKey.substring(0, 8) + '...' + this.publicKey.substring(this.publicKey.length - 4),
+            level: this.level,
+            exp: this.exp,
+            totalExp: this.playerStats.totalExp,
+            wins: this.playerStats.wins,
+            losses: this.playerStats.losses,
+            battlesWon: this.playerStats.battlesWon,
+            battlesLost: this.playerStats.battlesLost,
+            highestLevel: this.playerStats.highestLevel,
+            lastUpdated: Date.now()
+        };
+        
+        // Save to localStorage
+        localStorage.setItem('bonkler_player_stats', JSON.stringify(playerData));
+        
+        // Update leaderboard data
+        this.updateLeaderboardData(playerData);
+    }
+    
+    updateLeaderboardData(playerData) {
+        // Load existing leaderboard data
+        const existingData = localStorage.getItem('bonkler_leaderboard');
+        let leaderboardData = existingData ? JSON.parse(existingData) : [];
+        
+        // Find if player already exists
+        const existingIndex = leaderboardData.findIndex(p => p.walletAddress === playerData.walletAddress);
+        
+        if (existingIndex !== -1) {
+            // Update existing player
+            leaderboardData[existingIndex] = { ...leaderboardData[existingIndex], ...playerData };
+        } else {
+            // Add new player
+            leaderboardData.push(playerData);
+        }
+        
+        // Sort by total experience (descending)
+        leaderboardData.sort((a, b) => b.totalExp - a.totalExp);
+        
+        // Keep only top 100 players
+        leaderboardData = leaderboardData.slice(0, 100);
+        
+        // Save updated leaderboard
+        localStorage.setItem('bonkler_leaderboard', JSON.stringify(leaderboardData));
+        this.leaderboardData = leaderboardData;
+    }
+    
+    updateLeaderboard() {
+        // Load current leaderboard data
+        const existingData = localStorage.getItem('bonkler_leaderboard');
+        this.leaderboardData = existingData ? JSON.parse(existingData) : [];
+        
+        // Update the display
+        this.populateLeaderboard(this.currentLeaderboardTab);
+    }
+    
     populateLeaderboard(tab = 'global') {
         const leaderboardList = document.getElementById('leaderboard-list');
         leaderboardList.innerHTML = '';
-
-        // Generate sample leaderboard data
-        const leaderboardData = [
-            { name: 'Player1', level: 15, exp: 2500, wins: 45, avatar: '👤' },
-            { name: 'Player2', level: 12, exp: 1800, wins: 38, avatar: '👤' },
-            { name: 'Player3', level: 10, exp: 1500, wins: 32, avatar: '👤' },
-            { name: 'Player4', level: 8, exp: 1200, wins: 28, avatar: '👤' },
-            { name: 'Player5', level: 6, exp: 900, wins: 22, avatar: '👤' },
-            { name: 'Player6', level: 4, exp: 600, wins: 18, avatar: '👤' },
-            { name: 'Player7', level: 3, exp: 400, wins: 15, avatar: '👤' },
-            { name: 'Player8', level: 2, exp: 200, wins: 12, avatar: '👤' },
-            { name: 'Player9', level: 1, exp: 100, wins: 8, avatar: '👤' },
-            { name: 'Player10', level: 1, exp: 50, wins: 5, avatar: '👤' }
-        ];
-
-        leaderboardData.forEach((player, index) => {
+        
+        if (this.leaderboardData.length === 0) {
+            leaderboardList.innerHTML = '<div class="leaderboard-empty">No players found. Be the first to battle and get on the leaderboard!</div>';
+            return;
+        }
+        
+        // Filter data based on tab
+        let displayData = this.leaderboardData;
+        if (tab === 'weekly') {
+            const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+            displayData = this.leaderboardData.filter(player => 
+                player.lastUpdated > oneWeekAgo
+            );
+        } else if (tab === 'monthly') {
+            const oneMonthAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+            displayData = this.leaderboardData.filter(player => 
+                player.lastUpdated > oneMonthAgo
+            );
+        }
+        
+        // Sort by appropriate metric
+        if (tab === 'wins') {
+            displayData.sort((a, b) => b.wins - a.wins);
+        } else if (tab === 'level') {
+            displayData.sort((a, b) => b.level - a.level);
+        } else {
+            displayData.sort((a, b) => b.totalExp - a.totalExp);
+        }
+        
+        displayData.forEach((player, index) => {
             const entry = document.createElement('div');
             entry.className = 'leaderboard-entry';
             
@@ -4051,17 +4481,24 @@ class GameState {
             else if (index === 1) rankClass = 'silver';
             else if (index === 2) rankClass = 'bronze';
             
+            // Highlight current player
+            const isCurrentPlayer = this.publicKey && player.walletAddress === this.publicKey;
+            if (isCurrentPlayer) {
+                entry.classList.add('current-player');
+            }
+            
             entry.innerHTML = `
                 <div class="rank ${rankClass}">#${index + 1}</div>
                 <div class="player-info">
-                    <div class="player-avatar">${player.avatar}</div>
+                    <div class="player-avatar">👤</div>
                     <div class="player-details">
                         <h3>${player.name}</h3>
                         <p>Level ${player.level}</p>
+                        <small>${player.walletAddress}</small>
                     </div>
                 </div>
                 <div class="player-stats">
-                    <div class="stat-value">${player.exp}</div>
+                    <div class="stat-value">${player.totalExp}</div>
                     <div class="stat-label">EXP</div>
                     <div class="stat-value">${player.wins}</div>
                     <div class="stat-label">Wins</div>
