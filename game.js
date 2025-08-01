@@ -1067,8 +1067,8 @@ class GameState {
         this.ctx.fillStyle = '#f0f0f0';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Draw NFT preview image
-        this.drawNFTPreview(nft);
+        // Draw actual NFT components
+        this.renderNFTComponents(nft);
         
         // Draw NFT info
         this.ctx.fillStyle = '#000000';
@@ -1078,6 +1078,28 @@ class GameState {
         this.ctx.font = '12px Arial';
         this.ctx.fillText(`Attack: ${nft.attack} | Defense: ${nft.defense}`, this.canvas.width / 2, 50);
         this.ctx.fillText('Select components from the right panel to customize', this.canvas.width / 2, 70);
+    }
+
+    renderNFTComponents(nft) {
+        if (!this.ctx || !nft || !nft.components) return;
+
+        // Render layers in order: body → armor → hands → offhand → head → pilot → accessories
+        const layerOrder = ['body', 'armor', 'hands', 'offhand', 'head', 'pilot', 'accessory'];
+        const scale = 0.4; // Larger scale for builder preview
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        
+        layerOrder.forEach(layer => {
+            const component = nft.components[layer];
+            if (component && component.image && component.image.complete && component.image.naturalWidth > 0) {
+                const scaledWidth = component.image.width * scale;
+                const scaledHeight = component.image.height * scale;
+                const drawX = centerX - scaledWidth / 2;
+                const drawY = centerY - scaledHeight / 2;
+                
+                this.ctx.drawImage(component.image, drawX, drawY, scaledWidth, scaledHeight);
+            }
+        });
     }
 
     drawNFTPreview(nft) {
@@ -2788,109 +2810,19 @@ class GameState {
                 item.classList.add(`rarity-${nft.rarity.toLowerCase()}`);
             }
             
-            // Create NFT preview using CSS instead of canvas
-            const tokenId = nft.tokenId || 0;
-            const hasHorns = tokenId % 2 === 0;
-            const hasVisor = tokenId % 3 === 0;
+            // Create canvas for NFT preview
+            const canvas = document.createElement('canvas');
+            canvas.width = 60;
+            canvas.height = 60;
+            canvas.style.border = '1px solid #000';
+            canvas.style.background = '#ffffff';
+            
+            // Render NFT on canvas
+            this.renderNFTPreviewOnCanvas(canvas, nft);
             
             item.innerHTML = `
                 <div class="item-icon">
-                    <div class="nft-preview" style="
-                        width: 60px; 
-                        height: 60px; 
-                        background: #4A90E2; 
-                        border-radius: 8px;
-                        position: relative;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    ">
-                        <!-- Eyes -->
-                        <div style="
-                            position: absolute;
-                            top: 15px;
-                            left: 15px;
-                            width: 8px;
-                            height: 8px;
-                            background: #FF4444;
-                            border-radius: 2px;
-                        "></div>
-                        <div style="
-                            position: absolute;
-                            top: 15px;
-                            right: 15px;
-                            width: 8px;
-                            height: 8px;
-                            background: #FF4444;
-                            border-radius: 2px;
-                        "></div>
-                        
-                        <!-- Antenna -->
-                        <div style="
-                            position: absolute;
-                            top: -5px;
-                            left: 50%;
-                            transform: translateX(-50%);
-                            width: 6px;
-                            height: 15px;
-                            background: #FFD700;
-                        "></div>
-                        <div style="
-                            position: absolute;
-                            top: -8px;
-                            left: 50%;
-                            transform: translateX(-50%);
-                            width: 4px;
-                            height: 4px;
-                            background: #FF4444;
-                            border-radius: 50%;
-                        "></div>
-                        
-                        <!-- Mouth -->
-                        <div style="
-                            position: absolute;
-                            bottom: 15px;
-                            left: 50%;
-                            transform: translateX(-50%);
-                            width: 20px;
-                            height: 4px;
-                            background: #FFFFFF;
-                            border-radius: 2px;
-                        "></div>
-                        
-                        ${hasHorns ? `
-                        <!-- Horns -->
-                        <div style="
-                            position: absolute;
-                            top: 5px;
-                            left: 5px;
-                            width: 4px;
-                            height: 8px;
-                            background: #8B4513;
-                        "></div>
-                        <div style="
-                            position: absolute;
-                            top: 5px;
-                            right: 5px;
-                            width: 4px;
-                            height: 8px;
-                            background: #8B4513;
-                        "></div>
-                        ` : ''}
-                        
-                        ${hasVisor ? `
-                        <!-- Visor -->
-                        <div style="
-                            position: absolute;
-                            top: 12px;
-                            left: 5px;
-                            width: 50px;
-                            height: 4px;
-                            background: #000000;
-                            border-radius: 2px;
-                        "></div>
-                        ` : ''}
-                    </div>
+                    ${canvas.outerHTML}
                 </div>
                 <div class="item-name">${nft.name}</div>
                 <div class="item-description">NFT #${nft.tokenId}</div>
@@ -2910,6 +2842,30 @@ class GameState {
             });
             
             nftsGrid.appendChild(item);
+        });
+    }
+
+    renderNFTPreviewOnCanvas(canvas, nft) {
+        const ctx = canvas.getContext('2d');
+        if (!ctx || !nft || !nft.components) return;
+
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Render layers in order: body → armor → hands → offhand → head → pilot → accessories
+        const layerOrder = ['body', 'armor', 'hands', 'offhand', 'head', 'pilot', 'accessory'];
+        const scale = 0.15; // Smaller scale for inventory preview
+        
+        layerOrder.forEach(layer => {
+            const component = nft.components[layer];
+            if (component && component.image && component.image.complete && component.image.naturalWidth > 0) {
+                const scaledWidth = component.image.width * scale;
+                const scaledHeight = component.image.height * scale;
+                const drawX = (canvas.width - scaledWidth) / 2;
+                const drawY = (canvas.height - scaledHeight) / 2;
+                
+                ctx.drawImage(component.image, drawX, drawY, scaledWidth, scaledHeight);
+            }
         });
     }
 
