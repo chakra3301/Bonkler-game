@@ -19,7 +19,7 @@
             <div class="loading-subtitle">Loading Game Assets...</div>
             
             <div class="asset-preview">
-                <img id="asset-preview-img" src="" alt="Asset Preview" style="display: none;">
+                <canvas id="asset-preview-canvas" width="300" height="300"></canvas>
                 <div id="asset-preview-text">Initializing...</div>
             </div>
             
@@ -91,181 +91,129 @@
         <main class="game-main">
             <!-- Inventory Screen -->
             <div id="inventory-screen" class="screen active">
-                <div class="fighter-builder-container">
-                    <div class="builder-layout">
-                        <div class="left-column">
-                            <div class="builder-header">
-                                <h2>Build Your Fighter</h2>
-                                <p>Choose your initial fighter components. You can only build one fighter to start!</p>
-                            </div>
-                            <div class="builder-content">
-                                <div class="canvas-container">
-                                    <canvas id="fighter-canvas" width="600" height="900"></canvas>
-                                    <div class="canvas-overlay">
-                                        <div class="layer-info">
-                                            <span>Layer Order: Body → Armor → Hands → Offhand → Head → Pilot → Accessories</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="component-selector">
-                                    
-                                    <div class="component-category">
-                                        <h3>Accessories</h3>
-                                        <div class="component-navigator">
-                                            <button class="nav-arrow prev" data-category="accessory">‹</button>
-                                            <div class="component-display" id="accessory-display">
-                                                <div class="component-item selected">
-                                                    <span class="component-icon">🎩</span>
-                                                </div>
-                                            </div>
-                                            <button class="nav-arrow next" data-category="accessory">›</button>
-                                        </div>
-                                        <div class="component-info" id="accessory-info">
-                                            <span class="component-name">Select accessory</span>
-                                            <span class="component-stats"></span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="component-category">
-                                        <h3>Head</h3>
-                                        <div class="component-navigator">
-                                            <button class="nav-arrow prev" data-category="head">‹</button>
-                                            <div class="component-display" id="head-display">
-                                                <div class="component-item selected">
-                                                    <span class="component-icon">🎭</span>
-                                                </div>
-                                            </div>
-                                            <button class="nav-arrow next" data-category="head">›</button>
-                                        </div>
-                                        <div class="component-info" id="head-info">
-                                            <span class="component-name">Select a head</span>
-                                            <span class="component-stats"></span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="component-category">
-                                        <h3>Armor</h3>
-                                        <div class="component-navigator">
-                                            <button class="nav-arrow prev" data-category="armor">‹</button>
-                                            <div class="component-display" id="armor-display">
-                                                <div class="component-item selected">
-                                                    <span class="component-icon">🛡️</span>
-                                                </div>
-                                            </div>
-                                            <button class="nav-arrow next" data-category="armor">›</button>
-                                        </div>
-                                        <div class="component-info" id="armor-info">
-                                            <span class="component-name">Select armor</span>
-                                            <span class="component-stats"></span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="component-category">
-                                        <h3>Body</h3>
-                                        <div class="component-navigator">
-                                            <button class="nav-arrow prev" data-category="body">‹</button>
-                                            <div class="component-display" id="body-display">
-                                                <div class="component-item selected">
-                                                    <span class="component-icon">👔</span>
-                                                </div>
-                                            </div>
-                                            <button class="nav-arrow next" data-category="body">›</button>
-                                        </div>
-                                        <div class="component-info" id="body-info">
-                                            <span class="component-name">Select a body</span>
-                                            <span class="component-stats"></span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="component-category">
-                                        <h3>Hands</h3>
-                                        <div class="component-navigator">
-                                            <button class="nav-arrow prev" data-category="hands">‹</button>
-                                            <div class="component-display" id="hands-display">
-                                                <div class="component-item selected">
-                                                    <span class="component-icon">⚔️</span>
-                                                </div>
-                                            </div>
-                                            <button class="nav-arrow next" data-category="hands">›</button>
-                                        </div>
-                                        <div class="component-info" id="hands-info">
-                                            <span class="component-name">Select hands</span>
-                                            <span class="component-stats"></span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="component-category">
-                                        <h3>Offhand</h3>
-                                        <div class="component-navigator">
-                                            <button class="nav-arrow prev" data-category="offhand">‹</button>
-                                            <div class="component-display" id="offhand-display">
-                                                <div class="component-item selected">
-                                                    <span class="component-icon">💰</span>
-                                                </div>
-                                            </div>
-                                            <button class="nav-arrow next" data-category="offhand">›</button>
-                                        </div>
-                                        <div class="component-info" id="offhand-info">
-                                            <span class="component-name">Select offhand</span>
-                                            <span class="component-stats"></span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="component-category">
-                                        <h3>Pilot</h3>
-                                        <div class="component-navigator">
-                                            <button class="nav-arrow prev" data-category="pilot">‹</button>
-                                            <div class="component-display" id="pilot-display">
-                                                <div class="component-item selected">
-                                                    <span class="component-icon">👤</span>
-                                                </div>
-                                            </div>
-                                            <button class="nav-arrow next" data-category="pilot">›</button>
-                                        </div>
-                                        <div class="component-info" id="pilot-info">
-                                            <span class="component-name">Select a pilot</span>
-                                            <span class="component-stats"></span>
-                                        </div>
-                                    </div>
+                <div class="inventory-container">
+                    <div class="inventory-header">
+                        <h2>Your Inventory</h2>
+                        <p>Select an NFT to customize or view your items</p>
+                    </div>
+                    
+                    <!-- Inventory Tabs -->
+                    <div class="inventory-tabs">
+                        <button class="inventory-tab-btn active" data-tab="nfts">NFTs</button>
+                        <button class="inventory-tab-btn" data-tab="skills">Skills</button>
+                    </div>
+                    
+                    <!-- NFT Carousel Section -->
+                    <div class="nft-carousel-section">
+                        <h3>Your NFTs</h3>
+                        <div class="carousel-container">
+                            <button class="carousel-btn prev" id="nft-prev-btn">‹</button>
+                            <div class="carousel-viewport">
+                                <div class="carousel-track" id="nft-carousel-track">
+                                    <!-- NFT cards will be populated here -->
                                 </div>
                             </div>
-                            <div class="builder-controls">
-                                <button id="confirm-fighter-btn" class="confirm-btn">Confirm Fighter</button>
+                            <button class="carousel-btn next" id="nft-next-btn">›</button>
+                        </div>
+                        <div class="carousel-indicators" id="nft-carousel-indicators">
+                            <!-- Page indicators will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Skills Section -->
+                    <div class="skills-section" style="display: none;">
+                        <h3>Your Skills</h3>
+                        <div class="skills-container">
+                            <div class="available-skills">
+                                <h4>Available Skills</h4>
+                                <div class="skills-grid" id="available-skills-grid">
+                                    <!-- Available skills will be populated here -->
+                                </div>
+                            </div>
+                            <div class="equipped-skills">
+                                <h4>Equipped Skills (6 max)</h4>
+                                <div class="skills-grid" id="equipped-skills-grid">
+                                    <!-- Equipped skills will be populated here -->
+                                </div>
                             </div>
                         </div>
-                        <div class="right-column">
-                            <div class="inventory-section">
-                                <div class="inventory-header">
-                                    <h3><i class="fas fa-briefcase"></i> Your Inventory</h3>
-                                    <div class="inventory-tabs">
-                                        <button class="inventory-tab active" data-tab="nfts">NFTs</button>
-                                        <button class="inventory-tab" data-tab="purchased">Purchased Items</button>
-                                        <button class="inventory-tab" data-tab="skills">Skills</button>
+                    </div>
+                    
+                    <!-- Builder Section (hidden by default) -->
+                    <div class="fighter-builder-container" style="display: none;">
+                        <div class="builder-layout">
+                            <div class="left-column">
+                                <div class="builder-header">
+                                    <h2>Customize Your NFT</h2>
+                                    <p>Use your purchased items to customize your selected NFT</p>
+                                </div>
+                                <div class="builder-content">
+                                    <div class="canvas-container">
+                                        <canvas id="fighter-canvas" width="600" height="900"></canvas>
+                                        <div class="canvas-overlay">
+                                            <div class="layer-info">
+                                                <span>Layer Order: Body → Armor → Hands → Offhand → Head → Pilot → Accessories</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="builder-info">
+                                        <h3>Selected NFT: <span id="selected-nft-name">None</span></h3>
+                                        <p>Use your purchased items to customize your NFT</p>
                                     </div>
                                 </div>
-                                <div class="inventory-content">
-                                    <div id="inventory-nfts" class="inventory-tab-content active">
-                                        <div class="inventory-grid" id="inventory-nfts-grid">
-                                            <!-- User NFTs will be populated here -->
-                                        </div>
+                                <div class="builder-controls">
+                                    <button id="back-to-nfts-btn" class="back-btn">Back to NFTs</button>
+                                    <button id="confirm-fighter-btn" class="confirm-btn">Confirm Fighter</button>
+                                </div>
+                            </div>
+                            <div class="right-column">
+                                <div class="purchased-items-section">
+                                    <div class="section-header">
+                                        <h3><i class="fas fa-shopping-bag"></i> Your Purchased Items</h3>
+                                        <p>Click "Equip" to customize your selected NFT</p>
                                     </div>
-                                    <div id="inventory-purchased" class="inventory-tab-content">
-                                        <div class="inventory-grid" id="inventory-purchased-grid">
-                                            <!-- Purchased items will be populated here -->
-                                        </div>
-                                    </div>
-                                    <div id="inventory-skills" class="inventory-tab-content">
-                                        <div class="skills-container">
-                                            <div class="equipped-skills">
-                                                <h4>Equipped Skills (0/6)</h4>
-                                                <div class="skills-grid" id="equipped-skills-grid">
-                                                    <!-- Equipped skills will be populated here -->
+                                    <div class="purchased-items-content">
+                                        <div class="items-by-category">
+                                            <div class="category-section">
+                                                <h4>Bodies</h4>
+                                                <div class="items-grid" id="purchased-bodies-grid">
+                                                    <!-- Purchased bodies will be populated here -->
                                                 </div>
                                             </div>
-                                            <div class="available-skills">
-                                                <h4>Available Skills</h4>
-                                                <div class="skills-grid" id="available-skills-grid">
-                                                    <!-- Available skills will be populated here -->
+                                            <div class="category-section">
+                                                <h4>Armors</h4>
+                                                <div class="items-grid" id="purchased-armors-grid">
+                                                    <!-- Purchased armors will be populated here -->
+                                                </div>
+                                            </div>
+                                            <div class="category-section">
+                                                <h4>Hands</h4>
+                                                <div class="items-grid" id="purchased-hands-grid">
+                                                    <!-- Purchased hands will be populated here -->
+                                                </div>
+                                            </div>
+                                            <div class="category-section">
+                                                <h4>Offhands</h4>
+                                                <div class="items-grid" id="purchased-offhands-grid">
+                                                    <!-- Purchased offhands will be populated here -->
+                                                </div>
+                                            </div>
+                                            <div class="category-section">
+                                                <h4>Heads</h4>
+                                                <div class="items-grid" id="purchased-heads-grid">
+                                                    <!-- Purchased heads will be populated here -->
+                                                </div>
+                                            </div>
+                                            <div class="category-section">
+                                                <h4>Pilots</h4>
+                                                <div class="items-grid" id="purchased-pilots-grid">
+                                                    <!-- Purchased pilots will be populated here -->
+                                                </div>
+                                            </div>
+                                            <div class="category-section">
+                                                <h4>Accessories</h4>
+                                                <div class="items-grid" id="purchased-accessories-grid">
+                                                    <!-- Purchased accessories will be populated here -->
                                                 </div>
                                             </div>
                                         </div>

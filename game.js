@@ -200,6 +200,8 @@ class GameState {
             };
             this.userNFTs = data.userNFTs || [];
             this.purchasedItems = data.purchasedItems || [];
+            this.equippedSkills = data.equippedSkills || ['Slash', 'Power-up', 'Defend', 'Dodge'];
+            this.availableSkills = data.availableSkills || [];
         }
     }
 
@@ -212,7 +214,9 @@ class GameState {
             fighterBuilt: this.fighterBuilt,
             currentFighter: this.currentFighter,
             userNFTs: this.userNFTs,
-            purchasedItems: this.purchasedItems
+            purchasedItems: this.purchasedItems,
+            equippedSkills: this.equippedSkills,
+            availableSkills: this.availableSkills
         };
         localStorage.setItem('bonklerGameData', JSON.stringify(data));
     }
@@ -276,7 +280,8 @@ class GameState {
     updateNFTCount() {
         const countElement = document.getElementById('nft-count');
         if (countElement) {
-            countElement.textContent = `Loaded: ${this.nfts.length} NFTs`;
+            const count = this.userNFTs ? this.userNFTs.length : 0;
+            countElement.textContent = `Loaded: ${count} NFTs`;
         }
     }
 
@@ -630,7 +635,7 @@ class GameState {
         });
 
         // Inventory tabs
-        document.querySelectorAll('.inventory-tab').forEach(btn => {
+        document.querySelectorAll('.inventory-tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.setInventoryTab(e.target.dataset.tab);
             });
@@ -689,7 +694,6 @@ class GameState {
         
         await this.loadComponentAssets();
         this.setupBuilderNFTSelection();
-        this.drawEmptyBuilder();
     }
 
     async loadComponentAssets() {
@@ -711,8 +715,6 @@ class GameState {
         console.log('Hands assets:', this.componentAssets.hands?.length || 0);
         console.log('Offhand assets:', this.componentAssets.offhand?.length || 0);
         console.log('Accessory assets:', this.componentAssets.accessory?.length || 0);
-        
-        this.setupComponentNavigation();
         
         // Draw empty builder after assets are loaded
         this.drawEmptyBuilder();
@@ -1195,9 +1197,8 @@ class GameState {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Draw NFT as base fighter
-        this.ctx.fillStyle = '#f0f0f0';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        // Clear canvas with transparent background
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Draw actual NFT components using the built components
         this.renderNFTComponentsFromBuilder();
@@ -1401,14 +1402,20 @@ class GameState {
     }
 
     updateBuilderComponentDisplayForNFT(nft) {
+        console.log('updateBuilderComponentDisplayForNFT called');
+        console.log('builderComponents:', this.builderComponents);
+        
         // Update each component category to show NFT's actual components
         const categories = ['pilot', 'body', 'armor', 'hands', 'offhand', 'accessory'];
         
         categories.forEach(category => {
             const nftComponent = this.builderComponents[category];
+            console.log(`Processing ${category}:`, nftComponent);
+            
             if (nftComponent) {
                 this.updateComponentDisplayForNFT(category, nftComponent);
             } else {
+                console.log(`No component found for ${category}`);
                 // Show empty state for missing components
                 this.updateComponentDisplayForBuilder(category, []);
             }
@@ -1421,7 +1428,7 @@ class GameState {
     }
 
     updateComponentDisplayForBuilder(category, availableItems) {
-        const displayElement = document.querySelector(`.component-display[data-category="${category}"]`);
+        const displayElement = document.querySelector(`#${category}-display`);
         if (!displayElement) return;
         
         if (availableItems.length === 0) {
@@ -1455,8 +1462,12 @@ class GameState {
     }
 
     updateComponentDisplayForNFT(category, nftComponent) {
-        const displayElement = document.querySelector(`.component-display[data-category="${category}"]`);
-        if (!displayElement) return;
+        const displayElement = document.querySelector(`#${category}-display`);
+        console.log(`Looking for display element for ${category}:`, displayElement);
+        if (!displayElement) {
+            console.log(`No display element found for ${category}`);
+            return;
+        }
         
         console.log(`Updating display for ${category}:`, nftComponent);
         
@@ -1484,12 +1495,12 @@ class GameState {
 
     getComponentImagePath(item) {
         const folderMap = {
-            'pilot': 'store%20pilot',
+            'pilot': 'PILOT',
             'body': 'BODIES',
             'armor': 'ARMORS',
-            'hands': 'store%20hands',
-            'offhand': 'OFFHAND%20store',
-            'accessory': 'store%20accessories'
+            'hand': 'HANDS',
+            'offhand': 'OFFHAND',
+            'accessory': 'ACCESSORIES'
         };
         
         return `${folderMap[item.type] || item.type.toUpperCase()}/${item.asset}`;
@@ -1635,12 +1646,22 @@ class GameState {
 
     setInventoryTab(tab) {
         // Update tab buttons
-        document.querySelectorAll('.inventory-tab').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.inventory-tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
         
-        // Update tab content
-        document.querySelectorAll('.inventory-tab-content').forEach(content => content.classList.remove('active'));
-        document.getElementById(`inventory-${tab}`).classList.add('active');
+        // Show/hide sections based on tab
+        const nftSection = document.querySelector('.nft-carousel-section');
+        const skillsSection = document.querySelector('.skills-section');
+        
+        if (tab === 'nfts') {
+            nftSection.style.display = 'block';
+            skillsSection.style.display = 'none';
+            this.populateInventoryNFTs();
+        } else if (tab === 'skills') {
+            nftSection.style.display = 'none';
+            skillsSection.style.display = 'block';
+            this.populateInventorySkills();
+        }
     }
 
     setLeaderboardTab(tab) {
@@ -1684,16 +1705,16 @@ class GameState {
     }
 
     populateNFTs() {
-        if (this.nfts.length === 0) {
-            // Show inventory if no NFTs are available
-            this.switchScreen('inventory');
+        if (!this.userNFTs || this.userNFTs.length === 0) {
+            const nftGrid = document.getElementById('nft-grid');
+            nftGrid.innerHTML = '<div class="no-nfts-message">No fighters found in your wallet. Connect your wallet to see your NFTs.</div>';
             return;
         }
 
         const nftGrid = document.getElementById('nft-grid');
         nftGrid.innerHTML = '';
 
-        this.nfts.forEach(nft => {
+        this.userNFTs.forEach(nft => {
             const nftCard = document.createElement('div');
             nftCard.className = 'nft-card';
             nftCard.dataset.nftId = nft.id;
@@ -1729,6 +1750,7 @@ class GameState {
     }
 
     selectNFT(nft) {
+        console.log('NFT selected:', nft);
         this.selectedNFT = nft;
         
         // Update visual selection
@@ -1742,7 +1764,10 @@ class GameState {
     }
 
     startBattle() {
-        if (!this.currentFighter.pilot) return;
+        if (!this.selectedNFT) {
+            console.log('No NFT selected for battle');
+            return;
+        }
 
         // Initialize battle canvas
         this.initBattleCanvas();
@@ -1752,15 +1777,20 @@ class GameState {
         
         // Create enemy fighter
         this.enemyFighter = this.createRandomEnemy();
+        
+        // Create player fighter from selected NFT
         this.playerFighter = {
-            name: 'Your Fighter',
-            level: this.level,
-            attack: 50 + Math.floor(Math.random() * 20),
-            defense: 30 + Math.floor(Math.random() * 20),
-            health: 500,
-            maxHealth: 500,
-            components: this.currentFighter
+            name: this.selectedNFT.name,
+            level: this.selectedNFT.level,
+            attack: this.selectedNFT.attack,
+            defense: this.selectedNFT.defense,
+            health: this.selectedNFT.health,
+            maxHealth: this.selectedNFT.maxHealth,
+            components: this.selectedNFT.components || {}
         };
+        
+        console.log('Player fighter created:', this.playerFighter);
+        console.log('Player fighter components:', this.playerFighter.components);
         
         // Set up battle state
         this.currentBattle = {
@@ -1823,7 +1853,10 @@ class GameState {
     }
 
     renderFighterOnBattleCanvas(fighter, x, y, scale = 0.3, isEnemy = false) {
-        if (!this.battleCtx || !fighter || !fighter.components) return;
+        if (!this.battleCtx || !fighter || !fighter.components) {
+            console.log('Cannot render fighter:', { battleCtx: !!this.battleCtx, fighter: !!fighter, components: !!fighter?.components });
+            return;
+        }
 
         // Clear area for this fighter
         this.battleCtx.clearRect(x - 50, y - 100, 100, 200);
@@ -2968,10 +3001,11 @@ class GameState {
                 this.componentAssets[item.type + 's'] = [];
             }
             
-            // Create component asset
+            // Create component asset - convert store asset name to regular asset name
+            const regularAssetName = item.asset.replace('-store.png', '.png');
             const componentAsset = {
                 name: item.name,
-                path: `${item.type.toUpperCase()}/${item.asset}`,
+                path: `${item.type.toUpperCase()}/${regularAssetName}`,
                 type: item.type,
                 attack: item.attack || 0,
                 defense: item.defense || 0,
@@ -2987,6 +3021,9 @@ class GameState {
                 purchasedAt: new Date().toISOString()
             };
             this.purchasedItems.push(purchasedItem);
+            
+            console.log('Item purchased:', purchasedItem);
+            console.log('Total purchased items:', this.purchasedItems.length);
             
             this.showModal('Component Unlocked', `You unlocked ${item.name}! You can now use this component in the fighter builder.`);
         } else if (item.type === 'skill') {
@@ -3020,6 +3057,11 @@ class GameState {
         this.saveGameData();
         this.populateShop();
         this.populateInventory();
+        
+        // Refresh purchased items in builder if it's currently visible
+        if (document.querySelector('.fighter-builder-container').style.display !== 'none') {
+            this.populatePurchasedItems();
+        }
     }
 
     // Inventory System
@@ -3030,59 +3072,122 @@ class GameState {
     }
 
     populateInventoryNFTs() {
-        const nftsGrid = document.getElementById('inventory-nfts-grid');
-        if (!nftsGrid) return;
+        const carouselTrack = document.getElementById('nft-carousel-track');
+        const indicators = document.getElementById('nft-carousel-indicators');
+        if (!carouselTrack) return;
         
-        nftsGrid.innerHTML = '';
+        carouselTrack.innerHTML = '';
+        if (indicators) indicators.innerHTML = '';
         
-        if (this.userNFTs.length === 0) {
-            nftsGrid.innerHTML = '<div class="inventory-empty">No NFTs found. Connect your wallet to load your NFTs.</div>';
+        if (!this.userNFTs || this.userNFTs.length === 0) {
+            carouselTrack.innerHTML = '<div class="inventory-empty">No NFTs found. Connect your wallet to load your NFTs.</div>';
             return;
         }
         
-        this.userNFTs.forEach((nft, index) => {
-            const item = document.createElement('div');
-            item.className = 'shop-item';
-            item.dataset.index = index;
+        // Carousel settings
+        const itemsPerPage = 5;
+        const totalPages = Math.ceil(this.userNFTs.length / itemsPerPage);
+        
+        // Create carousel pages
+        for (let page = 0; page < totalPages; page++) {
+            const pageContainer = document.createElement('div');
+            pageContainer.className = 'carousel-page';
+            pageContainer.style.display = 'flex';
+            pageContainer.style.gap = '8px';
+            pageContainer.style.minWidth = '100%';
             
-            // Add rarity class if available
-            if (nft.rarity) {
-                item.classList.add(`rarity-${nft.rarity.toLowerCase()}`);
+            // Add NFTs for this page
+            for (let i = 0; i < itemsPerPage; i++) {
+                const nftIndex = page * itemsPerPage + i;
+                if (nftIndex >= this.userNFTs.length) break;
+                
+                const nft = this.userNFTs[nftIndex];
+                const nftCard = document.createElement('div');
+                nftCard.className = 'nft-card';
+                nftCard.dataset.nftId = nft.id;
+                nftCard.style.flex = '1';
+                nftCard.style.minWidth = '120px';
+                
+                // Add NFT indicator if it's an NFT
+                const nftBadge = nft.isNFT ? `<div class="nft-badge">NFT</div>` : '';
+                
+                // Create canvas for NFT preview
+                const canvas = document.createElement('canvas');
+                canvas.className = 'fighter-preview';
+                canvas.width = 120;
+                canvas.height = 180;
+                
+                nftCard.innerHTML = `
+                    <div class="nft-avatar custom-fighter">
+                        ${canvas.outerHTML}
+                        ${nftBadge}
+                    </div>
+                    <div class="nft-name">${nft.name}</div>
+                    <div class="nft-description">${nft.description || ''}</div>
+                    <div class="nft-stats">
+                        <div>Level: ${nft.level}</div>
+                        <div>Attack: ${nft.attack}</div>
+                        <div>Defense: ${nft.defense}</div>
+                        <div>Health: ${nft.health}/${nft.maxHealth}</div>
+                        ${nft.tokenId ? `<div>Token ID: ${nft.tokenId}</div>` : ''}
+                    </div>
+                `;
+                
+                // Render NFT preview
+                const previewCanvas = nftCard.querySelector('.fighter-preview');
+                const previewCtx = previewCanvas.getContext('2d');
+                this.renderFighterPreview(previewCtx, nft.components || {});
+                
+                nftCard.addEventListener('click', () => {
+                    // Remove previous selection
+                    document.querySelectorAll('.nft-card.selected').forEach(card => {
+                        card.classList.remove('selected');
+                    });
+                    nftCard.classList.add('selected');
+                    
+                    // Select NFT for builder
+                    this.selectNFTForBuilder(nft);
+                    
+                    // Show builder interface
+                    this.showBuilderInInventory();
+                });
+                
+                pageContainer.appendChild(nftCard);
             }
             
-            // Create canvas for NFT preview
-            const canvas = document.createElement('canvas');
-            canvas.width = 60;
-            canvas.height = 60;
-            canvas.style.border = '1px solid #000';
-            canvas.style.background = '#ffffff';
-            
-            // Render NFT on canvas using the same logic as battle selection
-            this.renderFighterPreviewForInventory(canvas.getContext('2d'), nft.components || {});
-            
-            item.innerHTML = `
-                <div class="item-icon">
-                    ${canvas.outerHTML}
-                </div>
-                <div class="item-name">${nft.name}</div>
-                <div class="item-description">NFT #${nft.tokenId}</div>
-                <div class="item-price">Attack: ${nft.attack} | Defense: ${nft.defense}</div>
-            `;
-            
-            item.addEventListener('click', () => {
-                // Remove previous selection
-                document.querySelectorAll('.shop-item.selected').forEach(el => el.classList.remove('selected'));
-                item.classList.add('selected');
+            carouselTrack.appendChild(pageContainer);
+        }
+        
+        // Create indicators
+        if (indicators && totalPages > 1) {
+            for (let i = 0; i < totalPages; i++) {
+                const indicator = document.createElement('div');
+                indicator.className = 'carousel-indicator';
+                if (i === 0) indicator.classList.add('active');
+                indicator.dataset.page = i;
                 
-                // Select NFT for builder
-                this.selectNFTForBuilder(nft);
+                indicator.addEventListener('click', () => {
+                    this.goToCarouselPage(i);
+                });
                 
-                // Stay on inventory screen and show builder interface
-                this.showBuilderInInventory();
+                indicators.appendChild(indicator);
+            }
+        }
+        
+        // Set up carousel navigation
+        this.setupCarouselNavigation();
+        
+        // Initialize carousel state
+        this.currentCarouselPage = 0;
+        this.totalCarouselPages = totalPages;
+        
+        // Set up back button
+        const backBtn = document.getElementById('back-to-nfts-btn');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                this.showCarouselView();
             });
-            
-            nftsGrid.appendChild(item);
-        });
+        }
     }
 
     renderNFTPreviewOnCanvas(canvas, nft) {
@@ -3110,6 +3215,47 @@ class GameState {
                 this.drawComponentPlaceholder(ctx, component.name, canvas.width, canvas.height, scale);
             }
         });
+    }
+
+    setupCarouselNavigation() {
+        const prevBtn = document.getElementById('nft-prev-btn');
+        const nextBtn = document.getElementById('nft-next-btn');
+        
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                this.goToCarouselPage(this.currentCarouselPage - 1);
+            });
+        }
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                this.goToCarouselPage(this.currentCarouselPage + 1);
+            });
+        }
+    }
+    
+    goToCarouselPage(page) {
+        if (page < 0 || page >= this.totalCarouselPages) return;
+        
+        this.currentCarouselPage = page;
+        const track = document.getElementById('nft-carousel-track');
+        const indicators = document.querySelectorAll('.carousel-indicator');
+        
+        if (track) {
+            track.style.transform = `translateX(-${page * 100}%)`;
+        }
+        
+        // Update indicators
+        indicators.forEach((indicator, index) => {
+            indicator.classList.toggle('active', index === page);
+        });
+        
+        // Update navigation buttons
+        const prevBtn = document.getElementById('nft-prev-btn');
+        const nextBtn = document.getElementById('nft-next-btn');
+        
+        if (prevBtn) prevBtn.disabled = page === 0;
+        if (nextBtn) nextBtn.disabled = page === this.totalCarouselPages - 1;
     }
 
     renderFighterPreviewForInventory(ctx, components) {
@@ -3163,28 +3309,162 @@ class GameState {
         ctx.fillRect(29, 30, 2, 1); // Mouth
     }
 
+    populatePurchasedItems() {
+        console.log('populatePurchasedItems called');
+        console.log('purchasedItems:', this.purchasedItems);
+        
+        const categories = ['bodies', 'armors', 'hands', 'offhands', 'heads', 'pilots', 'accessories'];
+        
+        categories.forEach(category => {
+            const gridId = `purchased-${category}-grid`;
+            const grid = document.getElementById(gridId);
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            // Get purchased items for this category
+            const categoryItems = this.purchasedItems.filter(item => {
+                const itemType = item.type === 'hand' ? 'hands' : item.type;
+                return itemType === category.slice(0, -1); // Remove 's' from end
+            });
+            
+            console.log(`Category ${category}:`, categoryItems);
+            
+            if (categoryItems.length === 0) {
+                grid.innerHTML = '<div class="purchased-item empty">No items purchased</div>';
+                return;
+            }
+            
+            categoryItems.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'purchased-item';
+                itemElement.dataset.itemId = item.name;
+                
+                // Get image path - use item.path which contains the correct path
+                let imagePath = item.path || '';
+                
+                // Fallback to constructing path if item.path is not available
+                if (!imagePath && item.asset) {
+                    if (item.type === 'body') {
+                        imagePath = `BODIES/${item.asset}`;
+                    } else if (item.type === 'armor') {
+                        imagePath = `ARMORS/${item.asset}`;
+                    } else if (item.type === 'hand') {
+                        imagePath = `HANDS/${item.asset}`;
+                    } else if (item.type === 'offhand') {
+                        imagePath = `OFFHAND/${item.asset}`;
+                    } else if (item.type === 'head') {
+                        imagePath = `HEADS/${item.asset}`;
+                    } else if (item.type === 'pilot') {
+                        imagePath = `PILOT/${item.asset}`;
+                    } else if (item.type === 'accessory') {
+                        imagePath = `ACCESSORIES/${item.asset}`;
+                    }
+                }
+                
+                itemElement.innerHTML = `
+                    <img src="${imagePath}" alt="${item.name}">
+                    <div class="purchased-item-name">${item.name}</div>
+                    <button class="equip-btn" data-category="${item.type}" data-item="${item.name}">Equip</button>
+                `;
+                
+                // Add click handler for equip button
+                const equipBtn = itemElement.querySelector('.equip-btn');
+                equipBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.equipItem(item);
+                });
+                
+                grid.appendChild(itemElement);
+            });
+        });
+    }
+
+    equipItem(item) {
+        if (!this.selectedNFT) {
+            alert('Please select an NFT first');
+            return;
+        }
+        
+        // Update the builder components
+        const category = item.type === 'hand' ? 'hands' : item.type;
+        
+        // Load the image if it's not already loaded
+        let image = item.image;
+        if (!image && item.path) {
+            image = new Image();
+            image.onload = () => {
+                // Re-render the NFT once the image is loaded
+                this.renderNFTAsBase(this.selectedNFT);
+            };
+            image.src = item.path;
+        }
+        
+        // Store the component with the image
+        this.builderComponents[category] = {
+            name: item.name,
+            path: item.path,
+            image: image,
+            attack: item.attack,
+            defense: item.defense
+        };
+        
+        // If image is already loaded, re-render immediately
+        if (image && image.complete && image.naturalWidth > 0) {
+            this.renderNFTAsBase(this.selectedNFT);
+        }
+        
+        // Update the button text to show it's equipped
+        const equipBtn = document.querySelector(`[data-item="${item.name}"]`);
+        if (equipBtn) {
+            equipBtn.textContent = 'Equipped';
+            equipBtn.disabled = true;
+        }
+        
+        console.log(`Equipped ${item.name} to ${category}`);
+        console.log('Builder components after equip:', this.builderComponents);
+        console.log('Image loading status:', image ? 'Image exists' : 'No image');
+        console.log('Image path:', item.path);
+    }
+    
+    showCarouselView() {
+        // Show carousel section and hide builder
+        const carouselSection = document.querySelector('.nft-carousel-section');
+        const builderContainer = document.querySelector('.fighter-builder-container');
+        
+        if (carouselSection) {
+            carouselSection.style.display = 'block';
+        }
+        
+        if (builderContainer) {
+            builderContainer.style.display = 'none';
+        }
+    }
+
     showBuilderInInventory() {
         // Ensure we're on the inventory screen
         this.switchScreen('inventory');
         
-        // Update the inventory header to show builder mode
-        const inventoryHeader = document.querySelector('#inventory-screen .screen-header h2');
-        if (inventoryHeader) {
-            inventoryHeader.textContent = 'Customize Your NFT';
+        // Hide carousel section and show builder
+        const carouselSection = document.querySelector('.nft-carousel-section');
+        const builderContainer = document.querySelector('.fighter-builder-container');
+        
+        if (carouselSection) {
+            carouselSection.style.display = 'none';
         }
         
-        // Show the builder canvas and component selection
-        const builderContainer = document.querySelector('.fighter-builder-container');
         if (builderContainer) {
             builderContainer.style.display = 'block';
         }
         
-        // Update component display for the selected NFT
-        if (this.selectedNFT) {
-            this.updateBuilderComponentDisplayForNFT(this.selectedNFT);
-        } else {
-            this.updateBuilderComponentDisplay();
+        // Update selected NFT name
+        const selectedNFTName = document.getElementById('selected-nft-name');
+        if (selectedNFTName && this.selectedNFT) {
+            selectedNFTName.textContent = this.selectedNFT.name;
         }
+        
+        // Populate purchased items
+        this.populatePurchasedItems();
         
         // Render the selected NFT in the builder
         if (this.selectedNFT) {
@@ -3440,20 +3720,39 @@ class GameState {
     startLoadingScreen() {
         this.loadingProgress = 0;
         this.assetIndex = 0;
-        this.assetImages = [
-            { src: 'PILOT/WOLFIE.png', text: 'Loading pilot characters...' },
-            { src: 'BODIES/ANOTHER-FREAKING-MACHINE.png', text: 'Loading body components...' },
-            { src: 'ARMORS/ArmorAdamantine.png', text: 'Loading armor sets...' },
-            { src: 'HANDS/AGHANIM-SCEPTER.png', text: 'Loading weapons...' },
-            { src: 'OFFHAND/48-LAWS-OF-POWER.png', text: 'Loading offhand items...' },
-            { src: 'ACCESSORIES/HALO.png', text: 'Loading accessories...' },
-            { src: 'HEADS/BONK.png', text: 'Loading head components...' },
-            { src: 'store%20pilot/ALIEN-MILADY.png', text: 'Loading store assets...' },
-            { src: 'store%20hands/AGHANIM-SCEPTER.png', text: 'Loading store weapons...' },
-            { src: 'store%20accessories/BK.png', text: 'Loading store accessories...' }
-        ];
+        this.loadingBonklers = [];
+        
+        // Generate random Bonklers for loading screen
+        this.generateLoadingBonklers();
         
         this.cycleAssetPreview();
+    }
+
+    generateLoadingBonklers() {
+        // Available components for random generation
+        const components = {
+            pilot: ['WOLFIE', 'ALIEN-MILADY', 'BEAUTY-BEAST-BUNNY', 'BINKY', 'BLACK-FROST', 'BONK-BAT', 'CHARLIE\'S-DOG', 'DANCING-MAN-EMOJI', 'DR-KAWASHIMA', 'GUITAR-BEAR', 'HAMTARO', 'KASANE-TETO', 'MAPLE-STORY', 'MEW', 'MILADY', 'MINIFIG', 'NEKO', 'OKSHIA-MIKAN-UWASA-FRUIT-JUICER', 'PIKMIN', 'REI', 'ROVER', 'SHAKOKI-DOGU', 'SNOOPY-PLUSH', 'SPRITE-AUTOGRAPH', 'STUART', 'TIVO', 'ZATSUNE-MIKU'],
+            body: ['ANOTHER-FREAKING-MACHINE', 'BEETLE', 'BRG-VOL1', 'BURGER-BONK-LASER', 'BURNER-PHONE', 'CHINESE-SPRITE', 'COSMIC-RAY-DETECTORS', 'DARK-MAGICIAN-GIRL', 'FIRE-BONKER-LASER', 'FRAGILE-HEARTS', 'GUAM', 'HARAJUKU-MOTOROLA', 'JACOB-JENSEN', 'JADE-CABBAGE', 'JUDD-CHAIR', 'LEGO-SKELETON', 'NOCTUA-HEATSINK', 'ORION-CAN', 'PELICAN-TERMINAL', 'RED-AND-BLUE-CHAIR', 'REI-LIGHTER', 'RILAKKUMA', 'RUG-PULL', 'RUMMIKUB', 'SONY-CD-PLAYER', 'SONY-POCKET-STATION', 'SONY-TABLET', 'SONY-TV', 'SUIT', 'TEKKEN-KING', 'VALET-CHAIR', 'VENDING-MACHINE', 'YMO-TOUR'],
+            armor: ['ArmorAdamantine', 'ArmorBlack', 'ArmorBlack-Trim', 'ArmorBronze', 'ArmorBronze-Trim', 'ArmorCoal', 'ArmorComme-Des-Garcons-Homme-Plus-FW18-Dover-Street-Market-Installation-Dinosaur-Bones', 'ArmorDragon', 'ArmorGlory', 'ArmorHandycam', 'ArmorHarajuku-Sticker', 'ArmorJade', 'ArmorMithril', 'ArmorMithril-Trim', 'ArmorPhantom', 'ArmorSteel', 'ArmorSteel-Trim', 'ArmorTerminator', 'ArmorTerminator-Recolor', 'ArmorWhite', 'ArmorWhite-Trim'],
+            hands: ['AGHANIM-SCEPTER', 'AMERICAN-FLAG', 'ANCIENT-GODSWORD', 'APE-ESCAPE-NET', 'ARMED-THREAT', 'ATARASHIKI-MURA', 'BALLOON', 'BIONICLE-AXE', 'BLADE-OF-THE-IMMORTAL', 'BLUDGEONING-ANGEL', 'BOOM-MIC', 'CATTLE-GUN', 'DREAMCAST-FISHING-CONTROLLER', 'ENERGY-SWORD', 'EVOLVED-ANTENNA', 'GOLDEN-AXE', 'IKEBANA', 'INSANITY-CATALYST', 'JORDAN', 'K\'NEX', 'NEWJEANS-HAMMER', 'PHONE-FLAIL', 'PORSCHE-SUSPENSION', 'RIBBON-STAFF', 'SIR-FETCH\'D', 'SKYLANDER-SWORD', 'SLY-COOPER-CANE', 'STYGIAN-REAVER', 'VELVET-CROWE', 'WATER-PISTOL', 'WINGED-STAFF-GOLD'],
+            offhand: ['48-LAWS-OF-POWER', 'ADVENTURE-OF-COOKIE-AND-CREAM', 'AMEX-PLATINUM', 'BEAT-HAPPENING', 'BEETLE-GAME', 'BEYBLADE', 'BREIFCASE', 'CARLO-BUGATTI-CHAIR', 'CLOVER', 'COOKIE', 'DAIHATSU-MIDGET', 'DWARF-FORTRESS-GREEK-BEDROOM-BLUEPRINT', 'FBI-BADGE', 'FINAL-FANTASY', 'FOOBAR', 'G-SHOCK', 'GAME-AND-WATCH', 'GUTENBERG-BIBLE', 'HAND-CLOCK', 'HAUCHIWA', 'KETAMINE', 'NAUTILUS', 'PALETTE', 'POCKET-PET', 'POKEWALKER', 'QUAD-DAMAGE', 'RAYMAN-M-STEAL-SHIELD', 'REMILIA-CREST', 'REMILIA-ENGINEERING', 'REMILIA-FILMS', 'RX-78', 'SHOOTING-STAR', 'SUBMARINE-CABLE', 'SUPER-LOVER-WATCH', 'TEDDY-BEAR-ANNIVERSARY', 'TOKYO-MANHOLE-COVER', 'TORNADO-2', 'VAX-PASS', 'YEN'],
+            accessory: ['BK', 'DROID', 'HALO', 'HIKKIKOMORI', 'RAVER-CAP'],
+            head: ['ALIEN-BONK', 'BONK', 'EVIL-BONK', 'SPIRIT', 'WHITE']
+        };
+
+        // Generate 5 random Bonklers
+        for (let i = 0; i < 5; i++) {
+            const randomBonkler = {
+                pilot: components.pilot[Math.floor(Math.random() * components.pilot.length)],
+                body: components.body[Math.floor(Math.random() * components.body.length)],
+                armor: components.armor[Math.floor(Math.random() * components.armor.length)],
+                hands: components.hands[Math.floor(Math.random() * components.hands.length)],
+                offhand: components.offhand[Math.floor(Math.random() * components.offhand.length)],
+                accessory: components.accessory[Math.floor(Math.random() * components.accessory.length)],
+                head: components.head[Math.floor(Math.random() * components.head.length)]
+            };
+            this.loadingBonklers.push(randomBonkler);
+        }
     }
 
     updateLoadingProgress(progress, text) {
@@ -3478,23 +3777,21 @@ class GameState {
     }
 
     cycleAssetPreview() {
-        if (this.assetIndex >= this.assetImages.length) {
+        if (this.assetIndex >= this.loadingBonklers.length) {
             this.assetIndex = 0;
         }
         
-        const asset = this.assetImages[this.assetIndex];
-        const previewImg = document.getElementById('asset-preview-img');
+        const bonkler = this.loadingBonklers[this.assetIndex];
+        const previewCanvas = document.getElementById('asset-preview-canvas');
         const previewText = document.getElementById('asset-preview-text');
         
-        if (previewImg && previewText) {
-            // Show image
-            previewImg.src = asset.src;
-            previewImg.style.display = 'block';
-            previewText.textContent = asset.text;
+        if (previewCanvas && previewText) {
+            // Render random Bonkler on canvas
+            this.renderLoadingBonkler(previewCanvas, bonkler);
+            previewText.textContent = `Loading Bonkler ${this.assetIndex + 1}...`;
             
-            // Hide image after 2 seconds and show next
+            // Show next Bonkler after 2 seconds
             setTimeout(() => {
-                previewImg.style.display = 'none';
                 this.assetIndex++;
                 if (this.loadingProgress < 100) {
                     this.cycleAssetPreview();
@@ -3506,6 +3803,81 @@ class GameState {
         if (this.loadingProgress < 100) {
             setTimeout(() => this.cycleAssetPreview(), 3000);
         }
+    }
+
+    renderLoadingBonkler(canvas, bonkler) {
+        const ctx = canvas.getContext('2d');
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        
+        // Clear canvas with transparent background
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+        
+        // Set up drawing context
+        ctx.imageSmoothingEnabled = false;
+        
+        // Calculate scale and position for centered rendering
+        const scale = 0.25; // Reduced scale to fit everything
+        const centerX = canvasWidth / 2;
+        const centerY = canvasHeight / 2;
+        
+        // Render each component
+        const components = ['pilot', 'body', 'armor', 'hands', 'offhand', 'accessory', 'head'];
+        
+        components.forEach(componentType => {
+            const componentName = bonkler[componentType];
+            if (componentName) {
+                const img = new Image();
+                img.onload = () => {
+                    // Calculate position based on component type
+                    let x = centerX;
+                    let y = centerY;
+                    
+                    // Adjust position for different components - more conservative positioning
+                    if (componentType === 'pilot') {
+                        y = centerY - 15;
+                    } else if (componentType === 'body') {
+                        y = centerY;
+                    } else if (componentType === 'armor') {
+                        y = centerY;
+                    } else if (componentType === 'hands') {
+                        x = centerX - 20;
+                        y = centerY + 5;
+                    } else if (componentType === 'offhand') {
+                        x = centerX + 20;
+                        y = centerY + 5;
+                    } else if (componentType === 'accessory') {
+                        y = centerY - 25;
+                    } else if (componentType === 'head') {
+                        y = centerY - 35;
+                    }
+                    
+                    // Draw the component
+                    const scaledWidth = img.width * scale;
+                    const scaledHeight = img.height * scale;
+                    
+                    // Ensure the component stays within canvas bounds
+                    const drawX = Math.max(0, Math.min(canvasWidth - scaledWidth, x - scaledWidth / 2));
+                    const drawY = Math.max(0, Math.min(canvasHeight - scaledHeight, y - scaledHeight / 2));
+                    
+                    ctx.drawImage(img, drawX, drawY, scaledWidth, scaledHeight);
+                };
+                
+                // Set image source based on component type
+                const folderMap = {
+                    'pilot': 'PILOT',
+                    'body': 'BODIES',
+                    'armor': 'ARMORS',
+                    'hands': 'HANDS',
+                    'offhand': 'OFFHAND',
+                    'accessory': 'ACCESSORIES',
+                    'head': 'HEADS'
+                };
+                
+                const folder = folderMap[componentType];
+                img.src = `${folder}/${componentName}.png`;
+            }
+        });
     }
 
     hideLoadingScreen() {
