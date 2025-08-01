@@ -1316,6 +1316,20 @@ class GameState {
             console.error('Screen not found:', screenName);
         }
         
+        // Special handling for builder screen
+        if (screenName === 'builder') {
+            // Ensure canvas is properly initialized
+            if (this.canvas && this.ctx) {
+                if (this.selectedNFT) {
+                    // Re-render the selected NFT
+                    this.renderNFTAsBase(this.selectedNFT);
+                } else {
+                    // Draw empty builder
+                    this.drawEmptyBuilder();
+                }
+            }
+        }
+        
         // Note: Users can now access inventory even after building a fighter
     }
 
@@ -2745,32 +2759,125 @@ class GameState {
                 item.classList.add(`rarity-${nft.rarity.toLowerCase()}`);
             }
             
+            // Create NFT preview using CSS instead of canvas
+            const tokenId = nft.tokenId || 0;
+            const hasHorns = tokenId % 2 === 0;
+            const hasVisor = tokenId % 3 === 0;
+            
             item.innerHTML = `
                 <div class="item-icon">
-                    <canvas id="nft-preview-${index}" width="60" height="60" style="width: 60px; height: 60px;"></canvas>
+                    <div class="nft-preview" style="
+                        width: 60px; 
+                        height: 60px; 
+                        background: #4A90E2; 
+                        border-radius: 8px;
+                        position: relative;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    ">
+                        <!-- Eyes -->
+                        <div style="
+                            position: absolute;
+                            top: 15px;
+                            left: 15px;
+                            width: 8px;
+                            height: 8px;
+                            background: #FF4444;
+                            border-radius: 2px;
+                        "></div>
+                        <div style="
+                            position: absolute;
+                            top: 15px;
+                            right: 15px;
+                            width: 8px;
+                            height: 8px;
+                            background: #FF4444;
+                            border-radius: 2px;
+                        "></div>
+                        
+                        <!-- Antenna -->
+                        <div style="
+                            position: absolute;
+                            top: -5px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 6px;
+                            height: 15px;
+                            background: #FFD700;
+                        "></div>
+                        <div style="
+                            position: absolute;
+                            top: -8px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 4px;
+                            height: 4px;
+                            background: #FF4444;
+                            border-radius: 50%;
+                        "></div>
+                        
+                        <!-- Mouth -->
+                        <div style="
+                            position: absolute;
+                            bottom: 15px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 20px;
+                            height: 4px;
+                            background: #FFFFFF;
+                            border-radius: 2px;
+                        "></div>
+                        
+                        ${hasHorns ? `
+                        <!-- Horns -->
+                        <div style="
+                            position: absolute;
+                            top: 5px;
+                            left: 5px;
+                            width: 4px;
+                            height: 8px;
+                            background: #8B4513;
+                        "></div>
+                        <div style="
+                            position: absolute;
+                            top: 5px;
+                            right: 5px;
+                            width: 4px;
+                            height: 8px;
+                            background: #8B4513;
+                        "></div>
+                        ` : ''}
+                        
+                        ${hasVisor ? `
+                        <!-- Visor -->
+                        <div style="
+                            position: absolute;
+                            top: 12px;
+                            left: 5px;
+                            width: 50px;
+                            height: 4px;
+                            background: #000000;
+                            border-radius: 2px;
+                        "></div>
+                        ` : ''}
+                    </div>
                 </div>
                 <div class="item-name">${nft.name}</div>
                 <div class="item-description">NFT #${nft.tokenId}</div>
                 <div class="item-price">Attack: ${nft.attack} | Defense: ${nft.defense}</div>
             `;
             
-            // Draw NFT preview on the canvas
-            this.drawNFTPreviewOnCanvas(`nft-preview-${index}`, nft);
-            
             item.addEventListener('click', () => {
                 // Remove previous selection
                 document.querySelectorAll('.shop-item.selected').forEach(el => el.classList.remove('selected'));
                 item.classList.add('selected');
                 
-                // Show NFT details
-                this.showModal('NFT Details', `
-                    <strong>${nft.name}</strong><br>
-                    Token ID: ${nft.tokenId}<br>
-                    Attack: ${nft.attack}<br>
-                    Defense: ${nft.defense}<br>
-                    Health: ${nft.health}<br>
-                    Rarity: ${nft.rarity || 'Common'}
-                `);
+                // Select NFT for builder
+                this.selectNFTForBuilder(nft);
+                
+                // Switch to builder screen
+                this.switchScreen('builder');
             });
             
             nftsGrid.appendChild(item);
