@@ -5,12 +5,12 @@
     box-sizing: border-box;
 }
 
-/* Zoom out everything by 10% */
+/* Zoom out everything by 20% */
 body {
-    transform: scale(0.9);
+    transform: scale(0.8);
     transform-origin: top left;
-    width: 111.11%; /* Compensate for the 10% scale reduction */
-    height: 111.11%;
+    width: 125%; /* Compensate for the 20% scale reduction */
+    height: 125%;
 }
 
 /* Loading Screen */
