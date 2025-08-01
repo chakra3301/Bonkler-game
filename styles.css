@@ -1074,7 +1074,7 @@ body {
 }
 
 /* Target accessory images specifically */
-.item-icon img[src*="Store%20accessories/"] {
+.item-icon img[src*="store%20accessories/"] {
     width: 120px !important;
     height: 120px !important;
     background: transparent !important;
@@ -1083,7 +1083,7 @@ body {
 }
 
 /* Remove white background from accessory item containers */
-.shop-item:has(img[src*="Store%20accessories/"]) .item-icon {
+.shop-item:has(img[src*="store%20accessories/"]) .item-icon {
     background: transparent !important;
     border: none !important;
     width: 120px !important;

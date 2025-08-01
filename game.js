@@ -1104,7 +1104,7 @@ class GameState {
             'armor': 'ARMORS',
             'hands': 'store%20hands',
             'offhand': 'OFFHAND%20store',
-            'accessory': 'Store%20accessories'
+            'accessory': 'store%20accessories'
         };
         
         return `${folderMap[item.type] || item.type.toUpperCase()}/${item.asset}`;
@@ -2522,7 +2522,7 @@ class GameState {
             
             shopItem.innerHTML = `
                 <div class="item-icon">
-                    ${item.asset ? `<img src="${item.type === 'offhand' ? 'OFFHAND%20store' : item.type === 'accessory' ? 'Store%20accessories' : item.type === 'pilot' ? 'store%20pilot' : item.type === 'body' ? 'BODIES' : item.type === 'armor' ? 'ARMORS' : item.type === 'hand' ? 'store%20hands' : item.type.toUpperCase()}/${item.asset}" alt="${item.name}" style="${item.type === 'accessory' || item.type === 'body' || item.type === 'armor' || item.type === 'hand' ? '' : 'width: 100%; height: 100%; object-fit: contain;'}">` : item.icon}
+                    ${item.asset ? `<img src="${item.type === 'offhand' ? 'OFFHAND%20store' : item.type === 'accessory' ? 'store%20accessories' : item.type === 'pilot' ? 'store%20pilot' : item.type === 'body' ? 'BODIES' : item.type === 'armor' ? 'ARMORS' : item.type === 'hand' ? 'store%20hands' : item.type.toUpperCase()}/${item.asset}" alt="${item.name}" style="${item.type === 'accessory' || item.type === 'body' || item.type === 'armor' || item.type === 'hand' ? '' : 'width: 100%; height: 100%; object-fit: contain;'}">` : item.icon}
                 </div>
                 <div class="item-name">${item.name}</div>
                 <div class="item-description">${description}</div>
@@ -2706,7 +2706,7 @@ class GameState {
             
             itemElement.innerHTML = `
                 <div class="item-icon">
-                    ${item.asset ? `<img src="${item.type === 'offhand' ? 'OFFHAND%20store' : item.type === 'accessory' ? 'Store%20accessories' : item.type === 'pilot' ? 'store%20pilot' : item.type === 'body' ? 'BODIES' : item.type === 'armor' ? 'ARMORS' : item.type === 'hand' ? 'store%20hands' : item.type.toUpperCase()}/${item.asset}" alt="${item.name}" style="${item.type === 'accessory' || item.type === 'body' || item.type === 'armor' || item.type === 'hand' ? '' : 'width: 100%; height: 100%; object-fit: contain;'}">` : item.icon}
+                    ${item.asset ? `<img src="${item.type === 'offhand' ? 'OFFHAND%20store' : item.type === 'accessory' ? 'store%20accessories' : item.type === 'pilot' ? 'store%20pilot' : item.type === 'body' ? 'BODIES' : item.type === 'armor' ? 'ARMORS' : item.type === 'hand' ? 'store%20hands' : item.type.toUpperCase()}/${item.asset}" alt="${item.name}" style="${item.type === 'accessory' || item.type === 'body' || item.type === 'armor' || item.type === 'hand' ? '' : 'width: 100%; height: 100%; object-fit: contain;'}">` : item.icon}
                 </div>
                 <div class="item-name">${item.name}</div>
                 <div class="item-description">${description}</div>
