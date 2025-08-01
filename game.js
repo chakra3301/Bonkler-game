@@ -506,11 +506,11 @@ class GameState {
 
     initializeSolanaConnection() {
         try {
-            // Use HTTPS endpoints for production (Vercel) and HTTP for localhost
+            // Use more reliable RPC endpoints
             const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             const rpcEndpoint = isLocalhost 
                 ? 'http://api.mainnet-beta.solana.com' 
-                : 'https://api.mainnet-beta.solana.com'; // Use official Solana RPC for production
+                : 'https://rpc.ankr.com/solana'; // Use Ankr RPC for production (more reliable)
             
             this.connection = new solanaWeb3.Connection(
                 rpcEndpoint,
@@ -530,10 +530,10 @@ class GameState {
             'http://solana-api.projectserum.com',
             'http://rpc.ankr.com/solana'
         ] : [
-            'https://api.mainnet-beta.solana.com', // Official Solana RPC first
+            'https://rpc.ankr.com/solana', // Ankr RPC first (more reliable)
             'https://solana.public-rpc.com',
-            'https://rpc.ankr.com/solana',
-            'https://solana-api.projectserum.com'
+            'https://solana-api.projectserum.com',
+            'https://api.mainnet-beta.solana.com' // Official RPC last (often rate-limited)
         ];
 
         for (const endpoint of rpcEndpoints) {
@@ -706,8 +706,23 @@ class GameState {
         } catch (error) {
             console.error('Error loading user NFTs:', error);
             
-            // For any connection error (certificate, network, RPC), fall back to demo mode
-            console.log('Connection error, falling back to demo NFTs');
+            // Try alternative RPC endpoints before falling back to demo mode
+            console.log('Primary RPC failed, trying alternative endpoints...');
+            const rpcSuccess = await this.tryAlternativeRPC();
+            
+            if (rpcSuccess) {
+                // Retry loading NFTs with new connection
+                try {
+                    console.log('Alternative RPC connected, retrying NFT loading...');
+                    await this.loadUserNFTs(publicKey);
+                    return;
+                } catch (retryError) {
+                    console.error('Retry failed:', retryError);
+                }
+            }
+            
+            // If all RPC endpoints fail, fall back to demo mode
+            console.log('All RPC endpoints failed, falling back to demo NFTs');
             await this.loadTestNFTs(publicKey);
             
             const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
