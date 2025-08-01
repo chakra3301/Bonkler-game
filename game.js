@@ -2847,8 +2847,8 @@ class GameState {
                 // Select NFT for builder
                 this.selectNFTForBuilder(nft);
                 
-                // Switch to builder screen
-                this.switchScreen('builder');
+                // Stay on inventory screen and show builder interface
+                this.showBuilderInInventory();
             });
             
             nftsGrid.appendChild(item);
@@ -2931,6 +2931,31 @@ class GameState {
         ctx.fillRect(25, 25, 2, 2); // Left eye
         ctx.fillRect(33, 25, 2, 2); // Right eye
         ctx.fillRect(29, 30, 2, 1); // Mouth
+    }
+
+    showBuilderInInventory() {
+        // Ensure we're on the inventory screen
+        this.switchScreen('inventory');
+        
+        // Update the inventory header to show builder mode
+        const inventoryHeader = document.querySelector('#inventory-screen .screen-header h2');
+        if (inventoryHeader) {
+            inventoryHeader.textContent = 'Customize Your NFT';
+        }
+        
+        // Show the builder canvas and component selection
+        const builderContainer = document.querySelector('.fighter-builder-container');
+        if (builderContainer) {
+            builderContainer.style.display = 'block';
+        }
+        
+        // Update component display for the selected NFT
+        this.updateBuilderComponentDisplay();
+        
+        // Render the selected NFT in the builder
+        if (this.selectedNFT) {
+            this.renderNFTAsBase(this.selectedNFT);
+        }
     }
 
     drawComponentPlaceholder(ctx, componentName, canvasWidth, canvasHeight, scale) {
