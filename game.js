@@ -32,6 +32,16 @@ class GameState {
         this.availableSkills = [];
         this.maxSkills = 6;
         
+        // Solana wallet state
+        this.connection = null;
+        this.wallet = null;
+        this.publicKey = null;
+        this.isConnected = false;
+        
+        // Bonkler NFT collection info
+        this.bonklerCollectionMint = 'YOUR_COLLECTION_MINT_ADDRESS'; // Replace with actual collection mint
+        this.bonklerProgramId = 'YOUR_PROGRAM_ID'; // Replace with actual program ID
+        
         // Initialize shop data
         this.shopData = {
             skills: [
@@ -133,6 +143,10 @@ class GameState {
         // Start loading screen
         this.startLoadingScreen();
         
+        // Initialize Solana connection
+        this.updateLoadingProgress(5, 'Initializing blockchain connection...');
+        this.initializeSolanaConnection();
+        
         // Load game data
         this.updateLoadingProgress(10, 'Loading game data...');
         this.loadGameData();
@@ -202,6 +216,10 @@ class GameState {
             this.purchasedItems = data.purchasedItems || [];
             this.equippedSkills = data.equippedSkills || ['Slash', 'Power-up', 'Defend', 'Dodge'];
             this.availableSkills = data.availableSkills || [];
+            
+            // Load wallet state
+            this.publicKey = data.publicKey || null;
+            this.isConnected = data.isConnected || false;
         }
     }
 
@@ -216,7 +234,9 @@ class GameState {
             userNFTs: this.userNFTs,
             purchasedItems: this.purchasedItems,
             equippedSkills: this.equippedSkills,
-            availableSkills: this.availableSkills
+            availableSkills: this.availableSkills,
+            publicKey: this.publicKey,
+            isConnected: this.isConnected
         };
         localStorage.setItem('bonklerGameData', JSON.stringify(data));
     }
@@ -481,88 +501,225 @@ class GameState {
         return 'common';
     }
 
-    async connectWallet() {
-        // For testing: Simulate wallet connection with your NFTs
-        const testAddress = '0x1234567890123456789012345678901234567890'; // Placeholder
-        
-        console.log('Connected wallet (test mode):', testAddress);
-        
-        // Update wallet button
-        const walletBtn = document.getElementById('wallet-connect-btn');
-        walletBtn.innerHTML = `<i class="fas fa-wallet"></i> ${testAddress.slice(0, 6)}...${testAddress.slice(-4)}`;
-        walletBtn.disabled = true;
-        
-        // Load test NFTs from your collection
-        await this.loadUserNFTs(testAddress);
-        
-        this.showModal('Wallet Connected (Test Mode)', `Connected to test wallet. Loaded your NFT collection!`);
-        
-        // Real wallet connection (uncomment for production)
-        /*
-        if (typeof window.ethereum !== 'undefined') {
-            try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                const account = accounts[0];
-                
-                console.log('Connected wallet:', account);
-                
-                const walletBtn = document.getElementById('wallet-connect-btn');
-                walletBtn.innerHTML = `<i class="fas fa-wallet"></i> ${account.slice(0, 6)}...${account.slice(-4)}`;
-                walletBtn.disabled = true;
-                
-                await this.loadUserNFTs(account);
-                
-                this.showModal('Wallet Connected', `Successfully connected wallet: ${account}`);
-                
-            } catch (error) {
-                console.error('Error connecting wallet:', error);
-                this.showModal('Connection Failed', 'Failed to connect wallet. Please try again.');
-            }
-        } else {
-            this.showModal('No Wallet Found', 'Please install MetaMask or another Web3 wallet to connect.');
+    initializeSolanaConnection() {
+        try {
+            // Initialize Solana connection to mainnet
+            this.connection = new solanaWeb3.Connection(
+                'https://api.mainnet-beta.solana.com',
+                'confirmed'
+            );
+            console.log('Solana connection initialized');
+        } catch (error) {
+            console.error('Failed to initialize Solana connection:', error);
         }
-        */
     }
 
-    async loadUserNFTs(account) {
-        console.log('Loading NFTs for account:', account);
-        
-        // Load a selection of your NFTs for testing
-        // In production, this would query the blockchain for user's owned NFTs
-        const userTokenIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; // Sample of your NFTs
-        
-        let loadedCount = 0;
-        this.userNFTs = []; // Clear existing user NFTs
-        
-        for (const tokenId of userTokenIds) {
-            try {
-                const response = await fetch(`nft-metadata/output-jsons/${tokenId}.json`);
-                if (response.ok) {
-                    const nftData = await response.json();
-                    const gameBonkler = this.convertNFTToGameFormat(nftData, tokenId);
-                    gameBonkler.isUserNFT = true;
-                    gameBonkler.owner = account; // Mark as owned by this wallet
-                    this.userNFTs.push(gameBonkler); // Add to user NFTs array only
-                    loadedCount++;
-                }
-            } catch (error) {
-                console.warn(`Failed to load user NFT ${tokenId}:`, error);
+    async connectWallet() {
+        try {
+            // Check if Phantom wallet is available
+            if (!window.solana || !window.solana.isPhantom) {
+                this.showModal('Phantom Wallet Required', 
+                    'Please install Phantom wallet from <a href="https://phantom.app" target="_blank">phantom.app</a> to connect.');
+                return;
             }
+
+            // Connect to Phantom wallet
+            const response = await window.solana.connect();
+            this.publicKey = response.publicKey.toString();
+            this.wallet = window.solana;
+            this.isConnected = true;
+
+            console.log('Connected to Phantom wallet:', this.publicKey);
+
+            // Update wallet button
+            const walletBtn = document.getElementById('wallet-connect-btn');
+            walletBtn.innerHTML = `<i class="fas fa-wallet"></i> ${this.publicKey.slice(0, 4)}...${this.publicKey.slice(-4)}`;
+            walletBtn.disabled = false;
+
+            // Load user's Bonkler NFTs
+            await this.loadUserNFTs(this.publicKey);
+
+            // Save wallet state
+            this.saveGameData();
+
+            this.showModal('Wallet Connected', `Successfully connected to Phantom wallet: ${this.publicKey}`);
+
+        } catch (error) {
+            console.error('Error connecting wallet:', error);
+            this.showModal('Connection Failed', 'Failed to connect wallet. Please try again.');
         }
+    }
+
+    async loadUserNFTs(publicKey) {
+        console.log('Loading Bonkler NFTs for wallet:', publicKey);
         
-        console.log(`Loaded ${loadedCount} NFTs for wallet ${account}`);
-        
-        // Refresh inventory display only
-        this.populateInventory();
-        
-        // Show success message
-        this.showModal('NFTs Loaded', `Successfully loaded ${loadedCount} of your NFTs!`);
+        if (!this.connection || !publicKey) {
+            console.error('No Solana connection or public key');
+            return;
+        }
+
+        try {
+            // Get all token accounts for the user
+            const tokenAccounts = await this.connection.getParsedTokenAccountsByOwner(
+                new solanaWeb3.PublicKey(publicKey),
+                {
+                    programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
+                }
+            );
+
+            console.log('Found token accounts:', tokenAccounts.value.length);
+
+            let loadedCount = 0;
+            this.userNFTs = []; // Clear existing user NFTs
+
+            // Filter for Bonkler NFTs (you'll need to replace with your actual collection mint)
+            for (const tokenAccount of tokenAccounts.value) {
+                const accountInfo = tokenAccount.account.data.parsed.info;
+                const mint = accountInfo.mint;
+                const balance = accountInfo.tokenAmount.uiAmount;
+
+                // Check if this is a Bonkler NFT (balance > 0 and matches collection)
+                if (balance > 0) {
+                    try {
+                        // Get NFT metadata
+                        const metadata = await this.getNFTMetadata(mint);
+                        
+                        if (metadata && this.isBonklerNFT(metadata)) {
+                            const gameBonkler = this.convertNFTToGameFormat(metadata, mint);
+                            gameBonkler.isUserNFT = true;
+                            gameBonkler.owner = publicKey;
+                            gameBonkler.mint = mint;
+                            this.userNFTs.push(gameBonkler);
+                            loadedCount++;
+                        }
+                    } catch (error) {
+                        console.warn(`Failed to load NFT ${mint}:`, error);
+                    }
+                }
+            }
+
+            console.log(`Loaded ${loadedCount} Bonkler NFTs for wallet ${publicKey}`);
+
+            // Refresh inventory display
+            this.populateInventory();
+            this.populateNFTs(); // Update battle screen too
+
+            if (loadedCount > 0) {
+                this.showModal('NFTs Loaded', `Successfully loaded ${loadedCount} of your Bonkler NFTs!`);
+            } else {
+                this.showModal('No NFTs Found', 'No Bonkler NFTs found in your wallet. Make sure you own some Bonkler NFTs!');
+            }
+
+        } catch (error) {
+            console.error('Error loading user NFTs:', error);
+            this.showModal('Error Loading NFTs', 'Failed to load your NFTs. Please try again.');
+        }
+    }
+
+    async getNFTMetadata(mint) {
+        try {
+            // Get the metadata account for the NFT
+            const metadataPDA = await solanaWeb3.PublicKey.findProgramAddress(
+                [
+                    Buffer.from('metadata'),
+                    new solanaWeb3.PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s').toBuffer(),
+                    new solanaWeb3.PublicKey(mint).toBuffer(),
+                ],
+                new solanaWeb3.PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
+            );
+
+            const accountInfo = await this.connection.getAccountInfo(metadataPDA[0]);
+            
+            if (accountInfo) {
+                // Parse metadata (this is a simplified version)
+                const metadata = this.parseMetadata(accountInfo.data);
+                return metadata;
+            }
+        } catch (error) {
+            console.warn(`Failed to get metadata for ${mint}:`, error);
+        }
+        return null;
+    }
+
+    parseMetadata(data) {
+        // Simplified metadata parsing
+        // In production, you'd want to use a proper metadata parser
+        try {
+            // This is a basic implementation - you might want to use a library like @metaplex-foundation/mpl-token-metadata
+            const name = this.extractString(data, 1);
+            const symbol = this.extractString(data, 1 + name.length + 4);
+            const uri = this.extractString(data, 1 + name.length + 4 + symbol.length + 4);
+            
+            return {
+                name,
+                symbol,
+                uri,
+                mint: data.slice(0, 32).toString('hex')
+            };
+        } catch (error) {
+            console.warn('Failed to parse metadata:', error);
+            return null;
+        }
+    }
+
+    extractString(data, offset) {
+        const length = data.readUInt32LE(offset);
+        return data.slice(offset + 4, offset + 4 + length).toString('utf8');
+    }
+
+    isBonklerNFT(metadata) {
+        // Check if this is a Bonkler NFT based on collection or name
+        return metadata && (
+            metadata.name?.toLowerCase().includes('bonkler') ||
+            metadata.symbol?.toLowerCase().includes('bonkler') ||
+            metadata.collection?.toLowerCase().includes('bonkler')
+        );
+    }
+
+    async disconnectWallet() {
+        try {
+            if (this.wallet && this.isConnected) {
+                await this.wallet.disconnect();
+            }
+            
+            this.publicKey = null;
+            this.wallet = null;
+            this.isConnected = false;
+            this.userNFTs = [];
+            
+            // Update wallet button
+            const walletBtn = document.getElementById('wallet-connect-btn');
+            walletBtn.innerHTML = `<i class="fas fa-wallet"></i> Connect Wallet`;
+            walletBtn.disabled = false;
+            
+            // Refresh displays
+            this.populateInventory();
+            this.populateNFTs();
+            
+            this.saveGameData();
+            
+            this.showModal('Wallet Disconnected', 'Successfully disconnected from wallet.');
+            
+        } catch (error) {
+            console.error('Error disconnecting wallet:', error);
+            this.showModal('Disconnect Failed', 'Failed to disconnect wallet. Please try again.');
+        }
     }
 
     updateUI() {
         document.getElementById('coins').textContent = this.coins;
         document.getElementById('exp').textContent = this.exp;
         document.getElementById('level').textContent = this.level;
+        
+        // Update wallet button state
+        const walletBtn = document.getElementById('wallet-connect-btn');
+        if (this.isConnected && this.publicKey) {
+            walletBtn.innerHTML = `<i class="fas fa-wallet"></i> ${this.publicKey.slice(0, 4)}...${this.publicKey.slice(-4)}`;
+            walletBtn.disabled = false;
+        } else {
+            walletBtn.innerHTML = `<i class="fas fa-wallet"></i> Connect Wallet`;
+            walletBtn.disabled = false;
+        }
     }
 
     addExp(amount) {
@@ -655,9 +812,13 @@ class GameState {
 
 
 
-        // Wallet connect
+        // Wallet connect/disconnect
         document.getElementById('wallet-connect-btn').addEventListener('click', () => {
-            this.connectWallet();
+            if (this.isConnected) {
+                this.disconnectWallet();
+            } else {
+                this.connectWallet();
+            }
         });
 
         // Load more NFTs
