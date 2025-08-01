@@ -506,19 +506,30 @@ class GameState {
 
     initializeSolanaConnection() {
         try {
-            // Initialize Solana connection to mainnet with a more reliable RPC endpoint
+            // Use HTTP endpoint for local development to avoid certificate issues
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const rpcEndpoint = isLocalhost 
+                ? 'http://api.mainnet-beta.solana.com' 
+                : 'https://solana.public-rpc.com';
+            
             this.connection = new solanaWeb3.Connection(
-                'https://solana.public-rpc.com',
+                rpcEndpoint,
                 'confirmed'
             );
-            console.log('Solana connection initialized');
+            console.log('Solana connection initialized with endpoint:', rpcEndpoint);
         } catch (error) {
             console.error('Failed to initialize Solana connection:', error);
         }
     }
 
     async tryAlternativeRPC() {
-        const rpcEndpoints = [
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        const rpcEndpoints = isLocalhost ? [
+            'http://api.mainnet-beta.solana.com',
+            'http://solana-api.projectserum.com',
+            'http://rpc.ankr.com/solana'
+        ] : [
             'https://solana.public-rpc.com',
             'https://rpc.ankr.com/solana',
             'https://solana-api.projectserum.com',
@@ -572,8 +583,13 @@ class GameState {
                             // Update wallet button
                             this.updateWalletButton();
                             
-                            // Load user's Bonkler NFTs
-                            await this.loadUserNFTs(this.publicKey);
+                            // Try to load NFTs, but don't fail if RPC is down
+                            try {
+                                await this.loadUserNFTs(this.publicKey);
+                            } catch (nftError) {
+                                console.log('NFT loading failed, using demo mode:', nftError);
+                                await this.loadTestNFTs(this.publicKey);
+                            }
                             
                             // Save wallet state
                             this.saveGameData();
@@ -599,8 +615,13 @@ class GameState {
                 // Update wallet button
                 this.updateWalletButton();
 
-                // Load user's Bonkler NFTs
-                await this.loadUserNFTs(this.publicKey);
+                // Try to load NFTs, but don't fail if RPC is down
+                try {
+                    await this.loadUserNFTs(this.publicKey);
+                } catch (nftError) {
+                    console.log('NFT loading failed, using demo mode:', nftError);
+                    await this.loadTestNFTs(this.publicKey);
+                }
 
                 // Save wallet state
                 this.saveGameData();
@@ -695,31 +716,10 @@ class GameState {
         } catch (error) {
             console.error('Error loading user NFTs:', error);
             
-            // If RPC error, try alternative endpoints
-            if (error.message && (error.message.includes('403') || error.message.includes('429') || error.message.includes('Access forbidden'))) {
-                console.log('RPC endpoint blocked, trying alternative endpoints');
-                const rpcSuccess = await this.tryAlternativeRPC();
-                
-                if (rpcSuccess) {
-                    // Retry loading NFTs with new connection
-                    try {
-                        await this.loadUserNFTs(publicKey);
-                        return;
-                    } catch (retryError) {
-                        console.error('Retry failed:', retryError);
-                    }
-                }
-                
-                // If all RPC endpoints fail, load test NFTs
-                console.log('All RPC endpoints failed, loading test NFTs');
-                await this.loadTestNFTs(publicKey);
-                this.showModal('Demo Mode', 'Blockchain access limited. Loaded demo NFTs for testing. In production, you would see your actual NFTs.');
-            } else {
-                // For any other error, also fall back to test NFTs
-                console.log('NFT loading error, falling back to test NFTs');
-                await this.loadTestNFTs(publicKey);
-                this.showModal('Demo Mode', 'Using demo NFTs for testing. Connect with real NFTs in production.');
-            }
+            // For any connection error (certificate, network, RPC), fall back to demo mode
+            console.log('Connection error, falling back to demo NFTs');
+            await this.loadTestNFTs(publicKey);
+            this.showModal('Demo Mode', 'Connection issues detected. Using demo NFTs for testing. In production with proper hosting, you would see your actual NFTs.');
         }
     }
 
