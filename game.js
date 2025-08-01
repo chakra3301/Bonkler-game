@@ -506,11 +506,11 @@ class GameState {
 
     initializeSolanaConnection() {
         try {
-            // Use HTTP endpoint for local development to avoid certificate issues
+            // Use HTTPS endpoints for production (Vercel) and HTTP for localhost
             const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             const rpcEndpoint = isLocalhost 
                 ? 'http://api.mainnet-beta.solana.com' 
-                : 'https://solana.public-rpc.com';
+                : 'https://api.mainnet-beta.solana.com'; // Use official Solana RPC for production
             
             this.connection = new solanaWeb3.Connection(
                 rpcEndpoint,
@@ -530,10 +530,10 @@ class GameState {
             'http://solana-api.projectserum.com',
             'http://rpc.ankr.com/solana'
         ] : [
+            'https://api.mainnet-beta.solana.com', // Official Solana RPC first
             'https://solana.public-rpc.com',
             'https://rpc.ankr.com/solana',
-            'https://solana-api.projectserum.com',
-            'https://api.mainnet-beta.solana.com'
+            'https://solana-api.projectserum.com'
         ];
 
         for (const endpoint of rpcEndpoints) {
@@ -709,7 +709,13 @@ class GameState {
             // For any connection error (certificate, network, RPC), fall back to demo mode
             console.log('Connection error, falling back to demo NFTs');
             await this.loadTestNFTs(publicKey);
-            this.showModal('Demo Mode', 'Connection issues detected. Using demo NFTs for testing. In production with proper hosting, you would see your actual NFTs.');
+            
+            const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+            const message = isProduction 
+                ? 'RPC connection issues detected. Using demo NFTs for testing. Your real NFTs will be available when RPC access is restored.'
+                : 'Connection issues detected. Using demo NFTs for testing. In production with proper hosting, you would see your actual NFTs.';
+            
+            this.showModal('Demo Mode', message);
         }
     }
 
