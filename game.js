@@ -503,9 +503,9 @@ class GameState {
 
     initializeSolanaConnection() {
         try {
-            // Initialize Solana connection to mainnet with a more reliable RPC endpoint
+            // Initialize Solana connection to mainnet with a free RPC endpoint
             this.connection = new solanaWeb3.Connection(
-                'https://solana-mainnet.rpc.extrnode.com',
+                'https://api.mainnet-beta.solana.com',
                 'confirmed'
             );
             console.log('Solana connection initialized');
@@ -516,10 +516,10 @@ class GameState {
 
     async tryAlternativeRPC() {
         const rpcEndpoints = [
-            'https://solana-mainnet.rpc.extrnode.com',
             'https://api.mainnet-beta.solana.com',
             'https://solana-api.projectserum.com',
-            'https://rpc.ankr.com/solana'
+            'https://rpc.ankr.com/solana',
+            'https://solana.public-rpc.com'
         ];
 
         for (const endpoint of rpcEndpoints) {
@@ -541,33 +541,62 @@ class GameState {
 
     async connectWallet() {
         try {
-            // Check if Phantom wallet is available
-            if (!window.solana || !window.solana.isPhantom) {
-                this.showModal('Phantom Wallet Required', 
-                    'Please install Phantom wallet from <a href="https://phantom.app" target="_blank">phantom.app</a> to connect.');
-                return;
+            // Try Wallet Standard first (supports all major wallets)
+            if (navigator.wallets) {
+                try {
+                    const wallets = await navigator.wallets.get();
+                    if (wallets && wallets.length > 0) {
+                        const wallet = wallets[0];
+                        const accounts = await wallet.features['standard:connect'].connect();
+                        
+                        if (accounts && accounts.length > 0) {
+                            this.publicKey = accounts[0].address;
+                            this.wallet = wallet;
+                            this.isConnected = true;
+                            
+                            console.log('Connected via Wallet Standard:', this.publicKey);
+                            
+                            // Update wallet button
+                            this.updateWalletButton();
+                            
+                            // Load user's Bonkler NFTs
+                            await this.loadUserNFTs(this.publicKey);
+                            
+                            // Save wallet state
+                            this.saveGameData();
+                            
+                            this.showModal('Wallet Connected', `Successfully connected to wallet: ${this.publicKey}`);
+                            return;
+                        }
+                    }
+                } catch (walletStandardError) {
+                    console.log('Wallet Standard failed, trying fallback:', walletStandardError);
+                }
             }
 
-            // Connect to Phantom wallet
-            const response = await window.solana.connect();
-            this.publicKey = response.publicKey.toString();
-            this.wallet = window.solana;
-            this.isConnected = true;
+            // Fallback to Phantom wallet
+            if (window.solana && window.solana.isPhantom) {
+                const response = await window.solana.connect();
+                this.publicKey = response.publicKey.toString();
+                this.wallet = window.solana;
+                this.isConnected = true;
 
-            console.log('Connected to Phantom wallet:', this.publicKey);
+                console.log('Connected to Phantom wallet:', this.publicKey);
 
-            // Update wallet button
-            const walletBtn = document.getElementById('wallet-connect-btn');
-            walletBtn.innerHTML = `<i class="fas fa-wallet"></i> ${this.publicKey.slice(0, 4)}...${this.publicKey.slice(-4)}`;
-            walletBtn.disabled = false;
+                // Update wallet button
+                this.updateWalletButton();
 
-            // Load user's Bonkler NFTs
-            await this.loadUserNFTs(this.publicKey);
+                // Load user's Bonkler NFTs
+                await this.loadUserNFTs(this.publicKey);
 
-            // Save wallet state
-            this.saveGameData();
+                // Save wallet state
+                this.saveGameData();
 
-            this.showModal('Wallet Connected', `Successfully connected to Phantom wallet: ${this.publicKey}`);
+                this.showModal('Wallet Connected', `Successfully connected to Phantom wallet: ${this.publicKey}`);
+            } else {
+                this.showModal('Wallet Required', 
+                    'Please install a Solana wallet extension (like Phantom, Solflare, or Backpack) to connect.');
+            }
 
         } catch (error) {
             console.error('Error connecting wallet:', error);
@@ -817,12 +846,7 @@ class GameState {
         }
     }
 
-    updateUI() {
-        document.getElementById('coins').textContent = this.coins;
-        document.getElementById('exp').textContent = this.exp;
-        document.getElementById('level').textContent = this.level;
-        
-        // Update wallet button state
+    updateWalletButton() {
         const walletBtn = document.getElementById('wallet-connect-btn');
         if (this.isConnected && this.publicKey) {
             walletBtn.innerHTML = `<i class="fas fa-wallet"></i> ${this.publicKey.slice(0, 4)}...${this.publicKey.slice(-4)}`;
@@ -831,6 +855,15 @@ class GameState {
             walletBtn.innerHTML = `<i class="fas fa-wallet"></i> Connect Wallet`;
             walletBtn.disabled = false;
         }
+    }
+
+    updateUI() {
+        document.getElementById('coins').textContent = this.coins;
+        document.getElementById('exp').textContent = this.exp;
+        document.getElementById('level').textContent = this.level;
+        
+        // Update wallet button state
+        this.updateWalletButton();
     }
 
     addExp(amount) {
