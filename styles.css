@@ -5,6 +5,14 @@
     box-sizing: border-box;
 }
 
+/* Zoom out everything by 10% */
+body {
+    transform: scale(0.9);
+    transform-origin: top left;
+    width: 111.11%; /* Compensate for the 10% scale reduction */
+    height: 111.11%;
+}
+
 /* Loading Screen */
 .loading-screen {
     position: fixed;

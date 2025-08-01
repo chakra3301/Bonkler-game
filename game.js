@@ -216,22 +216,22 @@ class GameState {
             // Only load progress if user has a connected wallet
             if (data.publicKey && data.isConnected) {
                 console.log('Loading saved progress for wallet:', data.publicKey);
-                this.coins = data.coins || 1000;
-                this.exp = data.exp || 0;
-                this.level = data.level || 1;
-                this.nfts = data.nfts || [];
-                this.fighterBuilt = data.fighterBuilt || false;
-                this.currentFighter = data.currentFighter || {
-                    pilot: null,
-                    body: null,
-                    head: null,
-                    armor: null,
-                    hands: null,
-                    offhand: null,
-                    accessory: null
-                };
-                this.userNFTs = data.userNFTs || [];
-                this.purchasedItems = data.purchasedItems || [];
+            this.coins = data.coins || 1000;
+            this.exp = data.exp || 0;
+            this.level = data.level || 1;
+            this.nfts = data.nfts || [];
+            this.fighterBuilt = data.fighterBuilt || false;
+            this.currentFighter = data.currentFighter || {
+                pilot: null,
+                body: null,
+                head: null,
+                armor: null,
+                hands: null,
+                offhand: null,
+                accessory: null
+            };
+            this.userNFTs = data.userNFTs || [];
+            this.purchasedItems = data.purchasedItems || [];
                 this.equippedSkills = data.equippedSkills || ['Slash', 'Power-up', 'Defend', 'Dodge'];
                 this.availableSkills = data.availableSkills || [];
                 
@@ -637,8 +637,8 @@ class GameState {
                             this.isConnected = true;
                             
                             console.log('Connected via Wallet Standard:', this.publicKey);
-                            
-                            // Update wallet button
+        
+        // Update wallet button
                             this.updateWalletButton();
                             
                             // Try to load NFTs, but don't fail if RPC is down
@@ -689,11 +689,11 @@ class GameState {
                 this.showModal('Wallet Required', 
                     'Please install a Solana wallet extension (like Phantom, Solflare, or Backpack) to connect.');
             }
-
-        } catch (error) {
-            console.error('Error connecting wallet:', error);
-            this.showModal('Connection Failed', 'Failed to connect wallet. Please try again.');
-        }
+                
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                this.showModal('Connection Failed', 'Failed to connect wallet. Please try again.');
+            }
     }
 
         async loadUserNFTs(publicKey) {
@@ -763,7 +763,7 @@ class GameState {
             console.log(`✅ Found ${bonklerNFTs.length} Bonkler NFTs`);
 
             // Convert to game format
-            this.userNFTs = []; // Clear existing user NFTs
+        this.userNFTs = []; // Clear existing user NFTs
             let loadedCount = 0;
 
             for (const nft of bonklerNFTs) {
@@ -782,7 +782,7 @@ class GameState {
                     if (nftNumber) {
                         try {
                             const response = await fetch(`nft-metadata/output-jsons/${nftNumber}.json`);
-                            if (response.ok) {
+                if (response.ok) {
                                 metadata = await response.json();
                                 console.log(`✅ Loaded metadata for NFT #${nftNumber}:`, metadata);
                             } else {
@@ -849,7 +849,7 @@ class GameState {
                 this.showModal('Test Mode', 'No Bonkler NFTs found in your wallet. Loaded test NFTs for demonstration.');
             }
 
-        } catch (error) {
+            } catch (error) {
             console.error('❌ Error loading user NFTs:', error);
             
             // Fall back to demo NFTs
@@ -1201,7 +1201,7 @@ class GameState {
             if (this.isConnected) {
                 this.disconnectWallet();
             } else {
-                this.connectWallet();
+            this.connectWallet();
             }
         });
 
@@ -1628,8 +1628,8 @@ class GameState {
                 const category = categoryMap[traitType];
                 if (category) {
                     // Find the corresponding asset in our component assets
-                    const assets = this.componentAssets[category] || [];
-                    
+            const assets = this.componentAssets[category] || [];
+            
                     // Try to find asset by name (exact match)
                     let asset = assets.find(a => a.name === value);
                     
@@ -1767,7 +1767,7 @@ class GameState {
                     console.log(`Mapping ${traitType} to ${category}`);
                     
                     // Find the corresponding asset in our component assets
-                    const assets = this.componentAssets[category] || [];
+            const assets = this.componentAssets[category] || [];
                     console.log(`Available assets for ${category}:`, assets.map(a => a.name));
                     
                     // Try to find asset by name (exact match)
@@ -3862,7 +3862,7 @@ class GameState {
                 this.renderFighterPreview(previewCtx, nft.components || {});
                 
                 nftCard.addEventListener('click', () => {
-                    // Remove previous selection
+                // Remove previous selection
                     document.querySelectorAll('.nft-card.selected').forEach(card => {
                         card.classList.remove('selected');
                     });
@@ -4443,7 +4443,7 @@ class GameState {
     populateLeaderboard(tab = 'global') {
         const leaderboardList = document.getElementById('leaderboard-list');
         leaderboardList.innerHTML = '';
-        
+
         if (this.leaderboardData.length === 0) {
             leaderboardList.innerHTML = '<div class="leaderboard-empty">No players found. Be the first to battle and get on the leaderboard!</div>';
             return;
