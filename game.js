@@ -506,22 +506,23 @@ class GameState {
 
     initializeSolanaConnection() {
         try {
-            // Use the most reliable public RPC endpoint
-            const rpcEndpoint = 'https://api.mainnet-beta.solana.com';
+            // Use Helius RPC endpoint with API key for reliable access
+            const rpcEndpoint = 'https://mainnet.helius-rpc.com/?api-key=681f390e-8fce-4246-85f7-1e515cd5894c';
             
             this.connection = new solanaWeb3.Connection(
                 rpcEndpoint,
                 'confirmed'
             );
-            console.log('Solana connection initialized with endpoint:', rpcEndpoint);
+            console.log('Solana connection initialized with Helius RPC endpoint');
         } catch (error) {
             console.error('Failed to initialize Solana connection:', error);
         }
     }
 
     async tryAlternativeRPC() {
-        // Use a curated list of working public RPC endpoints
+        // Use Helius RPC as primary fallback, then public endpoints
         const rpcEndpoints = [
+            'https://mainnet.helius-rpc.com/?api-key=681f390e-8fce-4246-85f7-1e515cd5894c',
             'https://api.mainnet-beta.solana.com',
             'https://solana-api.projectserum.com'
         ];
@@ -696,52 +697,31 @@ class GameState {
         } catch (error) {
             console.error('Error loading user NFTs:', error);
             
-            // Check if this is a rate limit or API key error
-            const isRateLimitError = error.message && (
-                error.message.includes('403') || 
-                error.message.includes('API key') || 
-                error.message.includes('rate limit') ||
-                error.message.includes('Access forbidden')
-            );
+            // Try alternative RPC endpoints (including Helius) before falling back to demo mode
+            console.log('Primary RPC failed, trying alternative endpoints...');
+            const rpcSuccess = await this.tryAlternativeRPC();
             
-            if (isRateLimitError) {
-                // Skip RPC retry for rate limit errors and go straight to demo mode
-                console.log('Rate limit detected, skipping RPC retry and using demo mode');
-                await this.loadTestNFTs(publicKey);
-                
-                const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-                const message = isProduction 
-                    ? 'Public RPC endpoints are currently rate-limited. Using demo NFTs for testing. Your real NFTs will be available when RPC access is restored.'
-                    : 'RPC rate limits detected. Using demo NFTs for testing. In production with proper hosting, you would see your actual NFTs.';
-                
-                this.showModal('Demo Mode', message);
-            } else {
-                // Try alternative RPC endpoints for other types of errors
-                console.log('Primary RPC failed, trying alternative endpoints...');
-                const rpcSuccess = await this.tryAlternativeRPC();
-                
-                if (rpcSuccess) {
-                    // Retry loading NFTs with new connection
-                    try {
-                        console.log('Alternative RPC connected, retrying NFT loading...');
-                        await this.loadUserNFTs(publicKey);
-                        return;
-                    } catch (retryError) {
-                        console.error('Retry failed:', retryError);
-                    }
+            if (rpcSuccess) {
+                // Retry loading NFTs with new connection
+                try {
+                    console.log('Alternative RPC connected, retrying NFT loading...');
+                    await this.loadUserNFTs(publicKey);
+                    return;
+                } catch (retryError) {
+                    console.error('Retry failed:', retryError);
                 }
-                
-                // If all RPC endpoints fail, fall back to demo mode
-                console.log('All RPC endpoints failed, falling back to demo NFTs');
-                await this.loadTestNFTs(publicKey);
-                
-                const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-                const message = isProduction 
-                    ? 'RPC connection issues detected. Using demo NFTs for testing. Your real NFTs will be available when RPC access is restored.'
-                    : 'Connection issues detected. Using demo NFTs for testing. In production with proper hosting, you would see your actual NFTs.';
-                
-                this.showModal('Demo Mode', message);
             }
+            
+            // If all RPC endpoints fail, fall back to demo mode
+            console.log('All RPC endpoints failed, falling back to demo NFTs');
+            await this.loadTestNFTs(publicKey);
+            
+            const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+            const message = isProduction 
+                ? 'RPC connection issues detected. Using demo NFTs for testing. Your real NFTs will be available when RPC access is restored.'
+                : 'Connection issues detected. Using demo NFTs for testing. In production with proper hosting, you would see your actual NFTs.';
+            
+            this.showModal('Demo Mode', message);
         }
     }
 
