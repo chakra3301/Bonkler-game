@@ -2262,19 +2262,19 @@ class GameState {
             return;
         }
         
-        // Create the customized fighter
-        const customizedNFT = {
-            ...this.selectedNFT,
-            customized: true,
-            customComponents: { ...this.builderComponents },
-            customName: `${this.selectedNFT.name} (Customized)`
-        };
+        // Save the customized components directly to the selected NFT
+        this.selectedNFT.customized = true;
+        this.selectedNFT.customComponents = { ...this.builderComponents };
+        this.selectedNFT.customName = `${this.selectedNFT.name} (Customized)`;
         
-        // Add to user's customized NFTs
-        if (!this.customizedNFTs) {
-            this.customizedNFTs = [];
+        // Update the NFT's components for battle
+        this.selectedNFT.components = { ...this.builderComponents };
+        
+        // Update the NFT in the userNFTs array
+        const nftIndex = this.userNFTs.findIndex(nft => nft.id === this.selectedNFT.id);
+        if (nftIndex !== -1) {
+            this.userNFTs[nftIndex] = { ...this.selectedNFT };
         }
-        this.customizedNFTs.push(customizedNFT);
         
         // Save and update inventory
         this.saveGameData();
@@ -2480,6 +2480,27 @@ class GameState {
         });
         document.querySelector(`[data-nft-id="${nft.id}"]`).classList.add('selected');
 
+        // Load customized components if they exist
+        if (nft.components) {
+            console.log('Loading customized components for battle:', nft.components);
+            
+            // Ensure all component images are loaded
+            Object.entries(nft.components).forEach(([layer, component]) => {
+                if (component && component.path && !component.image) {
+                    console.log(`Loading image for ${layer} component:`, component.name);
+                    const image = new Image();
+                    image.onload = () => {
+                        console.log(`Image loaded for ${layer} component:`, component.name);
+                        component.image = image;
+                    };
+                    image.onerror = (error) => {
+                        console.error(`Failed to load image for ${layer} component:`, component.name, error);
+                    };
+                    image.src = component.path;
+                }
+            });
+        }
+
         // Start battle if NFT is selected
         this.startBattle();
     }
@@ -2509,6 +2530,31 @@ class GameState {
             maxHealth: this.selectedNFT.maxHealth,
             components: this.selectedNFT.components || {}
         };
+        
+        // Apply customized components if they exist
+        if (this.selectedNFT.components) {
+            console.log('Using customized components for battle:', this.selectedNFT.components);
+            
+            // Calculate additional stats from components
+            let additionalAttack = 0;
+            let additionalDefense = 0;
+            
+            Object.values(this.selectedNFT.components).forEach(component => {
+                if (component && component.attack) {
+                    additionalAttack += component.attack;
+                }
+                if (component && component.defense) {
+                    additionalDefense += component.defense;
+                }
+            });
+            
+            // Apply component bonuses
+            this.playerFighter.attack += additionalAttack;
+            this.playerFighter.defense += additionalDefense;
+            
+            console.log(`Applied component bonuses: +${additionalAttack} ATK, +${additionalDefense} DEF`);
+            console.log('Final player fighter stats:', this.playerFighter);
+        }
         
         console.log('Player fighter created:', this.playerFighter);
         console.log('Player fighter components:', this.playerFighter.components);
@@ -2579,15 +2625,22 @@ class GameState {
             return;
         }
 
+        console.log(`Rendering ${isEnemy ? 'enemy' : 'player'} fighter:`, fighter.name);
+        console.log('Fighter components:', fighter.components);
+
         // Clear area for this fighter
         this.battleCtx.clearRect(x - 50, y - 100, 100, 200);
 
         // Render layers in order: body → armor → hands → offhand → head → pilot → accessories
         const layerOrder = ['body', 'armor', 'hands', 'offhand', 'head', 'pilot', 'accessory'];
+        let renderedComponents = 0;
         
         layerOrder.forEach(layer => {
             const component = fighter.components[layer];
+            console.log(`Checking ${layer} component:`, component);
+            
             if (component && component.image && component.image.complete && component.image.naturalWidth > 0) {
+                console.log(`Rendering ${layer} component:`, component.name);
                 const scaledWidth = component.image.width * scale;
                 const scaledHeight = component.image.height * scale;
                 const drawX = x - scaledWidth / 2;
@@ -2603,8 +2656,13 @@ class GameState {
                     // Enemy fighter stays as is
                     this.battleCtx.drawImage(component.image, drawX, drawY, scaledWidth, scaledHeight);
                 }
+                renderedComponents++;
+            } else if (component) {
+                console.log(`Component ${layer} has no valid image:`, component);
             }
         });
+        
+        console.log(`Rendered ${renderedComponents} components for ${isEnemy ? 'enemy' : 'player'} fighter`);
     }
 
     animateAttack(attacker, defender, isPlayerAttacking) {
@@ -4145,6 +4203,28 @@ class GameState {
                 attack: item.attack || 0,
                 defense: item.defense || 0
             };
+            
+            // Immediately save the equipped component to the selected NFT
+            if (this.selectedNFT) {
+                if (!this.selectedNFT.components) {
+                    this.selectedNFT.components = {};
+                }
+                this.selectedNFT.components[category] = {
+                    name: item.name,
+                    path: item.path,
+                    image: image,
+                    attack: item.attack || 0,
+                    defense: item.defense || 0
+                };
+                
+                // Update the NFT in the userNFTs array
+                const nftIndex = this.userNFTs.findIndex(nft => nft.id === this.selectedNFT.id);
+                if (nftIndex !== -1) {
+                    this.userNFTs[nftIndex] = { ...this.selectedNFT };
+                }
+                
+                console.log(`Saved ${item.name} to NFT ${this.selectedNFT.name} components:`, this.selectedNFT.components);
+            }
             
             // Test: Draw a simple rectangle to verify canvas is working
             if (this.ctx) {
