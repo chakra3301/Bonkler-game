@@ -232,6 +232,16 @@ class GameState {
             };
             this.userNFTs = data.userNFTs || [];
             this.purchasedItems = data.purchasedItems || [];
+            
+            // Debug: Check if customized components are loaded
+            if (this.userNFTs.length > 0) {
+                console.log('Loaded userNFTs from localStorage:', this.userNFTs.length, 'NFTs');
+                this.userNFTs.forEach((nft, index) => {
+                    if (nft.components && Object.keys(nft.components).length > 0) {
+                        console.log(`NFT ${index} (${nft.name}) has customized components:`, nft.components);
+                    }
+                });
+            }
                 this.equippedSkills = data.equippedSkills || ['Slash', 'Power-up', 'Defend', 'Dodge'];
                 this.availableSkills = data.availableSkills || [];
                 
@@ -318,6 +328,17 @@ class GameState {
             publicKey: this.publicKey,
             isConnected: this.isConnected
         };
+        
+        // Debug: Check what's being saved
+        if (this.userNFTs.length > 0) {
+            console.log('Saving userNFTs to localStorage:', this.userNFTs.length, 'NFTs');
+            this.userNFTs.forEach((nft, index) => {
+                if (nft.components && Object.keys(nft.components).length > 0) {
+                    console.log(`NFT ${index} (${nft.name}) has customized components being saved:`, nft.components);
+                }
+            });
+        }
+        
         localStorage.setItem('bonklerGameData', JSON.stringify(data));
     }
 
@@ -816,6 +837,22 @@ class GameState {
                     if (existingNFT && existingNFT.components && Object.keys(existingNFT.components).length > 0) {
                         console.log(`Preserving customized components for ${gameBonkler.name}:`, existingNFT.components);
                         gameBonkler.components = { ...existingNFT.components };
+                        
+                        // Ensure component images are loaded
+                        Object.entries(gameBonkler.components).forEach(([layer, component]) => {
+                            if (component && component.path && !component.image) {
+                                console.log(`Loading preserved image for ${layer} component:`, component.name);
+                                const image = new Image();
+                                image.onload = () => {
+                                    console.log(`Preserved image loaded for ${layer} component:`, component.name);
+                                    component.image = image;
+                                };
+                                image.onerror = (error) => {
+                                    console.error(`Failed to load preserved image for ${layer} component:`, component.name, error);
+                                };
+                                image.src = component.path;
+                            }
+                        });
                     }
                     
                     // Build components from metadata attributes only if no customized components exist
@@ -2590,6 +2627,10 @@ class GameState {
             
             console.log(`Applied component bonuses: +${additionalAttack} ATK, +${additionalDefense} DEF`);
             console.log('Final player fighter stats:', this.playerFighter);
+            
+            // Copy components to player fighter for rendering
+            this.playerFighter.components = { ...this.selectedNFT.components };
+            console.log('Copied components to player fighter:', this.playerFighter.components);
         }
         
         console.log('Player fighter created:', this.playerFighter);
