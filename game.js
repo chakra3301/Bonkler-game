@@ -2693,15 +2693,25 @@ class GameState {
         this.enemyFighter = this.createRandomEnemy();
         
         // Create player fighter from selected NFT
+        console.log('Selected NFT for battle:', this.selectedNFT);
+        console.log('Selected NFT health:', this.selectedNFT.health);
+        console.log('Selected NFT maxHealth:', this.selectedNFT.maxHealth);
+        
+        // Set default health if not defined
+        const defaultHealth = 400;
+        const defaultMaxHealth = 400;
+        
         this.playerFighter = {
             name: this.selectedNFT.name,
             level: this.selectedNFT.level,
             attack: this.selectedNFT.attack,
             defense: this.selectedNFT.defense,
-            health: this.selectedNFT.health,
-            maxHealth: this.selectedNFT.maxHealth,
+            health: this.selectedNFT.health || defaultHealth,
+            maxHealth: this.selectedNFT.maxHealth || defaultMaxHealth,
             components: this.selectedNFT.components || {}
         };
+        
+        console.log('Player fighter created with health:', this.playerFighter.health, '/', this.playerFighter.maxHealth);
         
         // Apply customized components if they exist
         if (this.selectedNFT.components) {
@@ -3568,7 +3578,9 @@ class GameState {
         } else if (damage > 0) {
             // Enemy attacks
             console.log('Enemy attacks for', damage, 'damage');
+            console.log('Player health before damage:', this.currentBattle.player.health);
             this.currentBattle.player.health = Math.max(0, this.currentBattle.player.health - damage);
+            console.log('Player health after damage:', this.currentBattle.player.health);
             this.addBattleLogEntry(`You take ${damage} damage!`, 'damage');
             
             // Animate enemy attack based on action type
@@ -3586,6 +3598,10 @@ class GameState {
         
         // Check for player death
         console.log('Player health after enemy action:', this.currentBattle.player.health);
+        console.log('Player maxHealth:', this.currentBattle.player.maxHealth);
+        console.log('Player health type:', typeof this.currentBattle.player.health);
+        console.log('Player maxHealth type:', typeof this.currentBattle.player.maxHealth);
+        
         if (this.currentBattle.player.health <= 0) {
             // Player dies
             console.log('Player dies!');
