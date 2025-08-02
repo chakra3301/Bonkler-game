@@ -1587,10 +1587,34 @@ class GameState {
             builderHeader.textContent = `Customize: ${nft.name}`;
         }
         
-        // Build components from NFT metadata
-        const nftComponents = this.buildComponentsFromNFTMetadata(nft);
-        this.builderComponents = nftComponents;
-        console.log('Built components from metadata:', nftComponents);
+        // Check if NFT has customized components first
+        if (nft.components && Object.keys(nft.components).length > 0) {
+            console.log('Using customized components for builder:', nft.components);
+            this.builderComponents = { ...nft.components };
+            
+            // Ensure all component images are loaded
+            Object.entries(this.builderComponents).forEach(([layer, component]) => {
+                if (component && component.path && !component.image) {
+                    console.log(`Loading image for ${layer} component in builder:`, component.name);
+                    const image = new Image();
+                    image.onload = () => {
+                        console.log(`Image loaded for ${layer} component in builder:`, component.name);
+                        component.image = image;
+                        // Re-render after image loads
+                        this.renderNFTAsBase(nft);
+                    };
+                    image.onerror = (error) => {
+                        console.error(`Failed to load image for ${layer} component in builder:`, component.name, error);
+                    };
+                    image.src = component.path;
+                }
+            });
+        } else {
+            // Build components from NFT metadata if no customized components exist
+            const nftComponents = this.buildComponentsFromNFTMetadata(nft);
+            this.builderComponents = nftComponents;
+            console.log('Built components from metadata:', nftComponents);
+        }
         
         // Update component display to show NFT's components
         this.updateBuilderComponentDisplayForNFT(nft);
@@ -4315,6 +4339,38 @@ class GameState {
         
         // Populate purchased items
         this.populatePurchasedItems();
+        
+        // Initialize builder components from the selected NFT
+        if (this.selectedNFT) {
+            // Check if NFT has customized components first
+            if (this.selectedNFT.components && Object.keys(this.selectedNFT.components).length > 0) {
+                console.log('Loading customized components for builder view:', this.selectedNFT.components);
+                this.builderComponents = { ...this.selectedNFT.components };
+                
+                // Ensure all component images are loaded
+                Object.entries(this.builderComponents).forEach(([layer, component]) => {
+                    if (component && component.path && !component.image) {
+                        console.log(`Loading image for ${layer} component in builder view:`, component.name);
+                        const image = new Image();
+                        image.onload = () => {
+                            console.log(`Image loaded for ${layer} component in builder view:`, component.name);
+                            component.image = image;
+                            // Re-render after image loads
+                            this.renderNFTAsBase(this.selectedNFT);
+                        };
+                        image.onerror = (error) => {
+                            console.error(`Failed to load image for ${layer} component in builder view:`, component.name, error);
+                        };
+                        image.src = component.path;
+                    }
+                });
+            } else {
+                // Use original NFT components if no customized ones exist
+                const nftComponents = this.buildComponentsFromNFTMetadata(this.selectedNFT);
+                this.builderComponents = nftComponents;
+                console.log('Using original NFT components for builder view:', nftComponents);
+            }
+        }
         
         // Render the selected NFT in the builder
         if (this.selectedNFT) {
