@@ -1929,9 +1929,8 @@ class GameState {
         console.log('renderNFTAsBase called for:', nft.name);
         console.log('Canvas dimensions:', this.canvas.width, 'x', this.canvas.height);
         
-        // Clear canvas with a light background to see if it's working
-        this.ctx.fillStyle = '#f8f8f8';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        // Clear canvas with transparent background
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Draw actual NFT components using the built components
         this.renderNFTComponentsFromBuilder();
@@ -4250,12 +4249,7 @@ class GameState {
                 console.log(`Saved ${item.name} to NFT ${this.selectedNFT.name} components:`, this.selectedNFT.components);
             }
             
-            // Test: Draw a simple rectangle to verify canvas is working
-            if (this.ctx) {
-                this.ctx.fillStyle = '#ff0000';
-                this.ctx.fillRect(10, 10, 50, 50);
-                console.log('Test rectangle drawn to canvas');
-            }
+
             
             // Re-render the NFT with the new component
             this.renderNFTAsBase(this.selectedNFT);
