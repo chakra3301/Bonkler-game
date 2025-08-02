@@ -692,6 +692,10 @@ class GameState {
                                     
                                     this.populateInventory();
                                     this.populateNFTs();
+                                    
+                                    // Don't call loadUserNFTs if we have saved data
+                                    console.log('🛑 Skipping loadUserNFTs because we have saved data');
+                                    return;
                                 } else {
                                     // Try to load NFTs from blockchain, but don't fail if RPC is down
                                     try {
@@ -757,6 +761,10 @@ class GameState {
                         
                         this.populateInventory();
                         this.populateNFTs();
+                        
+                        // Don't call loadUserNFTs if we have saved data
+                        console.log('🛑 Skipping loadUserNFTs because we have saved data (Phantom)');
+                        return;
                     } else {
                         // Try to load NFTs from blockchain, but don't fail if RPC is down
                         try {
@@ -909,24 +917,26 @@ class GameState {
                     // Check if this NFT had customized components in the previous session
                     const existingNFT = existingUserNFTs.find(existing => existing.id === nft.id);
                     if (existingNFT && existingNFT.components && Object.keys(existingNFT.components).length > 0) {
-                        console.log(`Preserving customized components for ${gameBonkler.name}:`, existingNFT.components);
+                        console.log(`✅ Preserving customized components for ${gameBonkler.name}:`, existingNFT.components);
                         gameBonkler.components = { ...existingNFT.components };
                         
                         // Ensure component images are loaded
                         Object.entries(gameBonkler.components).forEach(([layer, component]) => {
                             if (component && component.path && !component.image) {
-                                console.log(`Loading preserved image for ${layer} component:`, component.name);
+                                console.log(`🖼️ Loading preserved image for ${layer} component:`, component.name);
                                 const image = new Image();
                                 image.onload = () => {
-                                    console.log(`Preserved image loaded for ${layer} component:`, component.name);
+                                    console.log(`✅ Preserved image loaded for ${layer} component:`, component.name);
                                     component.image = image;
                                 };
                                 image.onerror = (error) => {
-                                    console.error(`Failed to load preserved image for ${layer} component:`, component.name, error);
+                                    console.error(`❌ Failed to load preserved image for ${layer} component:`, component.name, error);
                                 };
                                 image.src = component.path;
                             }
                         });
+                    } else {
+                        console.log(`🔄 No customized components found for ${gameBonkler.name}, will build from metadata`);
                     }
                     
                     // Build components from metadata attributes only if no customized components exist
@@ -5032,6 +5042,12 @@ class GameState {
                         this.saveGameData();
                     }
                 }
+            }
+            
+            // Auto-reconnect if we have saved data but no connection
+            if (!this.isConnected && this.publicKey) {
+                console.log('🔍 Auto-reconnecting wallet...');
+                this.connectWallet();
             }
         }, 2000); // Check every 2 seconds
     }
