@@ -983,6 +983,9 @@ class GameState {
             this.saveGameData();
             console.log('✅ Saved updated userNFTs to localStorage');
 
+            // Process NFTs with loaded component assets
+            this.reprocessNFTsWithAssets();
+            
             // Refresh displays
             this.populateInventory();
             this.populateNFTs();
@@ -1937,8 +1940,9 @@ class GameState {
                     console.log(`Mapping ${traitType} to ${category}`);
                     
                     // Find the corresponding asset in our component assets
-            const assets = this.componentAssets[category] || [];
+                    const assets = this.componentAssets[category] || [];
                     console.log(`Available assets for ${category}:`, assets.map(a => a.name));
+                    console.log(`Component assets loaded:`, this.componentAssets ? Object.keys(this.componentAssets) : 'Not loaded');
                     
                     // Try to find asset by name (exact match)
                     let asset = assets.find(a => a.name === value);
