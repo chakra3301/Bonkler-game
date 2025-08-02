@@ -1897,13 +1897,17 @@ class GameState {
     }
 
     renderNFTAsBase(nft) {
-        if (!this.ctx) return;
+        if (!this.ctx) {
+            console.error('Canvas context not available');
+            return;
+        }
         
-        // Clear canvas
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        console.log('renderNFTAsBase called for:', nft.name);
+        console.log('Canvas dimensions:', this.canvas.width, 'x', this.canvas.height);
         
-        // Clear canvas with transparent background
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // Clear canvas with a light background to see if it's working
+        this.ctx.fillStyle = '#f8f8f8';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Draw actual NFT components using the built components
         this.renderNFTComponentsFromBuilder();
@@ -1916,6 +1920,8 @@ class GameState {
         this.ctx.font = '12px Arial';
         this.ctx.fillText(`Attack: ${nft.attack} | Defense: ${nft.defense}`, this.canvas.width / 2, 50);
         this.ctx.fillText('Select components from the right panel to customize', this.canvas.width / 2, 70);
+        
+        console.log('renderNFTAsBase completed');
     }
 
     renderNFTComponents(nft) {
@@ -1979,12 +1985,13 @@ class GameState {
             console.log(`Checking ${layer}:`, component);
             
             if (component && component.image && component.image.complete && component.image.naturalWidth > 0) {
-                console.log(`Rendering ${layer} image:`, component.name);
+                console.log(`Rendering ${layer} image:`, component.name, 'at', component.image.width, 'x', component.image.height);
                 const scaledWidth = component.image.width * scale;
                 const scaledHeight = component.image.height * scale;
                 const drawX = centerX - scaledWidth / 2;
                 const drawY = centerY - scaledHeight / 2;
                 
+                console.log(`Drawing at position:`, drawX, drawY, 'with size:', scaledWidth, 'x', scaledHeight);
                 this.ctx.drawImage(component.image, drawX, drawY, scaledWidth, scaledHeight);
                 renderedComponents++;
             } else if (component && component.name) {
@@ -1994,6 +2001,14 @@ class GameState {
                 renderedComponents++;
             }
         });
+        
+        // If no components were rendered, draw a message
+        if (renderedComponents === 0) {
+            this.ctx.fillStyle = '#666666';
+            this.ctx.font = '16px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('No components equipped', centerX, centerY);
+        }
         
         console.log(`Rendered ${renderedComponents} components from builder`);
     }
@@ -4112,42 +4127,74 @@ class GameState {
         // Update the builder components
         const category = item.type === 'hand' ? 'hands' : item.type;
         
-        // Load the image if it's not already loaded
-        let image = item.image;
-        if (!image && item.path) {
-            image = new Image();
-            image.onload = () => {
-                // Re-render the NFT once the image is loaded
-                this.renderNFTAsBase(this.selectedNFT);
-            };
-            image.src = item.path;
-        }
+        console.log(`Equipping ${item.name} to ${category}`);
+        console.log('Item details:', item);
         
-        // Store the component with the image
-        this.builderComponents[category] = {
-            name: item.name,
-            path: item.path,
-            image: image,
-            attack: item.attack,
-            defense: item.defense
+        // Create a new image and load it properly
+        const image = new Image();
+        image.crossOrigin = 'anonymous'; // Handle CORS if needed
+        
+        image.onload = () => {
+            console.log(`Image loaded successfully for ${item.name}:`, image.width, 'x', image.height);
+            
+            // Store the component with the loaded image
+            this.builderComponents[category] = {
+                name: item.name,
+                path: item.path,
+                image: image,
+                attack: item.attack || 0,
+                defense: item.defense || 0
+            };
+            
+            // Test: Draw a simple rectangle to verify canvas is working
+            if (this.ctx) {
+                this.ctx.fillStyle = '#ff0000';
+                this.ctx.fillRect(10, 10, 50, 50);
+                console.log('Test rectangle drawn to canvas');
+            }
+            
+            // Re-render the NFT with the new component
+            this.renderNFTAsBase(this.selectedNFT);
+            
+            // Update the button text to show it's equipped
+            const equipBtn = document.querySelector(`[data-item="${item.name}"]`);
+            if (equipBtn) {
+                equipBtn.textContent = 'Equipped';
+                equipBtn.disabled = true;
+            }
+            
+            console.log('Builder components after equip:', this.builderComponents);
+            console.log(`Successfully equipped ${item.name} to ${category}`);
         };
         
-        // If image is already loaded, re-render immediately
-        if (image && image.complete && image.naturalWidth > 0) {
+        image.onerror = (error) => {
+            console.error(`Failed to load image for ${item.name}:`, error);
+            console.error('Image path:', item.path);
+            
+            // Still store the component but without image
+            this.builderComponents[category] = {
+                name: item.name,
+                path: item.path,
+                image: null,
+                attack: item.attack || 0,
+                defense: item.defense || 0
+            };
+            
+            // Re-render anyway (will show placeholder)
             this.renderNFTAsBase(this.selectedNFT);
-        }
+            
+            // Update the button text
+            const equipBtn = document.querySelector(`[data-item="${item.name}"]`);
+            if (equipBtn) {
+                equipBtn.textContent = 'Equipped';
+                equipBtn.disabled = true;
+            }
+        };
         
-        // Update the button text to show it's equipped
-        const equipBtn = document.querySelector(`[data-item="${item.name}"]`);
-        if (equipBtn) {
-            equipBtn.textContent = 'Equipped';
-            equipBtn.disabled = true;
-        }
+        // Start loading the image
+        image.src = item.path;
         
-        console.log(`Equipped ${item.name} to ${category}`);
-        console.log('Builder components after equip:', this.builderComponents);
-        console.log('Image loading status:', image ? 'Image exists' : 'No image');
-        console.log('Image path:', item.path);
+        console.log('Starting image load for:', item.path);
     }
     
     showCarouselView() {
