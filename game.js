@@ -3265,9 +3265,16 @@ class GameState {
         if (healthBar) {
             const healthPercentage = (character.health / character.maxHealth) * 100;
             healthBar.style.width = `${healthPercentage}%`;
-            console.log(`Updated ${side} health bar to ${healthPercentage}%`);
+            console.log(`Updated ${side} health bar to ${healthPercentage}% (${character.health}/${character.maxHealth})`);
+            
+            // Also update the health text if it exists
+            const healthText = document.getElementById(`${side}-health-text`);
+            if (healthText) {
+                healthText.textContent = `${character.health}/${character.maxHealth}`;
+            }
+        } else {
+            console.warn(`Health bar element not found: ${side}-health`);
         }
-        // Health bar might not exist if battle arena isn't shown yet - this is normal
     }
 
 
@@ -4577,7 +4584,7 @@ class GameState {
             
             itemElement.innerHTML = `
                 <div class="item-icon">
-                    ${item.asset ? `<img src="${item.type === 'offhand' ? 'OFFHAND%20store' : item.type === 'accessory' ? 'store%20accessories' : item.type === 'pilot' ? 'store%20pilot' : item.type === 'body' ? 'BODIES' : item.type === 'armor' ? 'ARMORS' : item.type === 'hand' ? 'store%20hands' : item.type.toUpperCase()}/${item.asset}" alt="${item.name}" style="${item.type === 'accessory' || item.type === 'body' || item.type === 'armor' || item.type === 'hand' ? '' : 'width: 100%; height: 100%; object-fit: contain;'}">` : item.icon}
+                    ${item.path ? `<img src="${item.path}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;">` : item.icon || '📦'}
                 </div>
                 <div class="item-name">${item.name}</div>
                 <div class="item-description">${description}</div>
