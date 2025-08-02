@@ -2680,6 +2680,9 @@ class GameState {
             return;
         }
 
+        // Switch to battle screen
+        this.switchScreen('battle');
+        
         // Initialize battle canvas
         this.initBattleCanvas();
         
@@ -3262,8 +3265,12 @@ class GameState {
         console.log(`Updating ${side} character display:`, character);
         
         const healthBar = document.getElementById(`${side}-health`);
+        console.log(`Looking for health bar element: ${side}-health`);
+        console.log(`Health bar element found:`, healthBar);
+        
         if (healthBar) {
             const healthPercentage = (character.health / character.maxHealth) * 100;
+            console.log(`Calculated health percentage: ${healthPercentage}%`);
             healthBar.style.width = `${healthPercentage}%`;
             console.log(`Updated ${side} health bar to ${healthPercentage}% (${character.health}/${character.maxHealth})`);
             
@@ -3274,6 +3281,9 @@ class GameState {
             }
         } else {
             console.warn(`Health bar element not found: ${side}-health`);
+            // Let's check what health bar elements actually exist
+            const allHealthElements = document.querySelectorAll('[id*="health"]');
+            console.log('All health-related elements:', allHealthElements);
         }
     }
 
@@ -3586,6 +3596,7 @@ class GameState {
         } else {
             console.log('Switching back to player turn');
             this.currentBattle.turn = 'player';
+            this.enableBattleControls();
         }
     }
 
