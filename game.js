@@ -763,7 +763,9 @@ class GameState {
             console.log(`✅ Found ${bonklerNFTs.length} Bonkler NFTs`);
 
             // Convert to game format
-        this.userNFTs = []; // Clear existing user NFTs
+            // Store existing user NFTs to preserve customized components
+            const existingUserNFTs = this.userNFTs || [];
+            this.userNFTs = []; // Clear existing user NFTs
             let loadedCount = 0;
 
             for (const nft of bonklerNFTs) {
@@ -809,23 +811,34 @@ class GameState {
                         mint: nft.id
                     };
                     
-                    // Build components from metadata attributes
-                    if (metadata && metadata.attributes) {
-                        console.log(`Building components from metadata for NFT #${nftNumber}`);
-                        this.buildComponentsFromAttributes(gameBonkler, metadata.attributes);
+                    // Check if this NFT had customized components in the previous session
+                    const existingNFT = existingUserNFTs.find(existing => existing.id === nft.id);
+                    if (existingNFT && existingNFT.components && Object.keys(existingNFT.components).length > 0) {
+                        console.log(`Preserving customized components for ${gameBonkler.name}:`, existingNFT.components);
+                        gameBonkler.components = { ...existingNFT.components };
+                    }
+                    
+                    // Build components from metadata attributes only if no customized components exist
+                    if (!gameBonkler.components || Object.keys(gameBonkler.components).length === 0) {
+                        if (metadata && metadata.attributes) {
+                            console.log(`Building components from metadata for NFT #${nftNumber}`);
+                            this.buildComponentsFromAttributes(gameBonkler, metadata.attributes);
+                        } else {
+                            console.log('No metadata found, creating fallback components');
+                            gameBonkler.components = {
+                                head: { name: 'BONK', path: 'HEADS/BONK.png', image: null },
+                                body: { name: 'RILAKKUMA', path: 'BODIES/RILAKKUMA.png', image: null },
+                                armor: { name: 'ArmorBronze', path: 'ARMORS/ArmorBronze.png', image: null },
+                                hands: { name: 'GOLDEN-AXE', path: 'HANDS/GOLDEN-AXE.png', image: null },
+                                offhand: { name: 'REMILIA-FILMS', path: 'OFFHAND/REMILIA-FILMS.png', image: null },
+                                pilot: { name: 'KASANE-TETO', path: 'PILOT/KASANE-TETO.png', image: null }
+                            };
+                            
+                            // Try to load the fallback component images
+                            this.loadFallbackComponentImages(gameBonkler.components);
+                        }
                     } else {
-                        console.log('No metadata found, creating fallback components');
-                        gameBonkler.components = {
-                            head: { name: 'BONK', path: 'HEADS/BONK.png', image: null },
-                            body: { name: 'RILAKKUMA', path: 'BODIES/RILAKKUMA.png', image: null },
-                            armor: { name: 'ArmorBronze', path: 'ARMORS/ArmorBronze.png', image: null },
-                            hands: { name: 'GOLDEN-AXE', path: 'HANDS/GOLDEN-AXE.png', image: null },
-                            offhand: { name: 'REMILIA-FILMS', path: 'OFFHAND/REMILIA-FILMS.png', image: null },
-                            pilot: { name: 'KASANE-TETO', path: 'PILOT/KASANE-TETO.png', image: null }
-                        };
-                        
-                        // Try to load the fallback component images
-                        this.loadFallbackComponentImages(gameBonkler.components);
+                        console.log(`Using preserved customized components for ${gameBonkler.name}`);
                     }
                     
                     this.userNFTs.push(gameBonkler);
@@ -4245,6 +4258,9 @@ class GameState {
                 if (nftIndex !== -1) {
                     this.userNFTs[nftIndex] = { ...this.selectedNFT };
                 }
+                
+                // Save to localStorage immediately
+                this.saveGameData();
                 
                 console.log(`Saved ${item.name} to NFT ${this.selectedNFT.name} components:`, this.selectedNFT.components);
             }
