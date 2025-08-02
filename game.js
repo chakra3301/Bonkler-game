@@ -894,7 +894,7 @@ class GameState {
             // Convert to game format
             // Store existing user NFTs to preserve customized components
             const existingUserNFTs = this.userNFTs || [];
-            this.userNFTs = []; // Clear existing user NFTs
+        this.userNFTs = []; // Clear existing user NFTs
             let loadedCount = 0;
 
             for (const nft of bonklerNFTs) {
@@ -4095,57 +4095,63 @@ class GameState {
                 if (fighterIndex >= allFighters.length) break;
                 
                 const fighter = allFighters[fighterIndex];
-                const nftCard = document.createElement('div');
-                nftCard.className = 'nft-card';
-                nftCard.dataset.nftId = nft.id;
-                nftCard.style.flex = '1';
-                nftCard.style.minWidth = '120px';
+                const fighterCard = document.createElement('div');
+                fighterCard.className = 'nft-card';
+                fighterCard.dataset.fighterId = fighter.id;
+                fighterCard.style.flex = '1';
+                fighterCard.style.minWidth = '120px';
                 
-                // Add NFT indicator if it's an NFT
-                const nftBadge = nft.isNFT ? `<div class="nft-badge">NFT</div>` : '';
+                // Add badge based on type
+                const badge = fighter.type === 'nft' ? `<div class="nft-badge">NFT</div>` : `<div class="custom-badge">Custom</div>`;
                 
-                // Create canvas for NFT preview
+                // Create canvas for fighter preview
                 const canvas = document.createElement('canvas');
                 canvas.className = 'fighter-preview';
                 canvas.width = 120;
                 canvas.height = 180;
                 
-                nftCard.innerHTML = `
+                fighterCard.innerHTML = `
                     <div class="nft-avatar custom-fighter">
                         ${canvas.outerHTML}
-                        ${nftBadge}
+                        ${badge}
                     </div>
-                    <div class="nft-name">${nft.name}</div>
-                    <div class="nft-description">${nft.description || ''}</div>
+                    <div class="nft-name">${fighter.name}</div>
+                    <div class="nft-description">${fighter.description || ''}</div>
                     <div class="nft-stats">
-                        <div>Level: ${nft.level}</div>
-                        <div>Attack: ${nft.attack}</div>
-                        <div>Defense: ${nft.defense}</div>
-                        <div>Health: ${nft.health}/${nft.maxHealth}</div>
-                        ${nft.tokenId ? `<div>Token ID: ${nft.tokenId}</div>` : ''}
+                        <div>Level: ${fighter.level}</div>
+                        <div>Attack: ${fighter.attack}</div>
+                        <div>Defense: ${fighter.defense}</div>
+                        <div>Health: ${fighter.health || 100}/${fighter.maxHealth || 100}</div>
+                        ${fighter.tokenId ? `<div>Token ID: ${fighter.tokenId}</div>` : ''}
                     </div>
                 `;
                 
-                // Render NFT preview
-                const previewCanvas = nftCard.querySelector('.fighter-preview');
+                // Render fighter preview
+                const previewCanvas = fighterCard.querySelector('.fighter-preview');
                 const previewCtx = previewCanvas.getContext('2d');
-                this.renderFighterPreview(previewCtx, nft.components || {});
+                this.renderFighterPreview(previewCtx, fighter.components || {});
                 
-                nftCard.addEventListener('click', () => {
+                fighterCard.addEventListener('click', () => {
                 // Remove previous selection
                     document.querySelectorAll('.nft-card.selected').forEach(card => {
                         card.classList.remove('selected');
                     });
-                    nftCard.classList.add('selected');
+                    fighterCard.classList.add('selected');
                     
-                    // Select NFT for builder
-                    this.selectNFTForBuilder(nft);
+                    if (fighter.type === 'nft') {
+                        // Select NFT for builder
+                        this.selectNFTForBuilder(fighter);
+                    } else {
+                        // Select custom Bonkler for battle
+                        this.selectedCustomBonkler = fighter;
+                        this.showModal('Custom Bonkler Selected', `Selected "${fighter.name}" for battle!`);
+                    }
                     
                     // Show builder interface
                     this.showBuilderInInventory();
                 });
                 
-                pageContainer.appendChild(nftCard);
+                pageContainer.appendChild(fighterCard);
             }
             
             carouselTrack.appendChild(pageContainer);
@@ -4317,8 +4323,19 @@ class GameState {
             
             // Get purchased items for this category
             const categoryItems = this.purchasedItems.filter(item => {
-                const itemType = item.type === 'hand' ? 'hands' : item.type;
-                return itemType === category.slice(0, -1); // Remove 's' from end
+                // Map category names to item types
+                const categoryToTypeMap = {
+                    'bodies': 'body',
+                    'armors': 'armor', 
+                    'hands': 'hand',
+                    'offhands': 'offhand',
+                    'heads': 'head',
+                    'pilots': 'pilot',
+                    'accessories': 'accessory'
+                };
+                
+                const expectedType = categoryToTypeMap[category];
+                return item.type === expectedType;
             });
             
             console.log(`Category ${category}:`, categoryItems);
@@ -4382,6 +4399,19 @@ class GameState {
         // Update the builder components
         const category = item.type === 'hand' ? 'hands' : item.type;
         
+        // Map item types to component categories
+        const typeToCategoryMap = {
+            'body': 'body',
+            'armor': 'armor',
+            'hand': 'hands', 
+            'offhand': 'offhand',
+            'head': 'head',
+            'pilot': 'pilot',
+            'accessory': 'accessory'
+        };
+        
+        const componentCategory = typeToCategoryMap[item.type] || item.type;
+        
         console.log(`Equipping ${item.name} to ${category}`);
         console.log('Item details:', item);
         
@@ -4393,7 +4423,7 @@ class GameState {
             console.log(`Image loaded successfully for ${item.name}:`, image.width, 'x', image.height);
             
             // Store the component with the loaded image
-            this.builderComponents[category] = {
+            this.builderComponents[componentCategory] = {
                 name: item.name,
                 path: item.path,
                 image: image,
@@ -4406,7 +4436,7 @@ class GameState {
                 if (!this.selectedNFT.components) {
                     this.selectedNFT.components = {};
                 }
-                this.selectedNFT.components[category] = {
+                this.selectedNFT.components[componentCategory] = {
                     name: item.name,
                     path: item.path,
                     image: image,
