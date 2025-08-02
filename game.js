@@ -4394,10 +4394,14 @@ class GameState {
         
         console.log(`Equipping ${item.name} to ${category}`);
         console.log('Item details:', item);
+        console.log('Item path:', item.path);
+        console.log('Selected NFT:', this.selectedNFT);
         
         // Create a new image and load it properly
         const image = new Image();
         image.crossOrigin = 'anonymous'; // Handle CORS if needed
+        
+        console.log('Attempting to load image from path:', item.path);
         
         image.onload = () => {
             console.log(`Image loaded successfully for ${item.name}:`, image.width, 'x', image.height);
@@ -4410,6 +4414,8 @@ class GameState {
                 attack: item.attack || 0,
                 defense: item.defense || 0
             };
+            
+            console.log(`Stored component in builderComponents[${category}]:`, this.builderComponents[category]);
             
             // Immediately save the equipped component to the selected NFT
             if (this.selectedNFT) {
@@ -4439,6 +4445,7 @@ class GameState {
 
             
             // Re-render the NFT with the new component
+            console.log('Re-rendering NFT with new component');
             this.renderNFTAsBase(this.selectedNFT);
             
             // Update the button text to show it's equipped
