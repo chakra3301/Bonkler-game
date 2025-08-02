@@ -3780,7 +3780,7 @@ class GameState {
                 { name: 'Rei', type: 'pilot', attack: 5, cost: 500, icon: '👤', asset: 'REI.png' },
                 { name: 'Rover', type: 'pilot', attack: 7, cost: 700, icon: '👤', asset: 'ROVER.png' },
                 { name: 'Shakoki Dogu', type: 'pilot', attack: 8, cost: 800, icon: '👤', asset: 'SHAKOKI-DOGU.png' },
-                { name: 'Sn oopy Plush', type: 'pilot', attack: 4, cost: 400, icon: '👤', asset: 'SNOOPY-PLUSH.png' },
+                { name: 'Snoopy Plush', type: 'pilot', attack: 4, cost: 400, icon: '👤', asset: 'SNOOPY-PLUSH.png' },
                 { name: 'Sprite Autograph', type: 'pilot', attack: 3, cost: 300, icon: '👤', asset: 'SPRITE-AUTOGRAPH.png' },
                 { name: 'Stuart', type: 'pilot', attack: 6, cost: 600, icon: '👤', asset: 'STUART.png' },
                 { name: 'Tivo', type: 'pilot', attack: 8, cost: 800, icon: '👤', asset: 'TIVO.png' },
@@ -3920,6 +3920,13 @@ class GameState {
                  { name: 'Beat Happening', type: 'offhand', attack: 3, cost: 240, icon: '🎸', asset: 'BEAT-HAPPENING-store.png' },
                  { name: '48 Laws of Power', type: 'offhand', defense: 6, cost: 450, icon: '📚', asset: '48-LAWS-OF-POWER-store.png' }
              ],
+            heads: [
+                { name: 'Bonk', type: 'head', attack: 5, cost: 300, icon: '👤', asset: 'BONK.png' },
+                { name: 'Evil Bonk', type: 'head', attack: 7, cost: 500, icon: '👤', asset: 'EVIL-BONK.png' },
+                { name: 'Alien Bonk', type: 'head', attack: 8, cost: 600, icon: '👤', asset: 'ALIEN-BONK.png' },
+                { name: 'Spirit', type: 'head', attack: 6, cost: 400, icon: '👤', asset: 'SPIRIT.png' },
+                { name: 'White', type: 'head', attack: 4, cost: 250, icon: '👤', asset: 'WHITE.png' }
+            ],
             accessories: [
                 { name: 'Raver Cap', type: 'accessory', attack: 3, cost: 250, icon: '🎩', asset: 'RAVER-CAP.png' },
                 { name: 'Halo', type: 'accessory', defense: 5, cost: 400, icon: '😇', asset: 'HALO.png' },
@@ -4613,6 +4620,8 @@ class GameState {
                 description = `Body component with +${item.defense} defense`;
             } else if (item.type === 'armor') {
                 description = `Armor component with +${item.defense} defense`;
+            } else if (item.type === 'head') {
+                description = `Head component with +${item.attack} attack`;
             } else if (item.type === 'hand') {
                 description = `Hand component with +${item.attack} attack`;
             } else if (item.type === 'offhand') {
