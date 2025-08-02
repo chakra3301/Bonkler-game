@@ -3999,27 +3999,28 @@ class GameState {
         this.coins -= item.cost;
         
         // Handle different item types
-        if (['pilot', 'body', 'head', 'armor', 'offhand', 'accessory'].includes(item.type)) {
+        if (['pilot', 'body', 'head', 'armor', 'offhand', 'accessory', 'hand'].includes(item.type)) {
             // Add component to available assets for future use
             if (!this.componentAssets) {
                 this.componentAssets = {};
             }
-            if (!this.componentAssets[item.type + 's']) {
-                this.componentAssets[item.type + 's'] = [];
+            const assetKey = item.type === 'hand' ? 'hands' : item.type + 's';
+            if (!this.componentAssets[assetKey]) {
+                this.componentAssets[assetKey] = [];
             }
             
             // Create component asset - convert store asset name to regular asset name
             const regularAssetName = item.asset.replace('-store.png', '.png');
             const componentAsset = {
                 name: item.name,
-                path: `${item.type.toUpperCase()}/${regularAssetName}`,
+                path: `${item.type === 'hand' ? 'HANDS' : item.type.toUpperCase()}/${regularAssetName}`,
                 type: item.type,
                 attack: item.attack || 0,
                 defense: item.defense || 0,
                 cost: item.cost
             };
             
-            this.componentAssets[item.type + 's'].push(componentAsset);
+            this.componentAssets[assetKey].push(componentAsset);
             
             // Add to purchased items inventory
             const purchasedItem = {
