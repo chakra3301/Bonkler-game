@@ -662,12 +662,32 @@ class GameState {
         // Update wallet button
                             this.updateWalletButton();
                             
-                            // Try to load NFTs, but don't fail if RPC is down
-                            try {
-                                await this.loadUserNFTs(this.publicKey);
-                            } catch (nftError) {
-                                console.log('NFT loading failed, using demo mode:', nftError);
-                                await this.loadTestNFTs(this.publicKey);
+                            // Check if we already have saved NFTs for this wallet
+                            const savedData = localStorage.getItem('bonklerGameData');
+                            if (savedData) {
+                                const data = JSON.parse(savedData);
+                                if (data.publicKey === this.publicKey && data.userNFTs && data.userNFTs.length > 0) {
+                                    console.log('Using saved NFTs from localStorage');
+                                    this.userNFTs = data.userNFTs;
+                                    this.populateInventory();
+                                    this.populateNFTs();
+                                } else {
+                                    // Try to load NFTs from blockchain, but don't fail if RPC is down
+                                    try {
+                                        await this.loadUserNFTs(this.publicKey);
+                                    } catch (nftError) {
+                                        console.log('NFT loading failed, using demo mode:', nftError);
+                                        await this.loadTestNFTs(this.publicKey);
+                                    }
+                                }
+                            } else {
+                                // Try to load NFTs from blockchain, but don't fail if RPC is down
+                                try {
+                                    await this.loadUserNFTs(this.publicKey);
+                                } catch (nftError) {
+                                    console.log('NFT loading failed, using demo mode:', nftError);
+                                    await this.loadTestNFTs(this.publicKey);
+                                }
                             }
                             
                             // Save wallet state
@@ -694,12 +714,32 @@ class GameState {
                 // Update wallet button
                 this.updateWalletButton();
 
-                // Try to load NFTs, but don't fail if RPC is down
-                try {
-                    await this.loadUserNFTs(this.publicKey);
-                } catch (nftError) {
-                    console.log('NFT loading failed, using demo mode:', nftError);
-                    await this.loadTestNFTs(this.publicKey);
+                // Check if we already have saved NFTs for this wallet
+                const savedData = localStorage.getItem('bonklerGameData');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    if (data.publicKey === this.publicKey && data.userNFTs && data.userNFTs.length > 0) {
+                        console.log('Using saved NFTs from localStorage');
+                        this.userNFTs = data.userNFTs;
+                        this.populateInventory();
+                        this.populateNFTs();
+                    } else {
+                        // Try to load NFTs from blockchain, but don't fail if RPC is down
+                        try {
+                            await this.loadUserNFTs(this.publicKey);
+                        } catch (nftError) {
+                            console.log('NFT loading failed, using demo mode:', nftError);
+                            await this.loadTestNFTs(this.publicKey);
+                        }
+                    }
+                } else {
+                    // Try to load NFTs from blockchain, but don't fail if RPC is down
+                    try {
+                        await this.loadUserNFTs(this.publicKey);
+                    } catch (nftError) {
+                        console.log('NFT loading failed, using demo mode:', nftError);
+                        await this.loadTestNFTs(this.publicKey);
+                    }
                 }
 
                 // Save wallet state
@@ -886,6 +926,10 @@ class GameState {
             }
 
             console.log(`🎯 Loaded ${loadedCount} Bonkler NFTs for wallet ${publicKey}`);
+
+            // Save the updated userNFTs immediately after loading
+            this.saveGameData();
+            console.log('✅ Saved updated userNFTs to localStorage');
 
             // Refresh displays
             this.populateInventory();
