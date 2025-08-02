@@ -6,10 +6,8 @@ class GameState {
         this.level = 1;
         this.nfts = [];
         this.userNFTs = [];
-        this.customBonklers = []; // New array for custom Bonklers
         this.purchasedItems = [];
         this.selectedNFT = null;
-        this.selectedCustomBonkler = null; // New property for selected custom Bonkler
         this.currentFighter = {};
         this.fighterBuilt = false;
         this.battleMode = 'ai';
@@ -206,6 +204,16 @@ class GameState {
         // Wallet connection monitoring
         this.startWalletMonitoring();
         
+        // Debug: Check if wallet should auto-connect
+        console.log('🔍 Checking if wallet should auto-connect...');
+        console.log('🔍 Current publicKey:', this.publicKey);
+        console.log('🔍 Current isConnected:', this.isConnected);
+        if (this.publicKey && this.isConnected) {
+            console.log('✅ Wallet already connected, skipping auto-connect');
+        } else {
+            console.log('❌ No wallet connected, will need manual connection');
+        }
+        
         // Hide loading screen and show game
         setTimeout(() => {
             this.hideLoadingScreen();
@@ -218,53 +226,60 @@ class GameState {
     }
 
     loadGameData() {
+        console.log('🔄 loadGameData called');
         // Load saved data from localStorage
         const savedData = localStorage.getItem('bonklerGameData');
         if (savedData) {
             const data = JSON.parse(savedData);
+            console.log('📦 Found saved data in localStorage');
             
             // Only load progress if user has a connected wallet
             if (data.publicKey && data.isConnected) {
-                console.log('Loading saved progress for wallet:', data.publicKey);
-            this.coins = data.coins || 1000;
-            this.exp = data.exp || 0;
-            this.level = data.level || 1;
-            this.nfts = data.nfts || [];
-            this.fighterBuilt = data.fighterBuilt || false;
-            this.currentFighter = data.currentFighter || {
-                pilot: null,
-                body: null,
-                head: null,
-                armor: null,
-                hands: null,
-                offhand: null,
-                accessory: null
-            };
-            this.userNFTs = data.userNFTs || [];
-            this.customBonklers = data.customBonklers || []; // Load custom Bonklers
-            this.purchasedItems = data.purchasedItems || [];
-            
-            // Debug: Check if customized components are loaded
-            if (this.userNFTs.length > 0) {
-                console.log('Loaded userNFTs from localStorage:', this.userNFTs.length, 'NFTs');
-                this.userNFTs.forEach((nft, index) => {
-                    if (nft.components && Object.keys(nft.components).length > 0) {
-                        console.log(`NFT ${index} (${nft.name}) has customized components:`, nft.components);
-                    }
-                });
-            }
+                console.log('✅ Loading saved progress for wallet:', data.publicKey);
+                this.coins = data.coins || 1000;
+                this.exp = data.exp || 0;
+                this.level = data.level || 1;
+                this.nfts = data.nfts || [];
+                this.fighterBuilt = data.fighterBuilt || false;
+                this.currentFighter = data.currentFighter || {
+                    pilot: null,
+                    body: null,
+                    head: null,
+                    armor: null,
+                    hands: null,
+                    offhand: null,
+                    accessory: null
+                };
+                this.userNFTs = data.userNFTs || [];
+                this.purchasedItems = data.purchasedItems || [];
+                
+                // Debug: Check if customized components are loaded
+                if (this.userNFTs.length > 0) {
+                    console.log('📋 Loaded userNFTs from localStorage:', this.userNFTs.length, 'NFTs');
+                    this.userNFTs.forEach((nft, index) => {
+                        if (nft.components && Object.keys(nft.components).length > 0) {
+                            console.log(`🎯 NFT ${index} (${nft.name}) has customized components:`, nft.components);
+                        } else {
+                            console.log(`📝 NFT ${index} (${nft.name}) has NO customized components`);
+                        }
+                    });
+                } else {
+                    console.log('❌ No userNFTs found in saved data');
+                }
+                
                 this.equippedSkills = data.equippedSkills || ['Slash', 'Power-up', 'Defend', 'Dodge'];
                 this.availableSkills = data.availableSkills || [];
                 
                 // Load wallet state
                 this.publicKey = data.publicKey;
                 this.isConnected = data.isConnected;
+                console.log('✅ Wallet state loaded - publicKey:', this.publicKey, 'isConnected:', this.isConnected);
             } else {
-                console.log('No connected wallet found, starting fresh');
+                console.log('❌ No connected wallet found, starting fresh');
                 this.resetToFreshStart();
             }
         } else {
-            console.log('No saved data found, starting fresh');
+            console.log('❌ No saved data found, starting fresh');
             this.resetToFreshStart();
         }
     }
@@ -323,28 +338,6 @@ class GameState {
         console.log('All cached data cleared');
         this.showModal('Data Cleared', 'All cached data has been cleared. The game has been reset to a fresh start.');
     }
-    
-    createCustomBonkler(name, components) {
-        const customBonkler = {
-            id: `custom_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            name: name,
-            level: 1,
-            attack: 50,
-            defense: 30,
-            exp: 0,
-            rarity: 'Custom',
-            components: components,
-            isCustomBonkler: true,
-            owner: this.publicKey,
-            createdAt: Date.now()
-        };
-        
-        this.customBonklers.push(customBonkler);
-        this.saveGameData();
-        
-        console.log('✅ Created custom Bonkler:', customBonkler);
-        return customBonkler;
-    }
 
     saveGameData() {
         const data = {
@@ -355,7 +348,6 @@ class GameState {
             fighterBuilt: this.fighterBuilt,
             currentFighter: this.currentFighter,
             userNFTs: this.userNFTs,
-            customBonklers: this.customBonklers, // Save custom Bonklers
             purchasedItems: this.purchasedItems,
             equippedSkills: this.equippedSkills,
             availableSkills: this.availableSkills,
@@ -718,10 +710,6 @@ class GameState {
                                     
                                     this.populateInventory();
                                     this.populateNFTs();
-                                    
-                                    // Don't call loadUserNFTs if we have saved data
-                                    console.log('🛑 Skipping loadUserNFTs because we have saved data');
-                                    return;
                                 } else {
                                     // Try to load NFTs from blockchain, but don't fail if RPC is down
                                     try {
@@ -787,10 +775,6 @@ class GameState {
                         
                         this.populateInventory();
                         this.populateNFTs();
-                        
-                        // Don't call loadUserNFTs if we have saved data
-                        console.log('🛑 Skipping loadUserNFTs because we have saved data (Phantom)');
-                        return;
                     } else {
                         // Try to load NFTs from blockchain, but don't fail if RPC is down
                         try {
@@ -943,26 +927,24 @@ class GameState {
                     // Check if this NFT had customized components in the previous session
                     const existingNFT = existingUserNFTs.find(existing => existing.id === nft.id);
                     if (existingNFT && existingNFT.components && Object.keys(existingNFT.components).length > 0) {
-                        console.log(`✅ Preserving customized components for ${gameBonkler.name}:`, existingNFT.components);
+                        console.log(`Preserving customized components for ${gameBonkler.name}:`, existingNFT.components);
                         gameBonkler.components = { ...existingNFT.components };
                         
                         // Ensure component images are loaded
                         Object.entries(gameBonkler.components).forEach(([layer, component]) => {
                             if (component && component.path && !component.image) {
-                                console.log(`🖼️ Loading preserved image for ${layer} component:`, component.name);
+                                console.log(`Loading preserved image for ${layer} component:`, component.name);
                                 const image = new Image();
                                 image.onload = () => {
-                                    console.log(`✅ Preserved image loaded for ${layer} component:`, component.name);
+                                    console.log(`Preserved image loaded for ${layer} component:`, component.name);
                                     component.image = image;
                                 };
                                 image.onerror = (error) => {
-                                    console.error(`❌ Failed to load preserved image for ${layer} component:`, component.name, error);
+                                    console.error(`Failed to load preserved image for ${layer} component:`, component.name, error);
                                 };
                                 image.src = component.path;
                             }
                         });
-                    } else {
-                        console.log(`🔄 No customized components found for ${gameBonkler.name}, will build from metadata`);
                     }
                     
                     // Build components from metadata attributes only if no customized components exist
@@ -2436,8 +2418,8 @@ class GameState {
 
 
     confirmFighter() {
-        if (!this.selectedNFT && !this.selectedCustomBonkler) {
-            this.showModal('No Fighter Selected', 'Please select an NFT or create a custom fighter first.');
+        if (!this.selectedNFT) {
+            this.showModal('No NFT Selected', 'Please select an NFT from your inventory to customize.');
             return;
         }
         
@@ -2445,31 +2427,32 @@ class GameState {
         const selectedComponents = Object.values(this.builderComponents).filter(comp => comp !== null);
         
         if (selectedComponents.length === 0) {
-            this.showModal('No Components Selected', 'Please select at least one component to customize your fighter.');
+            this.showModal('No Components Selected', 'Please select at least one component to customize your NFT.');
             return;
         }
         
-        // Prompt for custom Bonkler name
-        const name = prompt('Enter a name for your custom Bonkler:');
-        if (!name || name.trim() === '') {
-            this.showModal('Name Required', 'Please enter a name for your custom Bonkler.');
-            return;
+        // Save the customized components directly to the selected NFT
+        this.selectedNFT.customized = true;
+        this.selectedNFT.customComponents = { ...this.builderComponents };
+        this.selectedNFT.customName = `${this.selectedNFT.name} (Customized)`;
+        
+        // Update the NFT's components for battle
+        this.selectedNFT.components = { ...this.builderComponents };
+        
+        // Update the NFT in the userNFTs array
+        const nftIndex = this.userNFTs.findIndex(nft => nft.id === this.selectedNFT.id);
+        if (nftIndex !== -1) {
+            this.userNFTs[nftIndex] = { ...this.selectedNFT };
         }
         
-        // Create a new custom Bonkler
-        const customBonkler = this.createCustomBonkler(name.trim(), { ...this.builderComponents });
-        
-        // Set as selected fighter
-        this.selectedCustomBonkler = customBonkler;
-        
-        // Update inventory to show the new custom Bonkler
+        // Save and update inventory
+        this.saveGameData();
         this.populateInventory();
         
-        this.showModal('Custom Bonkler Created', `Your custom Bonkler "${name}" has been created! You can now use it in battle.`);
+        this.showModal('Fighter Customized!', `Your NFT "${this.selectedNFT.name}" has been customized and is ready for battle!`);
         
         // Reset builder
         this.selectedNFT = null;
-        this.selectedCustomBonkler = null;
         this.builderComponents = {
             pilot: null,
             body: null,
@@ -2692,8 +2675,8 @@ class GameState {
     }
 
     startBattle() {
-        if (!this.selectedNFT && !this.selectedCustomBonkler) {
-            console.log('No fighter selected for battle');
+        if (!this.selectedNFT) {
+            console.log('No NFT selected for battle');
             return;
         }
 
@@ -2706,27 +2689,26 @@ class GameState {
         // Create enemy fighter
         this.enemyFighter = this.createRandomEnemy();
         
-        // Create player fighter from selected NFT or custom Bonkler
-        const selectedFighter = this.selectedNFT || this.selectedCustomBonkler;
+        // Create player fighter from selected NFT
         this.playerFighter = {
-            name: selectedFighter.name,
-            level: selectedFighter.level,
-            attack: selectedFighter.attack,
-            defense: selectedFighter.defense,
-            health: selectedFighter.health || 100,
-            maxHealth: selectedFighter.maxHealth || 100,
-            components: selectedFighter.components || {}
+            name: this.selectedNFT.name,
+            level: this.selectedNFT.level,
+            attack: this.selectedNFT.attack,
+            defense: this.selectedNFT.defense,
+            health: this.selectedNFT.health,
+            maxHealth: this.selectedNFT.maxHealth,
+            components: this.selectedNFT.components || {}
         };
         
         // Apply customized components if they exist
-        if (selectedFighter.components) {
-            console.log('Using customized components for battle:', selectedFighter.components);
+        if (this.selectedNFT.components) {
+            console.log('Using customized components for battle:', this.selectedNFT.components);
             
             // Calculate additional stats from components
             let additionalAttack = 0;
             let additionalDefense = 0;
             
-            Object.values(selectedFighter.components).forEach(component => {
+            Object.values(this.selectedNFT.components).forEach(component => {
                 if (component && component.attack) {
                     additionalAttack += component.attack;
                 }
@@ -2743,7 +2725,7 @@ class GameState {
             console.log('Final player fighter stats:', this.playerFighter);
             
             // Copy components to player fighter for rendering
-            this.playerFighter.components = { ...selectedFighter.components };
+            this.playerFighter.components = { ...this.selectedNFT.components };
             console.log('Copied components to player fighter:', this.playerFighter.components);
         }
         
@@ -4066,20 +4048,14 @@ class GameState {
         carouselTrack.innerHTML = '';
         if (indicators) indicators.innerHTML = '';
         
-        // Combine user NFTs and custom Bonklers
-        const allFighters = [
-            ...this.userNFTs.map(nft => ({ ...nft, type: 'nft' })),
-            ...this.customBonklers.map(bonkler => ({ ...bonkler, type: 'custom' }))
-        ];
-        
-        if (allFighters.length === 0) {
-            carouselTrack.innerHTML = '<div class="inventory-empty">No fighters found. Create a custom Bonkler or connect your wallet to see your NFTs.</div>';
+        if (!this.userNFTs || this.userNFTs.length === 0) {
+            carouselTrack.innerHTML = '<div class="inventory-empty">No NFTs found. Connect your wallet to load your NFTs.</div>';
             return;
         }
         
         // Carousel settings
         const itemsPerPage = 5;
-        const totalPages = Math.ceil(allFighters.length / itemsPerPage);
+        const totalPages = Math.ceil(this.userNFTs.length / itemsPerPage);
         
         // Create carousel pages
         for (let page = 0; page < totalPages; page++) {
@@ -4089,69 +4065,63 @@ class GameState {
             pageContainer.style.gap = '8px';
             pageContainer.style.minWidth = '100%';
             
-            // Add fighters for this page
+            // Add NFTs for this page
             for (let i = 0; i < itemsPerPage; i++) {
-                const fighterIndex = page * itemsPerPage + i;
-                if (fighterIndex >= allFighters.length) break;
+                const nftIndex = page * itemsPerPage + i;
+                if (nftIndex >= this.userNFTs.length) break;
                 
-                const fighter = allFighters[fighterIndex];
-                const fighterCard = document.createElement('div');
-                fighterCard.className = 'nft-card';
-                fighterCard.dataset.fighterId = fighter.id;
-                fighterCard.style.flex = '1';
-                fighterCard.style.minWidth = '120px';
+                const nft = this.userNFTs[nftIndex];
+                const nftCard = document.createElement('div');
+                nftCard.className = 'nft-card';
+                nftCard.dataset.nftId = nft.id;
+                nftCard.style.flex = '1';
+                nftCard.style.minWidth = '120px';
                 
-                // Add badge based on type
-                const badge = fighter.type === 'nft' ? `<div class="nft-badge">NFT</div>` : `<div class="custom-badge">Custom</div>`;
+                // Add NFT indicator if it's an NFT
+                const nftBadge = nft.isNFT ? `<div class="nft-badge">NFT</div>` : '';
                 
-                // Create canvas for fighter preview
+                // Create canvas for NFT preview
                 const canvas = document.createElement('canvas');
                 canvas.className = 'fighter-preview';
                 canvas.width = 120;
                 canvas.height = 180;
                 
-                fighterCard.innerHTML = `
+                nftCard.innerHTML = `
                     <div class="nft-avatar custom-fighter">
                         ${canvas.outerHTML}
-                        ${badge}
+                        ${nftBadge}
                     </div>
-                    <div class="nft-name">${fighter.name}</div>
-                    <div class="nft-description">${fighter.description || ''}</div>
+                    <div class="nft-name">${nft.name}</div>
+                    <div class="nft-description">${nft.description || ''}</div>
                     <div class="nft-stats">
-                        <div>Level: ${fighter.level}</div>
-                        <div>Attack: ${fighter.attack}</div>
-                        <div>Defense: ${fighter.defense}</div>
-                        <div>Health: ${fighter.health || 100}/${fighter.maxHealth || 100}</div>
-                        ${fighter.tokenId ? `<div>Token ID: ${fighter.tokenId}</div>` : ''}
+                        <div>Level: ${nft.level}</div>
+                        <div>Attack: ${nft.attack}</div>
+                        <div>Defense: ${nft.defense}</div>
+                        <div>Health: ${nft.health}/${nft.maxHealth}</div>
+                        ${nft.tokenId ? `<div>Token ID: ${nft.tokenId}</div>` : ''}
                     </div>
                 `;
                 
-                // Render fighter preview
-                const previewCanvas = fighterCard.querySelector('.fighter-preview');
+                // Render NFT preview
+                const previewCanvas = nftCard.querySelector('.fighter-preview');
                 const previewCtx = previewCanvas.getContext('2d');
-                this.renderFighterPreview(previewCtx, fighter.components || {});
+                this.renderFighterPreview(previewCtx, nft.components || {});
                 
-                fighterCard.addEventListener('click', () => {
+                nftCard.addEventListener('click', () => {
                 // Remove previous selection
                     document.querySelectorAll('.nft-card.selected').forEach(card => {
                         card.classList.remove('selected');
                     });
-                    fighterCard.classList.add('selected');
+                    nftCard.classList.add('selected');
                     
-                    if (fighter.type === 'nft') {
-                        // Select NFT for builder
-                        this.selectNFTForBuilder(fighter);
-                    } else {
-                        // Select custom Bonkler for battle
-                        this.selectedCustomBonkler = fighter;
-                        this.showModal('Custom Bonkler Selected', `Selected "${fighter.name}" for battle!`);
-                    }
+                    // Select NFT for builder
+                    this.selectNFTForBuilder(nft);
                     
                     // Show builder interface
                     this.showBuilderInInventory();
                 });
                 
-                pageContainer.appendChild(fighterCard);
+                pageContainer.appendChild(nftCard);
             }
             
             carouselTrack.appendChild(pageContainer);
@@ -4323,19 +4293,8 @@ class GameState {
             
             // Get purchased items for this category
             const categoryItems = this.purchasedItems.filter(item => {
-                // Map category names to item types
-                const categoryToTypeMap = {
-                    'bodies': 'body',
-                    'armors': 'armor', 
-                    'hands': 'hand',
-                    'offhands': 'offhand',
-                    'heads': 'head',
-                    'pilots': 'pilot',
-                    'accessories': 'accessory'
-                };
-                
-                const expectedType = categoryToTypeMap[category];
-                return item.type === expectedType;
+                const itemType = item.type === 'hand' ? 'hands' : item.type;
+                return itemType === category.slice(0, -1); // Remove 's' from end
             });
             
             console.log(`Category ${category}:`, categoryItems);
@@ -4399,19 +4358,6 @@ class GameState {
         // Update the builder components
         const category = item.type === 'hand' ? 'hands' : item.type;
         
-        // Map item types to component categories
-        const typeToCategoryMap = {
-            'body': 'body',
-            'armor': 'armor',
-            'hand': 'hands', 
-            'offhand': 'offhand',
-            'head': 'head',
-            'pilot': 'pilot',
-            'accessory': 'accessory'
-        };
-        
-        const componentCategory = typeToCategoryMap[item.type] || item.type;
-        
         console.log(`Equipping ${item.name} to ${category}`);
         console.log('Item details:', item);
         
@@ -4423,7 +4369,7 @@ class GameState {
             console.log(`Image loaded successfully for ${item.name}:`, image.width, 'x', image.height);
             
             // Store the component with the loaded image
-            this.builderComponents[componentCategory] = {
+            this.builderComponents[category] = {
                 name: item.name,
                 path: item.path,
                 image: image,
@@ -4436,7 +4382,7 @@ class GameState {
                 if (!this.selectedNFT.components) {
                     this.selectedNFT.components = {};
                 }
-                this.selectedNFT.components[componentCategory] = {
+                this.selectedNFT.components[category] = {
                     name: item.name,
                     path: item.path,
                     image: image,
@@ -5097,19 +5043,14 @@ class GameState {
                         this.isConnected = false;
                         this.publicKey = null;
                         this.wallet = null;
-                        this.userNFTs = [];
+                        // Don't clear userNFTs - keep them for when wallet reconnects
+                        // this.userNFTs = [];
                         this.updateWalletButton();
                         this.populateInventory();
                         this.populateNFTs();
                         this.saveGameData();
                     }
                 }
-            }
-            
-            // Auto-reconnect if we have saved data but no connection
-            if (!this.isConnected && this.publicKey) {
-                console.log('🔍 Auto-reconnecting wallet...');
-                this.connectWallet();
             }
         }, 2000); // Check every 2 seconds
     }
