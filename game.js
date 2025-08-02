@@ -158,9 +158,17 @@ class GameState {
         this.updateLoadingProgress(5, 'Initializing blockchain connection...');
         this.initializeSolanaConnection();
         
-        // Load game data
+        // Load game data FIRST
         this.updateLoadingProgress(10, 'Loading game data...');
         this.loadGameData();
+        console.log('🔍 After loadGameData - userNFTs count:', this.userNFTs.length);
+        if (this.userNFTs.length > 0) {
+            this.userNFTs.forEach((nft, index) => {
+                if (nft.components && Object.keys(nft.components).length > 0) {
+                    console.log(`🔍 NFT ${index} has customized components:`, nft.components);
+                }
+            });
+        }
         
         // Setup event listeners
         this.updateLoadingProgress(20, 'Setting up game controls...');
@@ -664,11 +672,24 @@ class GameState {
                             
                             // Check if we already have saved NFTs for this wallet
                             const savedData = localStorage.getItem('bonklerGameData');
+                            console.log('🔍 Checking saved data for wallet:', this.publicKey);
                             if (savedData) {
                                 const data = JSON.parse(savedData);
+                                console.log('🔍 Saved data publicKey:', data.publicKey);
+                                console.log('🔍 Current publicKey:', this.publicKey);
+                                console.log('🔍 Saved userNFTs count:', data.userNFTs ? data.userNFTs.length : 0);
+                                
                                 if (data.publicKey === this.publicKey && data.userNFTs && data.userNFTs.length > 0) {
-                                    console.log('Using saved NFTs from localStorage');
+                                    console.log('✅ Using saved NFTs from localStorage');
                                     this.userNFTs = data.userNFTs;
+                                    
+                                    // Debug: Check customized components
+                                    this.userNFTs.forEach((nft, index) => {
+                                        if (nft.components && Object.keys(nft.components).length > 0) {
+                                            console.log(`✅ NFT ${index} has customized components:`, nft.components);
+                                        }
+                                    });
+                                    
                                     this.populateInventory();
                                     this.populateNFTs();
                                 } else {
@@ -716,11 +737,24 @@ class GameState {
 
                 // Check if we already have saved NFTs for this wallet
                 const savedData = localStorage.getItem('bonklerGameData');
+                console.log('🔍 Checking saved data for Phantom wallet:', this.publicKey);
                 if (savedData) {
                     const data = JSON.parse(savedData);
+                    console.log('🔍 Saved data publicKey:', data.publicKey);
+                    console.log('🔍 Current publicKey:', this.publicKey);
+                    console.log('🔍 Saved userNFTs count:', data.userNFTs ? data.userNFTs.length : 0);
+                    
                     if (data.publicKey === this.publicKey && data.userNFTs && data.userNFTs.length > 0) {
-                        console.log('Using saved NFTs from localStorage');
+                        console.log('✅ Using saved NFTs from localStorage (Phantom)');
                         this.userNFTs = data.userNFTs;
+                        
+                        // Debug: Check customized components
+                        this.userNFTs.forEach((nft, index) => {
+                            if (nft.components && Object.keys(nft.components).length > 0) {
+                                console.log(`✅ NFT ${index} has customized components:`, nft.components);
+                            }
+                        });
+                        
                         this.populateInventory();
                         this.populateNFTs();
                     } else {
