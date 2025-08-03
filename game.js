@@ -2826,6 +2826,10 @@ class GameState {
         // Initial render
         this.renderBattle();
         
+        // Update health bar displays immediately
+        this.updateCharacterDisplay('player', this.playerFighter);
+        this.updateCharacterDisplay('enemy', this.enemyFighter);
+        
         // Timer removed - battles are now unlimited
         
         // Enable battle controls
