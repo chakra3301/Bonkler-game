@@ -4017,10 +4017,34 @@ class GameState {
             }
             
             // Create component asset - convert store asset name to regular asset name
-            const regularAssetName = item.asset.replace('-store.png', '.png');
+            let regularAssetName = item.asset;
+            if (item.asset.includes('-store.png')) {
+                regularAssetName = item.asset.replace('-store.png', '.png');
+            }
+            
+            // Determine the correct folder path
+            let folderPath;
+            if (item.type === 'hand') {
+                folderPath = 'HANDS';
+            } else if (item.type === 'armor') {
+                folderPath = 'ARMORS';
+            } else if (item.type === 'body') {
+                folderPath = 'BODIES';
+            } else if (item.type === 'pilot') {
+                folderPath = 'PILOT';
+            } else if (item.type === 'head') {
+                folderPath = 'HEADS';
+            } else if (item.type === 'offhand') {
+                folderPath = 'OFFHAND';
+            } else if (item.type === 'accessory') {
+                folderPath = 'ACCESSORIES';
+            } else {
+                folderPath = item.type.toUpperCase();
+            }
+            
             const componentAsset = {
                 name: item.name,
-                path: `${item.type === 'hand' ? 'HANDS' : item.type.toUpperCase()}/${regularAssetName}`,
+                path: `${folderPath}/${regularAssetName}`,
                 type: item.type,
                 attack: item.attack || 0,
                 defense: item.defense || 0,
