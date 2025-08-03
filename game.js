@@ -201,6 +201,9 @@ class GameState {
         // Complete loading
         this.updateLoadingProgress(100, 'Game ready!');
         
+        // Clear any cached data that might have old paths
+        this.clearCachedPaths();
+        
         // Wallet connection monitoring
         this.startWalletMonitoring();
         
@@ -239,6 +242,12 @@ class GameState {
                     if (item.path && item.path.includes('/ARMOR/')) {
                         console.log('Migrating old armor path:', item.path);
                         item.path = item.path.replace('/ARMOR/', '/ARMORS/');
+                        console.log('New armor path:', item.path);
+                    }
+                    // Also check for any other old path formats
+                    if (item.path && item.path.includes('ARMOR/')) {
+                        console.log('Migrating old armor path (no slash):', item.path);
+                        item.path = item.path.replace('ARMOR/', 'ARMORS/');
                         console.log('New armor path:', item.path);
                     }
                 });
@@ -329,6 +338,19 @@ class GameState {
         };
         
         console.log('Game reset to fresh start');
+    }
+    
+    clearCachedPaths() {
+        console.log('🔄 Clearing cached paths with old format');
+        // Force browser to reload images by adding a cache-busting parameter
+        const images = document.querySelectorAll('img[src*="ARMOR/"]');
+        images.forEach(img => {
+            if (img.src.includes('ARMOR/')) {
+                const newSrc = img.src.replace('ARMOR/', 'ARMORS/');
+                img.src = newSrc + '?v=' + Date.now();
+                console.log('Updated image src from:', img.src, 'to:', newSrc);
+            }
+        });
     }
     
     clearAllCachedData() {
