@@ -254,9 +254,21 @@ class GameState {
                     // Regenerate path completely for armor items to ensure correct format
                     if (item.type === 'armor') {
                         const oldPath = item.path;
-                        item.path = `ARMORS/${item.asset}`;
-                        if (oldPath !== item.path) {
-                            console.log('Regenerated armor path from:', oldPath, 'to:', item.path);
+                        // Extract asset name from path if asset property doesn't exist
+                        let assetName = item.asset;
+                        if (!assetName && item.path) {
+                            // Extract filename from path (e.g., "ARMOR/ArmorBlack.png" -> "ArmorBlack.png")
+                            const pathParts = item.path.split('/');
+                            assetName = pathParts[pathParts.length - 1];
+                        }
+                        
+                        if (assetName) {
+                            item.path = `ARMORS/${assetName}`;
+                            if (oldPath !== item.path) {
+                                console.log('Regenerated armor path from:', oldPath, 'to:', item.path);
+                            }
+                        } else {
+                            console.warn('Could not regenerate armor path - missing asset name for item:', item);
                         }
                     }
                 });
