@@ -250,6 +250,15 @@ class GameState {
                         item.path = item.path.replace('ARMOR/', 'ARMORS/');
                         console.log('New armor path:', item.path);
                     }
+                    
+                    // Regenerate path completely for armor items to ensure correct format
+                    if (item.type === 'armor') {
+                        const oldPath = item.path;
+                        item.path = `ARMORS/${item.asset}`;
+                        if (oldPath !== item.path) {
+                            console.log('Regenerated armor path from:', oldPath, 'to:', item.path);
+                        }
+                    }
                 });
             }
             
