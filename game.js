@@ -233,6 +233,17 @@ class GameState {
             const data = JSON.parse(savedData);
             console.log('📦 Found saved data in localStorage');
             
+            // Migrate old purchased items to new path format
+            if (data.purchasedItems && Array.isArray(data.purchasedItems)) {
+                data.purchasedItems.forEach(item => {
+                    if (item.path && item.path.includes('/ARMOR/')) {
+                        console.log('Migrating old armor path:', item.path);
+                        item.path = item.path.replace('/ARMOR/', '/ARMORS/');
+                        console.log('New armor path:', item.path);
+                    }
+                });
+            }
+            
             // Only load progress if user has a connected wallet
             if (data.publicKey && data.isConnected) {
                 console.log('✅ Loading saved progress for wallet:', data.publicKey);
