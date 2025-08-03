@@ -2827,8 +2827,17 @@ class GameState {
         this.renderBattle();
         
         // Update health bar displays immediately
+        console.log('Updating player health bar:', this.playerFighter);
         this.updateCharacterDisplay('player', this.playerFighter);
+        console.log('Updating enemy health bar:', this.enemyFighter);
         this.updateCharacterDisplay('enemy', this.enemyFighter);
+        
+        // Force a second update after a short delay to ensure it sticks
+        setTimeout(() => {
+            console.log('Forcing second health bar update...');
+            this.updateCharacterDisplay('player', this.playerFighter);
+            this.updateCharacterDisplay('enemy', this.enemyFighter);
+        }, 100);
         
         // Timer removed - battles are now unlimited
         
