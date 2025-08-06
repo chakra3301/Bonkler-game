@@ -2371,6 +2371,12 @@ class GameState {
 
     getPurchasedItemsByType(type) {
         if (!this.purchasedItems) return [];
+        
+        // Handle both 'hand' and 'hands' types for backward compatibility
+        if (type === 'hands') {
+            return this.purchasedItems.filter(item => item.type === 'hands' || item.type === 'hand');
+        }
+        
         return this.purchasedItems.filter(item => item.type === type);
     }
 
@@ -2446,6 +2452,7 @@ class GameState {
             'body': 'BODIES',
             'armor': 'ARMORS',
             'hand': 'HANDS',
+            'hands': 'HANDS',
             'offhand': 'OFFHAND',
             'accessory': 'ACCESSORIES'
         };
@@ -2481,14 +2488,6 @@ class GameState {
             return;
         }
         
-        // Check if any components are selected
-        const selectedComponents = Object.values(this.builderComponents).filter(comp => comp !== null);
-        
-        if (selectedComponents.length === 0) {
-            this.showModal('No Components Selected', 'Please select at least one component to customize your NFT.');
-            return;
-        }
-        
         // Save the customized components directly to the selected NFT
         this.selectedNFT.customized = true;
         this.selectedNFT.customComponents = { ...this.builderComponents };
@@ -2507,7 +2506,9 @@ class GameState {
         this.saveGameData();
         this.populateInventory();
         
-        this.showModal('Fighter Customized!', `Your NFT "${this.selectedNFT.name}" has been customized and is ready for battle!`);
+        // Switch to battle screen and start battle
+        this.switchScreen('battle');
+        this.startBattle();
         
         // Reset builder
         this.selectedNFT = null;
@@ -4042,7 +4043,7 @@ class GameState {
             
             shopItem.innerHTML = `
                 <div class="item-icon">
-                    ${item.asset ? `<img src="${item.type === 'offhand' ? 'OFFHAND%20store' : item.type === 'accessory' ? 'store%20accessories' : item.type === 'pilot' ? 'store%20pilot' : item.type === 'body' ? 'BODIES' : item.type === 'armor' ? 'ARMORS' : item.type === 'hand' ? 'store%20hands' : item.type.toUpperCase()}/${item.asset}" alt="${item.name}" style="${item.type === 'accessory' || item.type === 'body' || item.type === 'armor' || item.type === 'hand' ? '' : 'width: 100%; height: 100%; object-fit: contain;'}">` : item.icon}
+                    ${item.asset ? `<img src="${item.type === 'offhand' ? 'OFFHAND%20store' : item.type === 'accessory' ? 'store%20accessories' : item.type === 'pilot' ? 'store pilot' : item.type === 'body' ? 'BODIES' : item.type === 'armor' ? 'ARMORS' : item.type === 'hand' ? 'store hands' : item.type.toUpperCase()}/${item.asset}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;">` : item.icon}
                 </div>
                 <div class="item-name">${item.name}</div>
                 <div class="item-description">${description}</div>
@@ -4126,6 +4127,12 @@ class GameState {
                 id: Date.now() + Math.random(), // Unique ID
                 purchasedAt: new Date().toISOString()
             };
+            
+            // Fix the type for hands items to match the expected category
+            if (item.type === 'hand') {
+                purchasedItem.type = 'hands';
+            }
+            
             this.purchasedItems.push(purchasedItem);
             
             console.log('Item purchased:', purchasedItem);
@@ -4713,7 +4720,7 @@ class GameState {
                 description = `Armor component with +${item.defense} defense`;
             } else if (item.type === 'head') {
                 description = `Head component with +${item.attack} attack`;
-            } else if (item.type === 'hand') {
+            } else if (item.type === 'hand' || item.type === 'hands') {
                 description = `Hand component with +${item.attack} attack`;
             } else if (item.type === 'offhand') {
                 description = `Offhand component with +${item.attack || item.defense} ${item.attack ? 'attack' : 'defense'}`;

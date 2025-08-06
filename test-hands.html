@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hands Section Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .test-item img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            margin-right: 15px;
+        }
+        .test-info {
+            flex: 1;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Hands Section Test</h1>
+        <p>This page tests if hands items are loading correctly from the store hands folder.</p>
+        
+        <div id="test-results">
+            <h2>Test Results:</h2>
+            <div id="results-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // Test hands items
+        const handsItems = [
+            'AGHANIM-SCEPTER.png',
+            'AMERICAN-FLAG.png',
+            'ANCIENT-GODSWORD.png',
+            'GOLDEN-AXE.png',
+            'WATER-PISTOL.png'
+        ];
+
+        const resultsContainer = document.getElementById('results-container');
+        let successCount = 0;
+        let errorCount = 0;
+
+        handsItems.forEach(item => {
+            const testItem = document.createElement('div');
+            testItem.className = 'test-item';
+            
+            const img = document.createElement('img');
+            img.src = `store hands/${item}`;
+            
+            const testInfo = document.createElement('div');
+            testInfo.className = 'test-info';
+            testInfo.innerHTML = `
+                <strong>${item}</strong><br>
+                <small>Path: store hands/${item}</small>
+            `;
+            
+            const status = document.createElement('div');
+            status.className = 'status';
+            
+            img.onload = () => {
+                status.textContent = '✅ Loaded';
+                status.className = 'status success';
+                successCount++;
+                updateSummary();
+            };
+            
+            img.onerror = () => {
+                status.textContent = '❌ Failed';
+                status.className = 'status error';
+                errorCount++;
+                updateSummary();
+            };
+            
+            testItem.appendChild(img);
+            testItem.appendChild(testInfo);
+            testItem.appendChild(status);
+            resultsContainer.appendChild(testItem);
+        });
+
+        function updateSummary() {
+            const total = successCount + errorCount;
+            if (total === handsItems.length) {
+                const summary = document.createElement('div');
+                summary.style.marginTop = '20px';
+                summary.style.padding = '10px';
+                summary.style.backgroundColor = errorCount === 0 ? '#d4edda' : '#f8d7da';
+                summary.style.borderRadius = '5px';
+                summary.innerHTML = `
+                    <strong>Test Summary:</strong><br>
+                    ✅ Success: ${successCount}<br>
+                    ❌ Errors: ${errorCount}<br>
+                    <strong>${errorCount === 0 ? 'All hands items loaded successfully!' : 'Some hands items failed to load.'}</strong>
+                `;
+                resultsContainer.appendChild(summary);
+            }
+        }
+    </script>
+</body>
+</html> 

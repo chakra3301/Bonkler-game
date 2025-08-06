@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Shop Sections Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .test-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            background: #f9f9f9;
+        }
+        .test-item img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            margin-right: 10px;
+        }
+        .test-info {
+            flex: 1;
+            font-size: 12px;
+        }
+        .status {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .all-success { background-color: #d4edda; color: #155724; }
+        .has-errors { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>All Shop Sections Test</h1>
+        <p>This page tests if all shop sections are loading correctly.</p>
+        
+        <div id="test-results">
+            <div class="section">
+                <h3>Pilots (store pilot)</h3>
+                <div id="pilots-container" class="test-grid"></div>
+            </div>
+            
+            <div class="section">
+                <h3>Bodies (BODIES)</h3>
+                <div id="bodies-container" class="test-grid"></div>
+            </div>
+            
+            <div class="section">
+                <h3>Hands (store hands)</h3>
+                <div id="hands-container" class="test-grid"></div>
+            </div>
+            
+            <div class="section">
+                <h3>Armors (ARMORS)</h3>
+                <div id="armors-container" class="test-grid"></div>
+            </div>
+            
+            <div class="section">
+                <h3>Offhands (OFFHAND store)</h3>
+                <div id="offhands-container" class="test-grid"></div>
+            </div>
+        </div>
+        
+        <div id="summary" class="summary" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Test items for each section
+        const testItems = {
+            pilots: [
+                'ALIEN-MILADY.png',
+                'BINKY.png',
+                'KASANE-TETO.png',
+                'REI.png',
+                'WOLFIE.png'
+            ],
+            bodies: [
+                'ANOTHER-FREAKING-MACHINE.png',
+                'BEETLE.png',
+                'TEKKEN-KING.png',
+                'RILAKKUMA.png',
+                'VENDING-MACHINE.png'
+            ],
+            hands: [
+                'AGHANIM-SCEPTER.png',
+                'GOLDEN-AXE.png',
+                'WATER-PISTOL.png',
+                'PORSCHE-SUSPENSION.png',
+                'VELVET-CROWE.png'
+            ],
+            armors: [
+                'ArmorAdamantine.png',
+                'ArmorBlack.png',
+                'ArmorBronze.png',
+                'ArmorMithril.png',
+                'ArmorWhite.png'
+            ],
+            offhands: [
+                'YEN-store.png',
+                'VAX-PASS-store.png',
+                'REMILIA-FILMS-store.png',
+                'POCKET-PET-store.png',
+                'G-SHOCK-store.png'
+            ]
+        };
+
+        const folderPaths = {
+            pilots: 'store pilot',
+            bodies: 'BODIES',
+            hands: 'store hands',
+            armors: 'ARMORS',
+            offhands: 'OFFHAND store'
+        };
+
+        let totalTests = 0;
+        let successCount = 0;
+        let errorCount = 0;
+
+        // Test each section
+        Object.keys(testItems).forEach(section => {
+            const container = document.getElementById(`${section}-container`);
+            const items = testItems[section];
+            const folderPath = folderPaths[section];
+            
+            totalTests += items.length;
+            
+            items.forEach(item => {
+                const testItem = document.createElement('div');
+                testItem.className = 'test-item';
+                
+                const img = document.createElement('img');
+                img.src = `${folderPath}/${item}`;
+                
+                const testInfo = document.createElement('div');
+                testInfo.className = 'test-info';
+                testInfo.innerHTML = `
+                    <strong>${item}</strong><br>
+                    <small>Path: ${folderPath}/${item}</small>
+                `;
+                
+                const status = document.createElement('div');
+                status.className = 'status';
+                
+                img.onload = () => {
+                    status.textContent = '✅';
+                    status.className = 'status success';
+                    successCount++;
+                    updateSummary();
+                };
+                
+                img.onerror = () => {
+                    status.textContent = '❌';
+                    status.className = 'status error';
+                    errorCount++;
+                    updateSummary();
+                };
+                
+                testItem.appendChild(img);
+                testItem.appendChild(testInfo);
+                testItem.appendChild(status);
+                container.appendChild(testItem);
+            });
+        });
+
+        function updateSummary() {
+            const total = successCount + errorCount;
+            if (total === totalTests) {
+                const summary = document.getElementById('summary');
+                summary.style.display = 'block';
+                
+                if (errorCount === 0) {
+                    summary.className = 'summary all-success';
+                    summary.innerHTML = `
+                        <strong>🎉 All Tests Passed!</strong><br>
+                        ✅ Success: ${successCount}<br>
+                        ❌ Errors: ${errorCount}<br>
+                        All shop sections are working correctly!
+                    `;
+                } else {
+                    summary.className = 'summary has-errors';
+                    summary.innerHTML = `
+                        <strong>⚠️ Some Tests Failed</strong><br>
+                        ✅ Success: ${successCount}<br>
+                        ❌ Errors: ${errorCount}<br>
+                        ${errorCount} items failed to load. Check the paths and file names.
+                    `;
+                }
+            }
+        }
+    </script>
+</body>
+</html> 
