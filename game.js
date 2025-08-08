@@ -161,14 +161,6 @@ class GameState {
         // Load game data FIRST
         this.updateLoadingProgress(10, 'Loading game data...');
         this.loadGameData();
-        console.log('🔍 After loadGameData - userNFTs count:', this.userNFTs.length);
-        if (this.userNFTs.length > 0) {
-            this.userNFTs.forEach((nft, index) => {
-                if (nft.components && Object.keys(nft.components).length > 0) {
-                    console.log(`🔍 NFT ${index} has customized components:`, nft.components);
-                }
-            });
-        }
         
         // Setup event listeners
         this.updateLoadingProgress(20, 'Setting up game controls...');
@@ -207,15 +199,7 @@ class GameState {
         // Wallet connection monitoring
         this.startWalletMonitoring();
         
-        // Debug: Check if wallet should auto-connect
-        console.log('🔍 Checking if wallet should auto-connect...');
-        console.log('🔍 Current publicKey:', this.publicKey);
-        console.log('🔍 Current isConnected:', this.isConnected);
-        if (this.publicKey && this.isConnected) {
-            console.log('✅ Wallet already connected, skipping auto-connect');
-        } else {
-            console.log('❌ No wallet connected, will need manual connection');
-        }
+
         
         // Hide loading screen and show game
         setTimeout(() => {
@@ -229,12 +213,10 @@ class GameState {
     }
 
     loadGameData() {
-        console.log('🔄 loadGameData called');
         // Load saved data from localStorage
         const savedData = localStorage.getItem('bonklerGameData');
         if (savedData) {
             const data = JSON.parse(savedData);
-            console.log('📦 Found saved data in localStorage');
             
             // Migrate old purchased items to new path format
             if (data.purchasedItems && Array.isArray(data.purchasedItems)) {
@@ -411,21 +393,10 @@ class GameState {
         
         // Debug: Check what's being saved
         if (this.userNFTs.length > 0) {
-            console.log('Saving userNFTs to localStorage:', this.userNFTs.length, 'NFTs');
-            this.userNFTs.forEach((nft, index) => {
-                if (nft.components && Object.keys(nft.components).length > 0) {
-                    console.log(`NFT ${index} (${nft.name}) has customized components being saved:`, nft.components);
-                }
-            });
+            
         }
         
-        // Debug: Check purchased items being saved
-        if (this.purchasedItems.length > 0) {
-            console.log('💾 Saving purchasedItems to localStorage:', this.purchasedItems.length, 'items');
-            console.log('💾 purchasedItems array:', this.purchasedItems);
-        } else {
-            console.log('💾 No purchasedItems to save');
-        }
+
         
         localStorage.setItem('bonklerGameData', JSON.stringify(data));
     }
@@ -436,7 +407,7 @@ class GameState {
             this.nftCount = 1555; // Total number of NFTs
             this.currentNFTIndex = 0;
             
-            console.log('Loading NFT bonklers from output-jsons...');
+
             
             // Load first 10 NFTs for testing
             await this.loadMoreNFTs(10);
@@ -455,7 +426,7 @@ class GameState {
         const endIndex = Math.min(this.currentNFTIndex + count, this.nftCount);
         const newNFTs = [];
         
-        console.log(`Loading NFTs ${this.currentNFTIndex} to ${endIndex - 1}...`);
+
         
         for (let i = this.currentNFTIndex; i < endIndex; i++) {
             try {
@@ -473,7 +444,7 @@ class GameState {
         
         this.currentNFTIndex = endIndex;
         
-        console.log(`Successfully loaded ${newNFTs.length} more NFT bonklers (Total: ${this.nfts.length})`);
+
         
         // Update UI
         this.updateNFTCount();
@@ -699,7 +670,7 @@ class GameState {
                 rpcEndpoint,
                 'confirmed'
             );
-            console.log('Solana connection initialized with Helius RPC endpoint');
+    
         } catch (error) {
             console.error('Failed to initialize Solana connection:', error);
         }
@@ -745,7 +716,7 @@ class GameState {
                             this.wallet = wallet;
                             this.isConnected = true;
                             
-                            console.log('Connected via Wallet Standard:', this.publicKey);
+
         
         // Update wallet button
                             this.updateWalletButton();
@@ -810,7 +781,7 @@ class GameState {
                 this.wallet = window.solana;
                 this.isConnected = true;
 
-                console.log('Connected to Phantom wallet:', this.publicKey);
+
 
                 // Update wallet button
                 this.updateWalletButton();
@@ -1465,14 +1436,7 @@ class GameState {
             accessory: await this.loadAssetsFromFolder('ACCESSORIES')
         };
         
-        console.log('Component assets loaded:', this.componentAssets);
-        console.log('Pilot assets:', this.componentAssets.pilot?.length || 0);
-        console.log('Body assets:', this.componentAssets.body?.length || 0);
-        console.log('Head assets:', this.componentAssets.head?.length || 0);
-        console.log('Armor assets:', this.componentAssets.armor?.length || 0);
-        console.log('Hands assets:', this.componentAssets.hands?.length || 0);
-        console.log('Offhand assets:', this.componentAssets.offhand?.length || 0);
-        console.log('Accessory assets:', this.componentAssets.accessory?.length || 0);
+
         
         // Draw empty builder after assets are loaded
         this.drawEmptyBuilder();
@@ -1789,7 +1753,7 @@ class GameState {
     }
 
     selectNFTForBuilder(nft) {
-        console.log('selectNFTForBuilder called with:', nft);
+
         this.selectedNFT = nft;
         
         // Update builder display
@@ -1800,7 +1764,7 @@ class GameState {
         
         // Check if NFT has customized components first
         if (nft.components && Object.keys(nft.components).length > 0) {
-            console.log('Using customized components for builder:', nft.components);
+
             this.builderComponents = { ...nft.components };
             
             // Ensure all component images are loaded
@@ -4252,10 +4216,6 @@ class GameState {
             
             this.purchasedItems.push(purchasedItem);
             
-            console.log('✅ Item purchased:', purchasedItem);
-            console.log('📦 Total purchased items:', this.purchasedItems.length);
-            console.log('📦 Full purchasedItems array:', this.purchasedItems);
-            
             this.showModal('Component Unlocked', `You unlocked ${item.name}! You can now use this component in the fighter builder.`);
         } else if (item.type === 'skill') {
             // Add skill to available skills
@@ -4566,9 +4526,7 @@ class GameState {
                 return itemType === category;
             });
             
-            console.log(`🔍 Filtering ${category}: found ${categoryItems.length} items`);
-            console.log(`🔍 All purchased items:`, this.purchasedItems.map(item => ({ name: item.name, type: item.type })));
-            console.log(`🔍 Category items for ${category}:`, categoryItems.map(item => ({ name: item.name, type: item.type })));
+            
             
             console.log(`Category ${category}:`, categoryItems);
             
@@ -4646,15 +4604,11 @@ class GameState {
         // Update the builder components
         const category = item.type === 'hand' ? 'hands' : item.type;
         
-        console.log(`Equipping ${item.name} to ${category}`);
-        console.log('Item details:', item);
-        console.log('Item path:', item.path);
-        console.log('Selected NFT:', this.selectedNFT);
+
         
         // Check if there's already an item equipped in this category
         const currentlyEquipped = this.builderComponents[category];
         if (currentlyEquipped) {
-            console.log(`Unequipping current ${category}: ${currentlyEquipped.name}`);
             // Unequip the current item by resetting its button
             this.updateEquipButtonState(currentlyEquipped.name, false);
         }
@@ -4663,10 +4617,7 @@ class GameState {
         const image = new Image();
         image.crossOrigin = 'anonymous'; // Handle CORS if needed
         
-        console.log('Attempting to load image from path:', item.path);
-        
         image.onload = () => {
-            console.log(`Image loaded successfully for ${item.name}:`, image.width, 'x', image.height);
             
             // Store the component with the loaded image
             this.builderComponents[category] = {
@@ -4676,8 +4627,6 @@ class GameState {
                 attack: item.attack || 0,
                 defense: item.defense || 0
             };
-            
-            console.log(`Stored component in builderComponents[${category}]:`, this.builderComponents[category]);
             
             // Immediately save the equipped component to the selected NFT
             if (this.selectedNFT) {
@@ -4701,25 +4650,17 @@ class GameState {
                 // Save to localStorage immediately
                 this.saveGameData();
                 
-                console.log(`Saved ${item.name} to NFT ${this.selectedNFT.name} components:`, this.selectedNFT.components);
             }
             
-
-            
             // Re-render the NFT with the new component
-            console.log('Re-rendering NFT with new component');
             this.renderNFTAsBase(this.selectedNFT);
             
             // Update the button text to show it's equipped
             this.updateEquipButtonState(item.name, true);
-            
-            console.log('Builder components after equip:', this.builderComponents);
-            console.log(`Successfully equipped ${item.name} to ${category}`);
         };
         
         image.onerror = (error) => {
             console.error(`Failed to load image for ${item.name}:`, error);
-            console.error('Image path:', item.path);
             
             // Still store the component but without image
             this.builderComponents[category] = {
@@ -4746,23 +4687,18 @@ class GameState {
     updateEquipButtonState(itemName, isEquipped) {
         // Find all buttons for this item (there might be multiple instances)
         const equipBtns = document.querySelectorAll(`[data-item="${itemName}"]`);
-        console.log(`🔍 Looking for buttons with data-item="${itemName}"`);
-        console.log(`🔍 Found ${equipBtns.length} buttons`);
         
-        equipBtns.forEach((btn, index) => {
-            console.log(`🔍 Button ${index}:`, btn.textContent, btn.disabled);
+        equipBtns.forEach(btn => {
             if (isEquipped) {
                 btn.textContent = 'Equipped';
                 btn.disabled = false; // Allow clicking to unequip
                 btn.style.background = '#808080';
                 btn.style.color = '#c0c0c0';
-                console.log(`✅ Set button ${index} to Equipped`);
             } else {
                 btn.textContent = 'Equip';
                 btn.disabled = false;
                 btn.style.background = '#c0c0c0';
                 btn.style.color = '#000000';
-                console.log(`✅ Set button ${index} to Equip`);
             }
         });
     }
@@ -4775,18 +4711,14 @@ class GameState {
         
         const category = item.type === 'hand' ? 'hands' : item.type;
         
-        console.log(`Unequipping ${item.name} from ${category}`);
-        
         // Remove the component from builder components
         if (this.builderComponents[category]) {
             delete this.builderComponents[category];
-            console.log(`Removed ${item.name} from builderComponents[${category}]`);
         }
         
         // Remove the component from the selected NFT
         if (this.selectedNFT && this.selectedNFT.components && this.selectedNFT.components[category]) {
             delete this.selectedNFT.components[category];
-            console.log(`Removed ${item.name} from NFT ${this.selectedNFT.name} components`);
         }
         
         // Update the NFT in the userNFTs array
@@ -4803,8 +4735,6 @@ class GameState {
         
         // Update the button state
         this.updateEquipButtonState(item.name, false);
-        
-        console.log(`Successfully unequipped ${item.name} from ${category}`);
     }
     
     showCarouselView() {
