@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hands Inventory Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .debug-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Hands Inventory Debug Test</h1>
+        
+        <div class="test-section">
+            <h3>🔍 Debugging Steps</h3>
+            <div class="status info">
+                <strong>Step 1:</strong> Open browser console (F12)
+            </div>
+            <div class="status info">
+                <strong>Step 2:</strong> Purchase a hands item from the shop
+            </div>
+            <div class="status info">
+                <strong>Step 3:</strong> Check console for "Item purchased:" log
+            </div>
+            <div class="status info">
+                <strong>Step 4:</strong> Go to Inventory → Purchased tab
+            </div>
+            <div class="status info">
+                <strong>Step 5:</strong> Check if hands item appears
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Expected Purchase Log</h3>
+            <div class="code-block">
+// Console should show something like:
+Item purchased: {
+    name: "Aghanim Scepter",
+    path: "HANDS/AGHANIM-SCEPTER.png",
+    type: "hands",
+    attack: 8,
+    defense: 0,
+    cost: 600,
+    id: 1234567890.123,
+    purchasedAt: "2024-01-01T12:00:00.000Z"
+}
+Total purchased items: 1
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Common Issues</h3>
+            <div class="debug-item">
+                <strong>Issue 1:</strong> Wrong image path
+                <br>Check if path is "HANDS/AGHANIM-SCEPTER.png" not "store hands/AGHANIM-SCEPTER.png"
+            </div>
+            <div class="debug-item">
+                <strong>Issue 2:</strong> Wrong type
+                <br>Check if type is "hands" not "hand"
+            </div>
+            <div class="debug-item">
+                <strong>Issue 3:</strong> Missing item in purchasedItems array
+                <br>Check if item is actually added to this.purchasedItems
+            </div>
+            <div class="debug-item">
+                <strong>Issue 4:</strong> Inventory not refreshing
+                <br>Check if populateInventory() is called after purchase
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Code Flow</h3>
+            <div class="status info">
+                <strong>Purchase Flow:</strong>
+                <ol>
+                    <li>User clicks "Buy" on hands item</li>
+                    <li>purchaseItem() function called</li>
+                    <li>Item added to purchasedItems array</li>
+                    <li>populateInventory() called</li>
+                    <li>populateInventoryPurchased() called</li>
+                    <li>Items displayed in inventory grid</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Hands Item Examples</h3>
+            <div class="status info">
+                <strong>Shop Data:</strong>
+                <ul>
+                    <li>Aghanim Scepter - 600 coins - +8 attack</li>
+                    <li>American Flag - 200 coins - +3 attack</li>
+                    <li>Ancient Godsword - 800 coins - +12 attack</li>
+                    <li>Energy Sword - 480 coins - +7 attack</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Troubleshooting Commands</h3>
+            <div class="code-block">
+// In browser console, run these commands:
+
+// Check purchased items
+console.log(game.purchasedItems);
+
+// Check if hands items exist
+console.log(game.purchasedItems.filter(item => item.type === 'hands' || item.type === 'hand'));
+
+// Check component assets
+console.log(game.componentAssets);
+
+// Force refresh inventory
+game.populateInventory();
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Expected Behavior</h3>
+            <div class="status success">
+                ✅ Hands item appears in inventory after purchase
+            </div>
+            <div class="status success">
+                ✅ Image displays correctly (HANDS folder)
+            </div>
+            <div class="status success">
+                ✅ Item shows correct stats (+attack)
+            </div>
+            <div class="status success">
+                ✅ Item can be clicked for details
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
