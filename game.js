@@ -231,21 +231,45 @@ class GameState {
                     // Also restore the builder components
                     this.builderComponents = { ...nftWithComponents.components };
                     
-                    // Load images for the components
+                    // Load images for the components and render when all are loaded
+                    let imagesToLoad = 0;
+                    let imagesLoaded = 0;
+                    
                     Object.entries(this.builderComponents).forEach(([layer, component]) => {
                         if (component && component.path && !component.image) {
+                            imagesToLoad++;
                             console.log(`Loading image for ${layer} component:`, component.name);
                             const image = new Image();
                             image.onload = () => {
                                 console.log(`Image loaded for ${layer} component:`, component.name);
                                 component.image = image;
+                                imagesLoaded++;
+                                
+                                // When all images are loaded, render the NFT
+                                if (imagesLoaded === imagesToLoad) {
+                                    console.log('All component images loaded, rendering NFT with equipped items');
+                                    this.renderNFTAsBase(this.selectedNFT);
+                                }
                             };
                             image.onerror = (error) => {
                                 console.error(`Failed to load image for ${layer} component:`, component.name, error);
+                                imagesLoaded++;
+                                
+                                // Still render even if some images fail to load
+                                if (imagesLoaded === imagesToLoad) {
+                                    console.log('All component images processed, rendering NFT with equipped items');
+                                    this.renderNFTAsBase(this.selectedNFT);
+                                }
                             };
                             image.src = component.path;
                         }
                     });
+                    
+                    // If no images need to be loaded, render immediately
+                    if (imagesToLoad === 0) {
+                        console.log('No component images to load, rendering NFT immediately');
+                        this.renderNFTAsBase(this.selectedNFT);
+                    }
                 }
             }
         }
@@ -4846,34 +4870,54 @@ class GameState {
                 console.log('Loading customized components for builder view:', this.selectedNFT.components);
                 this.builderComponents = { ...this.selectedNFT.components };
                 
-                // Ensure all component images are loaded
+                // Load images for the components and render when all are loaded
+                let imagesToLoad = 0;
+                let imagesLoaded = 0;
+                
                 Object.entries(this.builderComponents).forEach(([layer, component]) => {
                     if (component && component.path && !component.image) {
+                        imagesToLoad++;
                         console.log(`Loading image for ${layer} component in builder view:`, component.name);
                         const image = new Image();
                         image.onload = () => {
                             console.log(`Image loaded for ${layer} component in builder view:`, component.name);
                             component.image = image;
-                            // Re-render after image loads
-                            this.renderNFTAsBase(this.selectedNFT);
+                            imagesLoaded++;
+                            
+                            // When all images are loaded, render the NFT
+                            if (imagesLoaded === imagesToLoad) {
+                                console.log('All component images loaded for builder view, rendering NFT');
+                                this.renderNFTAsBase(this.selectedNFT);
+                            }
                         };
                         image.onerror = (error) => {
                             console.error(`Failed to load image for ${layer} component in builder view:`, component.name, error);
+                            imagesLoaded++;
+                            
+                            // Still render even if some images fail to load
+                            if (imagesLoaded === imagesToLoad) {
+                                console.log('All component images processed for builder view, rendering NFT');
+                                this.renderNFTAsBase(this.selectedNFT);
+                            }
                         };
                         image.src = component.path;
                     }
                 });
+                
+                // If no images need to be loaded, render immediately
+                if (imagesToLoad === 0) {
+                    console.log('No component images to load for builder view, rendering NFT immediately');
+                    this.renderNFTAsBase(this.selectedNFT);
+                }
             } else {
                 // Use original NFT components if no customized ones exist
                 const nftComponents = this.buildComponentsFromNFTMetadata(this.selectedNFT);
                 this.builderComponents = nftComponents;
                 console.log('Using original NFT components for builder view:', nftComponents);
+                
+                // Render the NFT with original components
+                this.renderNFTAsBase(this.selectedNFT);
             }
-        }
-        
-        // Render the selected NFT in the builder
-        if (this.selectedNFT) {
-            this.renderNFTAsBase(this.selectedNFT);
         }
     }
 
