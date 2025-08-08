@@ -4605,8 +4605,9 @@ class GameState {
                 }
                 
                 // Check if this item is currently equipped
-                const isCurrentlyEquipped = this.builderComponents[category] && 
-                    this.builderComponents[category].name === item.name;
+                const itemCategory = item.type === 'hand' ? 'hands' : item.type;
+                const isCurrentlyEquipped = this.builderComponents[itemCategory] && 
+                    this.builderComponents[itemCategory].name === item.name;
                 
                 const buttonText = isCurrentlyEquipped ? 'Equipped' : 'Equip';
                 const buttonDisabled = isCurrentlyEquipped ? 'disabled' : '';
@@ -4745,17 +4746,23 @@ class GameState {
     updateEquipButtonState(itemName, isEquipped) {
         // Find all buttons for this item (there might be multiple instances)
         const equipBtns = document.querySelectorAll(`[data-item="${itemName}"]`);
-        equipBtns.forEach(btn => {
+        console.log(`🔍 Looking for buttons with data-item="${itemName}"`);
+        console.log(`🔍 Found ${equipBtns.length} buttons`);
+        
+        equipBtns.forEach((btn, index) => {
+            console.log(`🔍 Button ${index}:`, btn.textContent, btn.disabled);
             if (isEquipped) {
                 btn.textContent = 'Equipped';
                 btn.disabled = false; // Allow clicking to unequip
                 btn.style.background = '#808080';
                 btn.style.color = '#c0c0c0';
+                console.log(`✅ Set button ${index} to Equipped`);
             } else {
                 btn.textContent = 'Equip';
                 btn.disabled = false;
                 btn.style.background = '#c0c0c0';
                 btn.style.color = '#000000';
+                console.log(`✅ Set button ${index} to Equip`);
             }
         });
     }
