@@ -4206,7 +4206,7 @@ class GameState {
                 regularAssetName = item.asset.replace('-store.png', '.png');
             }
             
-            // Determine the correct folder path
+            // Determine the correct folder path for purchased items (use regular folders, not store folders)
             let folderPath;
             if (item.type === 'hand') {
                 folderPath = 'HANDS';
@@ -4225,6 +4225,8 @@ class GameState {
             } else {
                 folderPath = item.type.toUpperCase();
             }
+            
+            console.log('🔧 Creating purchased item with path:', `${folderPath}/${regularAssetName}`);
             
             const componentAsset = {
                 name: item.name,
@@ -4853,9 +4855,11 @@ class GameState {
                 description = `Accessory component with +${item.attack || item.defense} ${item.attack ? 'attack' : 'defense'}`;
             }
             
+            console.log('🖼️ Creating item element for:', item.name, 'with path:', item.path);
+            
             itemElement.innerHTML = `
                 <div class="item-icon">
-                    ${item.path ? `<img src="${item.path}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;">` : item.icon || '📦'}
+                    ${item.path ? `<img src="${item.path}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;" onerror="console.error('❌ Failed to load image:', this.src);" onload="console.log('✅ Image loaded successfully:', this.src);">` : item.icon || '📦'}
                 </div>
                 <div class="item-name">${item.name}</div>
                 <div class="item-description">${description}</div>
