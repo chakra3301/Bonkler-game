@@ -4622,8 +4622,11 @@ class GameState {
                 const equipBtn = itemElement.querySelector('.equip-btn');
                 equipBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    // Only allow equipping if not already equipped
-                    if (!isCurrentlyEquipped) {
+                    if (isCurrentlyEquipped) {
+                        // Unequip the item
+                        this.unequipItem(item);
+                    } else {
+                        // Equip the item
                         this.equipItem(item);
                     }
                 });
@@ -4745,7 +4748,7 @@ class GameState {
         equipBtns.forEach(btn => {
             if (isEquipped) {
                 btn.textContent = 'Equipped';
-                btn.disabled = true;
+                btn.disabled = false; // Allow clicking to unequip
                 btn.style.background = '#808080';
                 btn.style.color = '#c0c0c0';
             } else {
@@ -4755,6 +4758,46 @@ class GameState {
                 btn.style.color = '#000000';
             }
         });
+    }
+    
+    unequipItem(item) {
+        if (!this.selectedNFT) {
+            this.showModal('No NFT Selected', 'Please select an NFT first before unequipping items.');
+            return;
+        }
+        
+        const category = item.type === 'hand' ? 'hands' : item.type;
+        
+        console.log(`Unequipping ${item.name} from ${category}`);
+        
+        // Remove the component from builder components
+        if (this.builderComponents[category]) {
+            delete this.builderComponents[category];
+            console.log(`Removed ${item.name} from builderComponents[${category}]`);
+        }
+        
+        // Remove the component from the selected NFT
+        if (this.selectedNFT && this.selectedNFT.components && this.selectedNFT.components[category]) {
+            delete this.selectedNFT.components[category];
+            console.log(`Removed ${item.name} from NFT ${this.selectedNFT.name} components`);
+        }
+        
+        // Update the NFT in the userNFTs array
+        const nftIndex = this.userNFTs.findIndex(nft => nft.id === this.selectedNFT.id);
+        if (nftIndex !== -1) {
+            this.userNFTs[nftIndex] = { ...this.selectedNFT };
+        }
+        
+        // Save to localStorage immediately
+        this.saveGameData();
+        
+        // Re-render the NFT without the component
+        this.renderNFTAsBase(this.selectedNFT);
+        
+        // Update the button state
+        this.updateEquipButtonState(item.name, false);
+        
+        console.log(`Successfully unequipped ${item.name} from ${category}`);
     }
     
     showCarouselView() {
