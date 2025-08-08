@@ -2233,6 +2233,7 @@ class GameState {
         }
 
         console.log('Rendering builder components:', this.builderComponents);
+        console.log('Builder components keys:', Object.keys(this.builderComponents));
 
         // Render layers in order: body → armor → hands → offhand → head → pilot → accessories
         const layerOrder = ['body', 'armor', 'hands', 'offhand', 'head', 'pilot', 'accessory'];
@@ -2261,6 +2262,8 @@ class GameState {
                 // Draw a placeholder for components without images
                 this.drawComponentPlaceholder(this.ctx, component.name, this.canvas.width, this.canvas.height, scale);
                 renderedComponents++;
+            } else if (component) {
+                console.log(`Component ${layer} exists but has no image or name:`, component);
             }
         });
         
