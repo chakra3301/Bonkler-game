@@ -909,6 +909,55 @@ body {
     margin-bottom: 4px;
 }
 
+/* Target purchased item images in builder - make them bigger and remove white background */
+.purchased-item img[src*="HANDS/"] {
+    width: 120px !important;
+    height: 120px !important;
+    background: transparent !important;
+    border: none !important;
+    object-fit: cover !important;
+}
+
+.purchased-item img[src*="PILOT/"] {
+    width: 120px !important;
+    height: 120px !important;
+    background: transparent !important;
+    border: none !important;
+    object-fit: cover !important;
+}
+
+.purchased-item img[src*="ACCESSORIES/"] {
+    width: 120px !important;
+    height: 120px !important;
+    background: transparent !important;
+    border: none !important;
+    object-fit: cover !important;
+}
+
+.purchased-item img[src*="OFFHAND/"] {
+    width: 120px !important;
+    height: 120px !important;
+    background: transparent !important;
+    border: none !important;
+    object-fit: cover !important;
+}
+
+.purchased-item img[src*="HEADS/"] {
+    width: 120px !important;
+    height: 120px !important;
+    background: transparent !important;
+    border: none !important;
+    object-fit: cover !important;
+}
+
+.purchased-item img[src*="BODIES/"] {
+    width: 120px !important;
+    height: 120px !important;
+    background: transparent !important;
+    border: none !important;
+    object-fit: cover !important;
+}
+
 .purchased-item-name {
     color: #000000;
     font-size: 8px;

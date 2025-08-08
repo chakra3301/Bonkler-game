@@ -2608,12 +2608,10 @@ class GameState {
         // Show/hide sections based on tab
         const nftSection = document.querySelector('.nft-carousel-section');
         const skillsSection = document.querySelector('.skills-section');
-        const purchasedSection = document.querySelector('.purchased-section');
         
         // Hide all sections first
         nftSection.style.display = 'none';
         skillsSection.style.display = 'none';
-        purchasedSection.style.display = 'none';
         
         if (tab === 'nfts') {
             nftSection.style.display = 'block';
@@ -2621,9 +2619,6 @@ class GameState {
         } else if (tab === 'skills') {
             skillsSection.style.display = 'block';
             this.populateInventorySkills();
-        } else if (tab === 'purchased') {
-            purchasedSection.style.display = 'block';
-            this.populateInventoryPurchased();
         }
     }
 
@@ -4303,7 +4298,6 @@ class GameState {
     // Inventory System
     populateInventory() {
         this.populateInventoryNFTs();
-        this.populateInventoryPurchased();
         this.populateInventorySkills();
     }
 
