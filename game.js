@@ -4250,6 +4250,10 @@ class GameState {
             if (item.type === 'hand') {
                 purchasedItem.type = 'hands';
             }
+            // Fix the type for offhand items to match the expected category
+            if (item.type === 'offhand') {
+                purchasedItem.type = 'offhands';
+            }
             
             this.purchasedItems.push(purchasedItem);
             
@@ -4556,9 +4560,21 @@ class GameState {
             
             // Get purchased items for this category
             const categoryItems = this.purchasedItems.filter(item => {
-                const itemType = item.type === 'hand' ? 'hands' : item.type;
-                return itemType === category.slice(0, -1); // Remove 's' from end
+                let itemType = item.type;
+                // Handle special case for hands
+                if (item.type === 'hand') {
+                    itemType = 'hands';
+                }
+                // Handle special case for offhand
+                if (item.type === 'offhand') {
+                    itemType = 'offhands';
+                }
+                return itemType === category;
             });
+            
+            console.log(`🔍 Filtering ${category}: found ${categoryItems.length} items`);
+            console.log(`🔍 All purchased items:`, this.purchasedItems.map(item => ({ name: item.name, type: item.type })));
+            console.log(`🔍 Category items for ${category}:`, categoryItems.map(item => ({ name: item.name, type: item.type })));
             
             console.log(`Category ${category}:`, categoryItems);
             
