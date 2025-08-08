@@ -3395,6 +3395,9 @@ class GameState {
                 beamBtn.style.display = 'none';
             }
         }
+        
+        // Show equipped skills dynamically
+        this.showEquippedSkills();
     }
 
     disableBattleControls() {
@@ -3597,6 +3600,104 @@ class GameState {
             this.currentBattle.turn = 'enemy';
             this.addBattleLogEntry(`Enemy's turn...`, 'enemy-action');
             setTimeout(() => this.enemyTurn(), 1500);
+        }
+    }
+
+    performDoubleStrike() {
+        if (!this.currentBattle || this.currentBattle.turn !== 'player') return;
+
+        // Check if player has Double Strike equipped
+        if (!this.equippedSkills || !this.equippedSkills.includes('Double Strike')) {
+            this.addBattleLogEntry(`Double Strike not equipped!`, 'battle-event');
+            return;
+        }
+        
+        this.addBattleLogEntry(`DOUBLE STRIKE!`, 'special');
+        
+        // Apply power-up bonus if active
+        let damageMultiplier = 1.0;
+        if (this.battleState.powerUpActive) {
+            damageMultiplier = 1.5;
+            this.addBattleLogEntry(`Power-up bonus applied!`, 'power-up');
+        }
+        
+        // First strike
+        const firstDamage = Math.floor(this.currentBattle.player.attack * (0.8 + Math.random() * 0.4) * damageMultiplier);
+        this.currentBattle.enemy.health = Math.max(0, this.currentBattle.enemy.health - firstDamage);
+        this.addBattleLogEntry(`First strike deals ${firstDamage} damage!`, 'damage');
+        
+        // Animate first attack
+        this.animateAttack(this.currentBattle.player, this.currentBattle.enemy, true);
+        this.showBattleEffect('attack', firstDamage);
+        
+        // Check if enemy died from first strike
+        if (this.currentBattle.enemy.health <= 0) {
+            this.currentBattle.enemy.health = 0;
+            this.updateCharacterDisplay('enemy', this.currentBattle.enemy);
+            this.showBattleEffect('enemy-death', 0);
+            this.addBattleLogEntry(`Enemy defeated!`, 'battle-event');
+            setTimeout(() => this.endBattle('victory'), 2000);
+            return;
+        }
+        
+        // Second strike after a short delay
+        setTimeout(() => {
+            const secondDamage = Math.floor(this.currentBattle.player.attack * (0.8 + Math.random() * 0.4) * damageMultiplier);
+            this.currentBattle.enemy.health = Math.max(0, this.currentBattle.enemy.health - secondDamage);
+            this.addBattleLogEntry(`Second strike deals ${secondDamage} damage!`, 'damage');
+            
+            // Animate second attack
+            this.animateAttack(this.currentBattle.player, this.currentBattle.enemy, true);
+            this.showBattleEffect('attack', secondDamage);
+            
+            this.updateCharacterDisplay('enemy', this.currentBattle.enemy);
+            
+            if (this.currentBattle.enemy.health <= 0) {
+                // Enemy dies
+                this.currentBattle.enemy.health = 0;
+                this.updateCharacterDisplay('enemy', this.currentBattle.enemy);
+                this.showBattleEffect('enemy-death', 0);
+                this.addBattleLogEntry(`Enemy defeated!`, 'battle-event');
+                setTimeout(() => this.endBattle('victory'), 2000);
+            } else {
+                this.currentBattle.turn = 'enemy';
+                this.addBattleLogEntry(`Enemy's turn...`, 'enemy-action');
+                setTimeout(() => this.enemyTurn(), 1500);
+            }
+        }, 1000);
+    }
+
+    showEquippedSkills() {
+        const battleControls = document.querySelector('.battle-controls');
+        if (!battleControls) return;
+        
+        // Remove any existing dynamic skill buttons
+        const existingDynamicButtons = battleControls.querySelectorAll('.dynamic-skill-btn');
+        existingDynamicButtons.forEach(btn => btn.remove());
+        
+        // Show equipped skills as buttons
+        if (this.equippedSkills && this.equippedSkills.length > 0) {
+            this.equippedSkills.forEach(skillName => {
+                // Skip skills that already have hardcoded buttons
+                if (['Slash', 'Power-up', 'Defend', 'Dodge', 'Special', 'Bonkler Beam'].includes(skillName)) {
+                    return;
+                }
+                
+                const skillButton = document.createElement('button');
+                skillButton.className = 'battle-btn dynamic-skill-btn';
+                skillButton.id = `${skillName.toLowerCase().replace(/\s+/g, '-')}-btn`;
+                skillButton.textContent = skillName;
+                
+                // Add click event listener
+                skillButton.addEventListener('click', () => {
+                    if (skillName === 'Double Strike') {
+                        this.performDoubleStrike();
+                    }
+                    // Add more skill functions here as needed
+                });
+                
+                battleControls.appendChild(skillButton);
+            });
         }
     }
 

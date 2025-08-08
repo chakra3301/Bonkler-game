@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Strike Purchase Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .skill-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #eee;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .skill-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        .skill-info {
+            flex: 1;
+        }
+        .skill-name {
+            font-weight: bold;
+            color: #333;
+        }
+        .skill-description {
+            color: #666;
+            font-size: 14px;
+        }
+        .skill-cost {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Double Strike Purchase Test</h1>
+        
+        <div class="test-section">
+            <h3>Skills Available in Shop</h3>
+            <div class="skill-item">
+                <div class="skill-icon">⚔️⚔️</div>
+                <div class="skill-info">
+                    <div class="skill-name">Double Strike</div>
+                    <div class="skill-description">Attack twice in one turn</div>
+                </div>
+                <div class="skill-cost">300 coins</div>
+            </div>
+            
+            <div class="skill-item">
+                <div class="skill-icon">🔄</div>
+                <div class="skill-info">
+                    <div class="skill-name">Counter Attack</div>
+                    <div class="skill-description">Counter enemy attacks</div>
+                </div>
+                <div class="skill-cost">400 coins</div>
+            </div>
+            
+            <div class="skill-item">
+                <div class="skill-icon">💚</div>
+                <div class="skill-info">
+                    <div class="skill-name">Heal</div>
+                    <div class="skill-description">Restore 30% health</div>
+                </div>
+                <div class="skill-cost">200 coins</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>How to Purchase Double Strike</h3>
+            <div class="status info">
+                <strong>Step 1:</strong> Go to the Shop in the game
+            </div>
+            <div class="status info">
+                <strong>Step 2:</strong> Click on the "Skills" category button
+            </div>
+            <div class="status info">
+                <strong>Step 3:</strong> Find "Double Strike" in the skills list
+            </div>
+            <div class="status info">
+                <strong>Step 4:</strong> Click "Buy (300 coins)" button
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Expected Behavior</h3>
+            <div class="status success">
+                ✅ If you have 300+ coins: Double Strike should be purchasable
+            </div>
+            <div class="status error">
+                ❌ If you have less than 300 coins: Button should show "Not enough coins"
+            </div>
+            <div class="status success">
+                ✅ After purchase: Skill should appear in your inventory under Skills tab
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Troubleshooting</h3>
+            <div class="status info">
+                <strong>If Double Strike doesn't appear:</strong>
+                <ul>
+                    <li>Make sure you're in the "Skills" category (not Pilots, Bodies, etc.)</li>
+                    <li>Check that you have 300+ coins</li>
+                    <li>Try refreshing the page</li>
+                    <li>Check the browser console for any errors</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Shop Categories Available</h3>
+            <ul>
+                <li><strong>Pilots</strong> - Pilot components</li>
+                <li><strong>Bodies</strong> - Body components</li>
+                <li><strong>Armors</strong> - Armor components</li>
+                <li><strong>Hands</strong> - Hand components</li>
+                <li><strong>Offhands</strong> - Offhand components</li>
+                <li><strong>Accessories</strong> - Accessory components</li>
+                <li><strong>Skills</strong> - Battle skills (including Double Strike)</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html> 
