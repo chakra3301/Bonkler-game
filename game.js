@@ -4213,6 +4213,10 @@ class GameState {
             if (item.type === 'offhand') {
                 purchasedItem.type = 'offhands';
             }
+            // Fix the type for armor items to match the expected category
+            if (item.type === 'armor') {
+                purchasedItem.type = 'armors';
+            }
             
             this.purchasedItems.push(purchasedItem);
             
@@ -4502,6 +4506,7 @@ class GameState {
     populatePurchasedItems() {
         console.log('populatePurchasedItems called');
         console.log('purchasedItems:', this.purchasedItems);
+        console.log('purchasedItems length:', this.purchasedItems.length);
         
         const categories = ['bodies', 'armors', 'hands', 'offhands', 'heads', 'pilots', 'accessories'];
         
@@ -4523,12 +4528,12 @@ class GameState {
                 if (item.type === 'offhand') {
                     itemType = 'offhands';
                 }
+                console.log(`Filtering item ${item.name} (type: ${item.type}) for category ${category} -> itemType: ${itemType}`);
                 return itemType === category;
             });
             
-            
-            
             console.log(`Category ${category}:`, categoryItems);
+            console.log(`Category ${category} items count:`, categoryItems.length);
             
             if (categoryItems.length === 0) {
                 grid.innerHTML = '<div class="purchased-item empty">No items purchased</div>';
