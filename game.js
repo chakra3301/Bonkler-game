@@ -419,6 +419,14 @@ class GameState {
             });
         }
         
+        // Debug: Check purchased items being saved
+        if (this.purchasedItems.length > 0) {
+            console.log('💾 Saving purchasedItems to localStorage:', this.purchasedItems.length, 'items');
+            console.log('💾 purchasedItems array:', this.purchasedItems);
+        } else {
+            console.log('💾 No purchasedItems to save');
+        }
+        
         localStorage.setItem('bonklerGameData', JSON.stringify(data));
     }
 
@@ -4243,8 +4251,9 @@ class GameState {
             
             this.purchasedItems.push(purchasedItem);
             
-            console.log('Item purchased:', purchasedItem);
-            console.log('Total purchased items:', this.purchasedItems.length);
+            console.log('✅ Item purchased:', purchasedItem);
+            console.log('📦 Total purchased items:', this.purchasedItems.length);
+            console.log('📦 Full purchasedItems array:', this.purchasedItems);
             
             this.showModal('Component Unlocked', `You unlocked ${item.name}! You can now use this component in the fighter builder.`);
         } else if (item.type === 'skill') {
@@ -4603,7 +4612,7 @@ class GameState {
 
     equipItem(item) {
         if (!this.selectedNFT) {
-            alert('Please select an NFT first');
+            this.showModal('No NFT Selected', 'Please select an NFT first before equipping items. Go to the Battle screen and select an NFT.');
             return;
         }
         
@@ -4805,11 +4814,19 @@ class GameState {
 
     populateInventoryPurchased() {
         const purchasedGrid = document.getElementById('inventory-purchased-grid');
-        if (!purchasedGrid) return;
+        if (!purchasedGrid) {
+            console.error('❌ inventory-purchased-grid element not found');
+            return;
+        }
+        
+        console.log('🔍 populateInventoryPurchased called');
+        console.log('📦 purchasedItems array:', this.purchasedItems);
+        console.log('📦 purchasedItems length:', this.purchasedItems.length);
         
         purchasedGrid.innerHTML = '';
         
         if (this.purchasedItems.length === 0) {
+            console.log('❌ No purchased items found');
             purchasedGrid.innerHTML = '<div class="inventory-empty">No purchased items found. Buy items from the shop to see them here.</div>';
             return;
         }
@@ -4843,7 +4860,15 @@ class GameState {
                 <div class="item-name">${item.name}</div>
                 <div class="item-description">${description}</div>
                 <div class="item-price">Purchased</div>
+                <button class="equip-btn" data-item='${JSON.stringify(item)}'>Equip</button>
             `;
+            
+            // Add equip button functionality
+            const equipBtn = itemElement.querySelector('.equip-btn');
+            equipBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.equipItem(item);
+            });
             
             itemElement.addEventListener('click', () => {
                 // Remove previous selection
