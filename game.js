@@ -4581,6 +4581,12 @@ class GameState {
                 const equipBtn = itemElement.querySelector('.equip-btn');
                 equipBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    
+                    // Check current state dynamically
+                    const currentItemCategory = item.type === 'hand' ? 'hands' : item.type;
+                    const isCurrentlyEquipped = this.builderComponents[currentItemCategory] && 
+                        this.builderComponents[currentItemCategory].name === item.name;
+                    
                     if (isCurrentlyEquipped) {
                         // Unequip the item
                         this.unequipItem(item);
@@ -4710,9 +4716,11 @@ class GameState {
         }
         
         const category = item.type === 'hand' ? 'hands' : item.type;
+        console.log(`Unequipping ${item.name} from category ${category}`);
         
         // Remove the component from builder components
         if (this.builderComponents[category]) {
+            console.log(`Removing ${item.name} from builderComponents[${category}]`);
             delete this.builderComponents[category];
         }
         
@@ -4735,6 +4743,7 @@ class GameState {
         
         // Update the button state
         this.updateEquipButtonState(item.name, false);
+        console.log(`Unequip complete for ${item.name}`);
     }
     
     showCarouselView() {
