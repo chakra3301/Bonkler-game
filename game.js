@@ -2171,6 +2171,10 @@ class GameState {
         // Clear canvas with transparent background
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
+        // Debug: Draw a background rectangle to see the canvas area
+        this.ctx.fillStyle = 'rgba(200, 200, 200, 0.3)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
         // Draw actual NFT components using the built components
         this.renderNFTComponentsFromBuilder();
         
@@ -2234,6 +2238,7 @@ class GameState {
 
         console.log('Rendering builder components:', this.builderComponents);
         console.log('Builder components keys:', Object.keys(this.builderComponents));
+        console.log('Canvas dimensions:', this.canvas.width, 'x', this.canvas.height);
 
         // Render layers in order: body → armor → hands → offhand → head → pilot → accessories
         const layerOrder = ['body', 'armor', 'hands', 'offhand', 'head', 'pilot', 'accessory'];
