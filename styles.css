@@ -1495,7 +1495,7 @@ body {
 }
 
 /* Target accessory images specifically */
-.item-icon img[src*="store%20accessories/"] {
+.item-icon img[src*="store accessories/"] {
     width: 120px !important;
     height: 120px !important;
     background: transparent !important;
@@ -1504,7 +1504,7 @@ body {
 }
 
 /* Remove white background from accessory item containers */
-.shop-item:has(img[src*="store%20accessories/"]) .item-icon {
+.shop-item:has(img[src*="store accessories/"]) .item-icon {
     background: transparent !important;
     border: none !important;
     width: 120px !important;
@@ -1512,7 +1512,7 @@ body {
 }
 
 /* Target offhand images specifically */
-.item-icon img[src*="OFFHAND%20store/"] {
+.item-icon img[src*="OFFHAND store/"] {
     width: 120px !important;
     height: 120px !important;
     background: transparent !important;
@@ -1521,7 +1521,7 @@ body {
 }
 
 /* Remove white background from offhand item containers */
-.shop-item:has(img[src*="OFFHAND%20store/"]) .item-icon {
+.shop-item:has(img[src*="OFFHAND store/"]) .item-icon {
     background: transparent !important;
     border: none !important;
     width: 120px !important;
@@ -1529,7 +1529,7 @@ body {
 }
 
 /* Target pilot images specifically */
-.item-icon img[src*="store%20pilot/"] {
+.item-icon img[src*="store pilot/"] {
     width: 120px !important;
     height: 120px !important;
     background: transparent !important;
@@ -1538,7 +1538,7 @@ body {
 }
 
 /* Remove white background from pilot item containers */
-.shop-item:has(img[src*="store%20pilot/"]) .item-icon {
+.shop-item:has(img[src*="store pilot/"]) .item-icon {
     background: transparent !important;
     border: none !important;
     width: 120px !important;
@@ -1580,7 +1580,7 @@ body {
 }
 
 /* Target hand images specifically */
-.item-icon img[src*="store%20hands/"] {
+.item-icon img[src*="store hands/"] {
     width: 120px !important;
     height: 120px !important;
     background: transparent !important;
@@ -1589,7 +1589,7 @@ body {
 }
 
 /* Remove white background from hand item containers */
-.shop-item:has(img[src*="store%20hands/"]) .item-icon {
+.shop-item:has(img[src*="store hands/"]) .item-icon {
     background: transparent !important;
     border: none !important;
     width: 120px !important;
