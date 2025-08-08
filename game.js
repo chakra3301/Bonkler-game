@@ -4151,7 +4151,7 @@ class GameState {
             
             shopItem.innerHTML = `
                 <div class="item-icon">
-                    ${item.asset ? `<img src="${item.type === 'offhand' ? 'OFFHAND%20store' : item.type === 'accessory' ? 'store%20accessories' : item.type === 'pilot' ? 'store pilot' : item.type === 'body' ? 'BODIES' : item.type === 'armor' ? 'ARMORS' : item.type === 'hand' ? 'store hands' : item.type.toUpperCase()}/${item.asset}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;">` : item.icon}
+                    ${item.asset ? `<img src="${item.type === 'offhand' ? 'OFFHAND store' : item.type === 'accessory' ? 'store accessories' : item.type === 'pilot' ? 'store pilot' : item.type === 'body' ? 'BODIES' : item.type === 'armor' ? 'ARMORS' : item.type === 'hand' ? 'store hands' : item.type.toUpperCase()}/${item.asset}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;">` : item.icon}
                 </div>
                 <div class="item-name">${item.name}</div>
                 <div class="item-description">${description}</div>
