@@ -4604,17 +4604,28 @@ class GameState {
                     }
                 }
                 
+                // Check if this item is currently equipped
+                const isCurrentlyEquipped = this.builderComponents[category] && 
+                    this.builderComponents[category].name === item.name;
+                
+                const buttonText = isCurrentlyEquipped ? 'Equipped' : 'Equip';
+                const buttonDisabled = isCurrentlyEquipped ? 'disabled' : '';
+                const buttonStyle = isCurrentlyEquipped ? 'style="background: #808080; color: #c0c0c0;"' : '';
+                
                 itemElement.innerHTML = `
                     <img src="${imagePath}" alt="${item.name}">
                     <div class="purchased-item-name">${item.name}</div>
-                    <button class="equip-btn" data-category="${item.type}" data-item="${item.name}">Equip</button>
+                    <button class="equip-btn" data-category="${item.type}" data-item="${item.name}" ${buttonDisabled} ${buttonStyle}>${buttonText}</button>
                 `;
                 
                 // Add click handler for equip button
                 const equipBtn = itemElement.querySelector('.equip-btn');
                 equipBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    this.equipItem(item);
+                    // Only allow equipping if not already equipped
+                    if (!isCurrentlyEquipped) {
+                        this.equipItem(item);
+                    }
                 });
                 
                 grid.appendChild(itemElement);
@@ -4635,6 +4646,14 @@ class GameState {
         console.log('Item details:', item);
         console.log('Item path:', item.path);
         console.log('Selected NFT:', this.selectedNFT);
+        
+        // Check if there's already an item equipped in this category
+        const currentlyEquipped = this.builderComponents[category];
+        if (currentlyEquipped) {
+            console.log(`Unequipping current ${category}: ${currentlyEquipped.name}`);
+            // Unequip the current item by resetting its button
+            this.updateEquipButtonState(currentlyEquipped.name, false);
+        }
         
         // Create a new image and load it properly
         const image = new Image();
@@ -4688,11 +4707,7 @@ class GameState {
             this.renderNFTAsBase(this.selectedNFT);
             
             // Update the button text to show it's equipped
-            const equipBtn = document.querySelector(`[data-item="${item.name}"]`);
-            if (equipBtn) {
-                equipBtn.textContent = 'Equipped';
-                equipBtn.disabled = true;
-            }
+            this.updateEquipButtonState(item.name, true);
             
             console.log('Builder components after equip:', this.builderComponents);
             console.log(`Successfully equipped ${item.name} to ${category}`);
@@ -4715,17 +4730,31 @@ class GameState {
             this.renderNFTAsBase(this.selectedNFT);
             
             // Update the button text
-            const equipBtn = document.querySelector(`[data-item="${item.name}"]`);
-            if (equipBtn) {
-                equipBtn.textContent = 'Equipped';
-                equipBtn.disabled = true;
-            }
+            this.updateEquipButtonState(item.name, true);
         };
         
         // Start loading the image
         image.src = item.path;
         
         console.log('Starting image load for:', item.path);
+    }
+    
+    updateEquipButtonState(itemName, isEquipped) {
+        // Find all buttons for this item (there might be multiple instances)
+        const equipBtns = document.querySelectorAll(`[data-item="${itemName}"]`);
+        equipBtns.forEach(btn => {
+            if (isEquipped) {
+                btn.textContent = 'Equipped';
+                btn.disabled = true;
+                btn.style.background = '#808080';
+                btn.style.color = '#c0c0c0';
+            } else {
+                btn.textContent = 'Equip';
+                btn.disabled = false;
+                btn.style.background = '#c0c0c0';
+                btn.style.color = '#000000';
+            }
+        });
     }
     
     showCarouselView() {
