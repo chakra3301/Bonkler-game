@@ -4613,7 +4613,12 @@ class GameState {
         }
         
         // Update the builder components
-        const category = item.type === 'hand' ? 'hands' : item.type;
+        let category = item.type;
+        if (item.type === 'hand') {
+            category = 'hands';
+        } else if (item.type === 'armors') {
+            category = 'armor'; // Convert from plural to singular for rendering
+        }
         
 
         
@@ -4720,7 +4725,12 @@ class GameState {
             return;
         }
         
-        const category = item.type === 'hand' ? 'hands' : item.type;
+        let category = item.type;
+        if (item.type === 'hand') {
+            category = 'hands';
+        } else if (item.type === 'armors') {
+            category = 'armor'; // Convert from plural to singular for rendering
+        }
         console.log(`Unequipping ${item.name} from category ${category}`);
         
         // Remove the component from builder components
