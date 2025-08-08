@@ -186,6 +186,9 @@ class GameState {
         this.updateLeaderboard();
         this.updateUI();
         
+        // Restore last selected NFT if available
+        this.restoreSelectedNFT();
+        
         // Preload battle background
         this.updateLoadingProgress(95, 'Preparing battle arena...');
         this.preloadBattleBackground();
@@ -199,8 +202,6 @@ class GameState {
         // Wallet connection monitoring
         this.startWalletMonitoring();
         
-
-        
         // Hide loading screen and show game
         setTimeout(() => {
             this.hideLoadingScreen();
@@ -210,6 +211,44 @@ class GameState {
             this.switchScreen('battle');
         }
         }, 1000);
+    }
+
+    restoreSelectedNFT() {
+        // Try to restore the last selected NFT from localStorage
+        const savedData = localStorage.getItem('bonklerGameData');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            if (data.userNFTs && data.userNFTs.length > 0) {
+                // Find the first NFT that has customized components
+                const nftWithComponents = data.userNFTs.find(nft => 
+                    nft.components && Object.keys(nft.components).length > 0
+                );
+                
+                if (nftWithComponents) {
+                    console.log('Restoring selected NFT:', nftWithComponents.name);
+                    this.selectedNFT = nftWithComponents;
+                    
+                    // Also restore the builder components
+                    this.builderComponents = { ...nftWithComponents.components };
+                    
+                    // Load images for the components
+                    Object.entries(this.builderComponents).forEach(([layer, component]) => {
+                        if (component && component.path && !component.image) {
+                            console.log(`Loading image for ${layer} component:`, component.name);
+                            const image = new Image();
+                            image.onload = () => {
+                                console.log(`Image loaded for ${layer} component:`, component.name);
+                                component.image = image;
+                            };
+                            image.onerror = (error) => {
+                                console.error(`Failed to load image for ${layer} component:`, component.name, error);
+                            };
+                            image.src = component.path;
+                        }
+                    });
+                }
+            }
+        }
     }
 
     loadGameData() {
