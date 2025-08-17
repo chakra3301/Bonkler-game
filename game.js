@@ -228,48 +228,11 @@ class GameState {
                     console.log('Restoring selected NFT:', nftWithComponents.name);
                     this.selectedNFT = nftWithComponents;
                     
-                    // Also restore the builder components
-                    this.builderComponents = { ...nftWithComponents.components };
+                    // Reset to original NFT state - no customized components
+                    this.builderComponents = {};
                     
-                    // Load images for the components and render when all are loaded
-                    let imagesToLoad = 0;
-                    let imagesLoaded = 0;
-                    
-                    Object.entries(this.builderComponents).forEach(([layer, component]) => {
-                        if (component && component.path && !component.image) {
-                            imagesToLoad++;
-                            console.log(`Loading image for ${layer} component:`, component.name);
-                            const image = new Image();
-                            image.onload = () => {
-                                console.log(`Image loaded for ${layer} component:`, component.name);
-                                component.image = image;
-                                imagesLoaded++;
-                                
-                                // When all images are loaded, render the NFT
-                                if (imagesLoaded === imagesToLoad) {
-                                    console.log('All component images loaded, rendering NFT with equipped items');
-                                    this.renderNFTAsBase(this.selectedNFT);
-                                }
-                            };
-                            image.onerror = (error) => {
-                                console.error(`Failed to load image for ${layer} component:`, component.name, error);
-                                imagesLoaded++;
-                                
-                                // Still render even if some images fail to load
-                                if (imagesLoaded === imagesToLoad) {
-                                    console.log('All component images processed, rendering NFT with equipped items');
-                                    this.renderNFTAsBase(this.selectedNFT);
-                                }
-                            };
-                            image.src = component.path;
-                        }
-                    });
-                    
-                    // If no images need to be loaded, render immediately
-                    if (imagesToLoad === 0) {
-                        console.log('No component images to load, rendering NFT immediately');
-                        this.renderNFTAsBase(this.selectedNFT);
-                    }
+                    // Render the NFT in its original state using its base components
+                    this.renderNFTComponents(this.selectedNFT);
                 }
             }
         }

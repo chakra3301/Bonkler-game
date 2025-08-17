@@ -1021,6 +1021,28 @@ body {
     margin-top: 8px;
 }
 
+.save-btn {
+    background: #c0c0c0;
+    border: 2px outset #ffffff;
+    color: #000000;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+    font-size: 11px;
+    transition: none;
+    margin-right: 8px;
+}
+
+.save-btn:hover {
+    background: #d4d0c8;
+}
+
+.save-btn:active {
+    border: 2px inset #ffffff;
+    background: #a0a0a0;
+}
+
 .confirm-btn {
     background: #c0c0c0;
     border: 2px outset #ffffff;

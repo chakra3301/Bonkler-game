@@ -166,6 +166,7 @@
                                 </div>
                                 <div class="builder-controls">
                                     <button id="back-to-nfts-btn" class="back-btn">Back to NFTs</button>
+                                    <button id="save-equipment-btn" class="save-btn">Save Equipment</button>
                                     <button id="confirm-fighter-btn" class="confirm-btn">Battle</button>
                                 </div>
                             </div>
@@ -365,19 +366,7 @@
         </div>
     </div>
 
-    <!-- Solana Web3.js -->
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    <!-- Wallet Standard Support -->
-    <script src="https://unpkg.com/@solana/wallet-standard-features@latest/lib/index.iife.min.js"></script>
-    <script src="https://unpkg.com/@solana/wallet-adapter-base@latest/lib/index.iife.min.js"></script>
-    <!-- Buffer polyfill for browser compatibility -->
-    <script src="https://unpkg.com/buffer@6.0.3/index.js"></script>
-    <script>
-        // Make Buffer available globally
-        if (typeof window !== 'undefined' && window.buffer) {
-            window.Buffer = window.buffer.Buffer;
-        }
-    </script>
+    <!-- Game Script -->
     <script src="game.js"></script>
 </body>
 </html> 
