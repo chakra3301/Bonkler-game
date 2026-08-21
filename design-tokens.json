@@ -1,0 +1,36 @@
+{
+  "$comment": "Bonkler Battle visual system. A cleaner Windows 2000 shell: sharp geometry, real bevel hierarchy, navy title bars, teal desktop and one warm combat accent.",
+  "color": {
+    "desktop": "#007d7b",
+    "desktopDark": "#005e5c",
+    "chrome": {
+      "base": "#c6c9c8",
+      "light": "#e9eceb",
+      "mid": "#d5d8d7",
+      "dark": "#808786",
+      "deep": "#3d4443"
+    },
+    "field": "#f7f8f3",
+    "text": { "primary": "#111514", "secondary": "#4d5553", "inverse": "#ffffff" },
+    "primary": { "base": "#000b78", "bright": "#1249c4" },
+    "accent": { "base": "#007c76", "dark": "#005a56", "combat": "#d84a16" },
+    "status": { "positive": "#087b34", "danger": "#a91d1d", "warning": "#f0d95f" }
+  },
+  "typography": {
+    "family": {
+      "ui": "Tahoma, MS Sans Serif, Segoe UI, sans-serif",
+      "mono": "SFMono-Regular, Consolas, Liberation Mono, monospace"
+    },
+    "scale": { "xs": "10px", "sm": "11px", "base": "14px", "lg": "17px", "xl": "22px", "display": "30px" },
+    "weight": { "regular": 400, "bold": 700 }
+  },
+  "shape": { "radius": "0px", "border": "1px", "windowBorder": "2px" },
+  "space": { "1": "4px", "2": "8px", "3": "12px", "4": "16px", "5": "20px", "6": "24px" },
+  "motion": {
+    "fast": "180ms",
+    "base": "260ms",
+    "slow": "420ms",
+    "easeOut": "cubic-bezier(0.22, 1, 0.36, 1)",
+    "reducedMotion": "collapse all non-essential transitions to 0.01ms"
+  }
+}

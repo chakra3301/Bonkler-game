@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-inventory" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v14H4zM7 9h10M7 13h10M7 17h6"/></g></symbol>
+  <symbol id="icon-battle" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="m5 4 6 6-3 3-4-8 1-1Zm14 0-6 6 3 3 4-8-1-1ZM7 17l10-10M17 17 7 7M5 19l2-2M19 19l-2-2"/></g></symbol>
+  <symbol id="icon-shop" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h16v11H4zM3 9l2-5h14l2 5M8 4 7 9M12 4v5M16 4l1 5M8 13h3v7"/></g></symbol>
+  <symbol id="icon-rank" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M8 4h8v4c0 3-2 5-4 5s-4-2-4-5V4ZM8 6H4v2c0 2 2 3 4 3M16 6h4v2c0 2-2 3-4 3M12 13v4M8 20h8M9 17h6"/></g></symbol>
+  <symbol id="icon-coin" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 20 7v10l-8 4-8-4V7l8-4Z"/><path d="m8 9 4-2 4 2-4 2-4-2Zm4 2v5"/></g></symbol>
+  <symbol id="icon-exp" viewBox="0 0 24 24"><path fill="currentColor" d="m12 2 2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2L12 2Z"/></symbol>
+  <symbol id="icon-level" viewBox="0 0 24 24"><path fill="currentColor" d="m12 3 8 8h-5v9H9v-9H4l8-8Z"/></symbol>
+  <symbol id="icon-sound" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M5 10v5h4l5 4V5L9 10H5ZM17 9c2 2 2 4 0 6M19 6c4 4 4 8 0 12"/></g></symbol>
+  <symbol id="icon-wallet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h16v13H3zM3 6l3-3h11l2 3M14 10h7v5h-7z"/><path d="M17 12h1"/></g></symbol>
+  <symbol id="icon-slash" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="m4 19 13-13 3-2-2 4L5 21l-1-2ZM7 5l3 3M14 16l3 3"/></g></symbol>
+  <symbol id="icon-power" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="m5 15 7-7 7 7M5 20l7-7 7 7M12 3v8"/></g></symbol>
+  <symbol id="icon-defend" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M12 3 20 6v6c0 5-3 8-8 10-5-2-8-5-8-10V6l8-3Zm0 4v10M8 11h8"/></symbol>
+  <symbol id="icon-dodge" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h12M11 4l4 4-4 4M21 16H9M13 12l-4 4 4 4"/></g></symbol>
+  <symbol id="icon-special" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="m12 2 2 7 7 3-7 3-2 7-2-7-7-3 7-3 2-7Z"/></symbol>
+  <symbol id="icon-beam" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M13 2 5 13h6l-1 9 9-13h-6V2Z"/></symbol>
+  <symbol id="icon-pilot" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M8 8V5l4-2 4 2v3l-4 3-4-3ZM5 21v-6l4-3h6l4 3v6M9 17h6M12 12v5"/></g></symbol>
+  <symbol id="icon-body" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M7 5h10l3 5-2 11H6L4 10l3-5ZM9 9h6M8 14h8M10 18h4"/></g></symbol>
+  <symbol id="icon-head" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M5 6h14v12H5zM8 10h2M14 10h2M9 15h6M8 3v3M16 3v3"/></g></symbol>
+  <symbol id="icon-hand" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="m4 20 3-6 8-8 3 3-8 8-6 3ZM14 5l2-2 5 5-2 2M7 14l3 3"/></g></symbol>
+  <symbol id="icon-offhand" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v14H4zM8 9h8v6H8zM4 9H2M4 15H2M22 9h-2M22 15h-2"/></g></symbol>
+  <symbol id="icon-accessory" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12c0-3 3-5 8-5s8 2 8 5-3 5-8 5-8-2-8-5Z"/><path d="M7 12h10M12 7V3M9 3h6"/></g></symbol>
+  <symbol id="icon-double" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="m3 18 8-8 2 2-8 8-2-2ZM11 8l3-3 2 2-3 3M10 20l8-8 2 2-8 8-2-2ZM16 10l3-3 2 2-3 3"/></g></symbol>
+  <symbol id="icon-counter" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M19 8a8 8 0 0 0-13-2L3 9M3 4v5h5M5 16a8 8 0 0 0 13 2l3-3M21 20v-5h-5"/></g></symbol>
+  <symbol id="icon-heal" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6V3Z"/></symbol>
+  <symbol id="icon-critical" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l3 3M15 15l3 3M18 6l-3 3M9 15l-3 3"/><path d="M12 9v6M9 12h6"/></g></symbol>
+  <symbol id="icon-victory" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4h10v5c0 4-2 6-5 6S7 13 7 9V4ZM7 6H3v2c0 3 2 4 5 4M17 6h4v2c0 3-2 4-5 4M12 15v4M7 21h10M9 19h6"/></g></symbol>
+  <symbol id="icon-defeat" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9 8 4h8l3 5v8l-3 4H8l-3-4V9ZM8 11h3M13 11h3M9 17l3-3 3 3"/></g></symbol>
+  <symbol id="icon-global" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 4 6 4 9s-1 6-4 9c-3-3-4-6-4-9s1-6 4-9Z"/></g></symbol>
+  <symbol id="icon-local" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16v18H4zM7 3v6h8V3M8 15h8v6"/></g></symbol>
+  <symbol id="icon-package" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="m4 7 8-4 8 4v10l-8 4-8-4V7ZM4 7l8 4 8-4M12 11v10"/></g></symbol>
+  <symbol id="icon-error" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5l14 14M19 5 5 19"/></g></symbol>
+  <symbol id="icon-time" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M9 3h6M12 5v8l4 2"/></g></symbol>
+</svg>

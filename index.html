@@ -2,240 +2,176 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bonkler NFT Battle Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#007d7b">
+    <meta name="color-scheme" content="light">
+    <title>Bonkler Battle</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="styles.css">
-    
-    <!-- Social Media Preview -->
-    <meta property="og:title" content="Bonkler NFT Battle Game">
-    <meta property="og:description" content="BONKLER BATTLE ! Build your janky bonkler and battle your way to the top of the leaderboard">
+    <link rel="stylesheet" href="styles.css?v=1.8.1">
+
+    <meta name="description" content="Build a janky Bonkler, tune its loadout, and battle your way up the leaderboard.">
+    <meta property="og:title" content="Bonkler Battle">
+    <meta property="og:description" content="Build a janky Bonkler and battle your way to the top.">
     <meta property="og:image" content="preview.png">
     <meta property="og:type" content="website">
-    
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Bonkler NFT Battle Game">
-    <meta name="twitter:description" content="BONKLER BATTLE ! Build your janky bonkler and battle your way to the top of the leaderboard">
+    <meta name="twitter:title" content="Bonkler Battle">
+    <meta name="twitter:description" content="Build a janky Bonkler and battle your way to the top.">
     <meta name="twitter:image" content="preview.png">
-    
-    <!-- Page Description -->
-    <meta name="description" content="BONKLER BATTLE ! Build your janky bonkler and battle your way to the top of the leaderboard">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="loading-screen">
-        <div class="loading-content">
-            <div class="loading-title">
-                <i class="fas fa-sword"></i>
-                Bonkler Battle
-            </div>
-            <div class="loading-subtitle">Loading Game Assets...</div>
-            
-            <div class="asset-preview">
-                <canvas id="asset-preview-canvas" width="300" height="300"></canvas>
-                <div id="asset-preview-text">Initializing...</div>
-            </div>
-            
-            <div class="loading-bar-container">
-                <div class="loading-bar">
-                    <div class="loading-bar-fill" id="loading-bar-fill"></div>
+    <a class="skip-link" href="#main-content">Skip to game</a>
+
+    <div id="loading-screen" class="loading-screen" role="status" aria-live="polite">
+        <div class="loading-content window-frame">
+            <div class="window-titlebar">
+                <div class="titlebar-label">
+                    <img src="favicon.png" alt="" width="20" height="20">
+                    <span>Bonkler Battle Setup</span>
                 </div>
-                <div class="loading-text" id="loading-text">0%</div>
+                <div class="window-controls" aria-hidden="true"><span>_</span><span>□</span><span>×</span></div>
             </div>
-            
-            <div class="loading-tips">
-                <div class="tip" id="loading-tip">Preparing battle arena...</div>
+            <div class="loading-body">
+                <div class="loading-copy">
+                    <p class="loading-kicker">BONKLER SYSTEMS / BOOT UTILITY</p>
+                    <h1 class="loading-title">Assembling combat unit…</h1>
+                    <p class="loading-subtitle">Loading local fighter parts and battle modules.</p>
+                </div>
+
+                <div class="asset-preview">
+                    <canvas id="asset-preview-canvas" width="300" height="300" aria-label="Random Bonkler preview"></canvas>
+                    <div id="asset-preview-text">Initializing graphics…</div>
+                </div>
+
+                <div class="loading-bar-container">
+                    <div class="loading-bar" role="progressbar" aria-label="Game loading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                        <div class="loading-bar-fill" id="loading-bar-fill"></div>
+                    </div>
+                    <div class="loading-readout">
+                        <span id="loading-tip">Preparing battle arena…</span>
+                        <strong id="loading-text">0%</strong>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    
-    <div id="game-container" style="display: none;">
-        <!-- Header -->
+
+    <div id="game-container" class="application-window" style="display: none;">
         <header class="game-header">
             <div class="header-content">
-                <h1 class="game-title">
-                    <i class="fas fa-sword"></i>
-                    Bonkler Battle
-                </h1>
-                <div class="user-stats">
-                    <div class="stat">
-                        <i class="fas fa-coins"></i>
-                        <span id="coins">1000</span>
+                <div class="brand-lockup">
+                    <img class="brand-icon" src="favicon.png" alt="" width="28" height="29">
+                    <div>
+                        <h1 class="game-title">Bonkler Battle</h1>
+                        <span class="game-build">MECHA COMBAT TERMINAL · BUILD 1.8.1</span>
                     </div>
-                    <div class="stat">
-                        <i class="fas fa-star"></i>
-                        <span id="exp">0</span>
-                    </div>
-                    <div class="stat">
-                        <i class="fas fa-trophy"></i>
-                        <span id="level">1</span>
-                    </div>
-                    <div class="stat">
-                        <button id="wallet-connect-btn" class="wallet-btn">
-                            <i class="fas fa-wallet"></i>
-                            Connect Wallet
-                        </button>
-                    </div>
+                </div>
+                <div class="header-actions">
+                    <a class="collection-link" href="https://magiceden.io/marketplace/bonklers" target="_blank" rel="noopener noreferrer" aria-label="View the Bonklers collection on Magic Eden (opens in a new tab)"><svg class="ui-symbol" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-shop"></use></svg><span>Magic Eden</span></a>
+                    <div class="window-controls app-controls" aria-hidden="true"><span>_</span><span>□</span><span>×</span></div>
+                </div>
+            </div>
 
+            <div class="command-bar">
+                <div class="session-state">
+                    <span class="status-light" aria-hidden="true"></span>
+                    <strong id="session-mode">DEMO MODE</strong>
+                    <span id="session-copy">3 local fighters ready</span>
+                </div>
+                <div class="user-stats" aria-label="Player statistics">
+                    <div class="stat" title="Coins"><svg class="ui-symbol ui-icon" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-coin"></use></svg><span class="stat-label">COINS</span><strong id="coins">1200</strong></div>
+                    <div class="stat" title="Experience"><svg class="ui-symbol ui-icon" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-exp"></use></svg><span class="stat-label">EXP</span><strong id="exp">0</strong></div>
+                    <div class="stat" title="Level"><svg class="ui-symbol ui-icon" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-level"></use></svg><span class="stat-label">LVL</span><strong id="level">1</strong></div>
+                    <button type="button" id="sound-toggle-btn" class="sound-btn" aria-pressed="false" title="Enable interface sounds"><svg class="ui-symbol" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-sound"></use></svg><span class="sound-label">SOUND OFF</span></button>
+                    <button type="button" id="wallet-connect-btn" class="wallet-btn"><svg class="ui-symbol" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-wallet"></use></svg><span>Connect Wallet</span></button>
                 </div>
             </div>
         </header>
 
-        <!-- Navigation -->
-        <nav class="game-nav">
-            <button class="nav-btn" data-screen="inventory">
-                <i class="fas fa-briefcase"></i>
-                Inventory
-            </button>
-            <button class="nav-btn active" data-screen="battle">
-                <i class="fas fa-sword"></i>
-                Battle
-            </button>
-            <button class="nav-btn" data-screen="shop">
-                <i class="fas fa-shopping-cart"></i>
-                Shop
-            </button>
-            <button class="nav-btn" data-screen="leaderboard">
-                <i class="fas fa-trophy"></i>
-                Leaderboard
-            </button>
+        <nav class="game-nav" aria-label="Game screens">
+            <button type="button" class="nav-btn active" data-screen="inventory" aria-current="page"><svg class="ui-symbol nav-icon" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-inventory"></use></svg><span>Inventory</span><small>01</small></button>
+            <button type="button" class="nav-btn" data-screen="battle"><svg class="ui-symbol nav-icon" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-battle"></use></svg><span>Battle</span><small>02</small></button>
+            <button type="button" class="nav-btn" data-screen="shop"><svg class="ui-symbol nav-icon" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-shop"></use></svg><span>Shop</span><small>03</small></button>
+            <button type="button" class="nav-btn" data-screen="leaderboard"><svg class="ui-symbol nav-icon" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-rank"></use></svg><span>Ranks</span><small>04</small></button>
         </nav>
 
-        <!-- Main Content -->
-        <main class="game-main">
-            <!-- Inventory Screen -->
-            <div id="inventory-screen" class="screen active">
+        <main class="game-main" id="main-content" tabindex="-1">
+            <section id="inventory-screen" class="screen active" aria-labelledby="inventory-heading" aria-hidden="false">
                 <div class="inventory-container">
-                    <div class="inventory-header">
-                        <h2>Your Inventory</h2>
-                        <p>Select an NFT to customize or view your items</p>
+                    <div class="section-titlebar">
+                        <div><span class="section-index">01</span><h2 id="inventory-heading">Inventory & Loadout</h2></div>
+                        <p>Select a fighter to inspect or customize its equipment.</p>
                     </div>
-                    
-                    <!-- Inventory Tabs -->
-                    <div class="inventory-tabs">
-                        <button class="inventory-tab-btn active" data-tab="nfts">NFTs</button>
-                        <button class="inventory-tab-btn" data-tab="skills">Skills</button>
-                    </div>
-                    
-                    <!-- NFT Carousel Section -->
-                    <div class="nft-carousel-section">
-                        <h3>Your NFTs</h3>
-                        <div class="carousel-container">
-                            <button class="carousel-btn prev" id="nft-prev-btn">‹</button>
-                            <div class="carousel-viewport">
-                                <div class="carousel-track" id="nft-carousel-track">
-                                    <!-- NFT cards will be populated here -->
-                                </div>
-                            </div>
-                            <button class="carousel-btn next" id="nft-next-btn">›</button>
-                        </div>
-                        <div class="carousel-indicators" id="nft-carousel-indicators">
-                            <!-- Page indicators will be populated here -->
-                        </div>
-                    </div>
-                    
-                    <!-- Skills Section -->
-                    <div class="skills-section" style="display: none;">
-                        <h3>Your Skills</h3>
-                        <div class="skills-container">
-                            <div class="available-skills">
-                                <h4>Available Skills</h4>
-                                <div class="skills-grid" id="available-skills-grid">
-                                    <!-- Available skills will be populated here -->
-                                </div>
-                            </div>
-                            <div class="equipped-skills">
-                                <h4>Equipped Skills (6 max)</h4>
-                                <div class="skills-grid" id="equipped-skills-grid">
-                                    <!-- Equipped skills will be populated here -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
 
-                    
-                    <!-- Builder Section (hidden by default) -->
+                    <div class="inventory-tabs" role="tablist" aria-label="Inventory categories">
+                        <button type="button" class="inventory-tab-btn active" data-tab="nfts" role="tab" aria-selected="true">Fighters</button>
+                        <button type="button" class="inventory-tab-btn" data-tab="skills" role="tab" aria-selected="false">Skills</button>
+                    </div>
+
+                    <div class="nft-carousel-section">
+                        <div class="panel-heading">
+                            <h3>Available Fighters</h3>
+                            <span class="panel-hint">DOUBLE-CLICK ENERGY, SINGLE-CLICK CONTROLS</span>
+                        </div>
+                        <div class="carousel-container">
+                            <button type="button" class="carousel-btn prev" id="nft-prev-btn" aria-label="Previous fighters">‹</button>
+                            <div class="carousel-viewport">
+                                <div class="carousel-track" id="nft-carousel-track"></div>
+                            </div>
+                            <button type="button" class="carousel-btn next" id="nft-next-btn" aria-label="Next fighters">›</button>
+                        </div>
+                        <div class="carousel-indicators" id="nft-carousel-indicators" aria-label="Fighter pages"></div>
+                    </div>
+
+                    <div class="skills-section" style="display: none;">
+                        <div class="skills-container">
+                            <div class="equipped-skills">
+                                <div class="panel-heading"><h3>Equipped Skills</h3><span>6 slots maximum</span></div>
+                                <div class="skills-grid" id="equipped-skills-grid"></div>
+                            </div>
+                            <div class="available-skills">
+                                <div class="panel-heading"><h3>Available Skills</h3><span>Purchase more in the shop</span></div>
+                                <div class="skills-grid" id="available-skills-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="fighter-builder-container" style="display: none;">
+                        <div class="builder-header section-titlebar">
+                            <div><span class="section-index">CFG</span><h2>Fighter Builder</h2></div>
+                            <p>Purchased equipment can replace any active layer.</p>
+                        </div>
                         <div class="builder-layout">
                             <div class="left-column">
-                                <div class="builder-header">
-                                    <h2>Customize Your NFT</h2>
-                                    <p>Use your purchased items to customize your selected NFT</p>
-                                </div>
                                 <div class="builder-content">
                                     <div class="canvas-container">
-                                        <canvas id="fighter-canvas" width="600" height="900"></canvas>
-                                        <div class="canvas-overlay">
-                                            <div class="layer-info">
-                                                <span>Layer Order: Body → Armor → Hands → Offhand → Head → Pilot → Accessories</span>
-                                            </div>
-                                        </div>
+                                        <canvas id="fighter-canvas" width="600" height="900" aria-label="Selected fighter loadout preview">Your browser does not support the fighter preview.</canvas>
+                                        <div class="canvas-overlay"><div class="layer-info">BODY → ARMOR → HANDS → OFFHAND → HEAD → PILOT → ACCESSORY</div></div>
                                     </div>
                                     <div class="builder-info">
-                                        <h3>Selected NFT: <span id="selected-nft-name">None</span></h3>
-                                        <p>Use your purchased items to customize your NFT</p>
+                                        <span class="field-label">ACTIVE UNIT</span>
+                                        <h3 id="selected-nft-name">None selected</h3>
+                                        <p>Changes save to this fighter when applied.</p>
                                     </div>
                                 </div>
                                 <div class="builder-controls">
-                                    <button id="back-to-nfts-btn" class="back-btn">Back to NFTs</button>
-                                    <button id="save-equipment-btn" class="save-btn">Save Equipment</button>
-                                    <button id="confirm-fighter-btn" class="confirm-btn">Battle</button>
+                                    <button type="button" id="back-to-nfts-btn" class="back-btn">← Fighters</button>
+                                    <button type="button" id="save-equipment-btn" class="save-btn">Save Loadout</button>
+                                    <button type="button" id="confirm-fighter-btn" class="confirm-btn">Enter Battle →</button>
                                 </div>
                             </div>
                             <div class="right-column">
                                 <div class="purchased-items-section">
-                                    <div class="section-header">
-                                        <h3><i class="fas fa-shopping-bag"></i> Your Purchased Items</h3>
-                                        <p>Click "Equip" to customize your selected NFT</p>
-                                    </div>
+                                    <div class="panel-heading section-header"><div><h3>Purchased Components</h3><p>Choose one item per equipment layer.</p></div></div>
                                     <div class="purchased-items-content">
                                         <div class="items-by-category">
-                                            <div class="category-section">
-                                                <h4>Bodies</h4>
-                                                <div class="items-grid" id="purchased-bodies-grid">
-                                                    <!-- Purchased bodies will be populated here -->
-                                                </div>
-                                            </div>
-                                            <div class="category-section">
-                                                <h4>Armors</h4>
-                                                <div class="items-grid" id="purchased-armors-grid">
-                                                    <!-- Purchased armors will be populated here -->
-                                                </div>
-                                            </div>
-                                            <div class="category-section">
-                                                <h4>Hands</h4>
-                                                <div class="items-grid" id="purchased-hands-grid">
-                                                    <!-- Purchased hands will be populated here -->
-                                                </div>
-                                            </div>
-                                            <div class="category-section">
-                                                <h4>Offhands</h4>
-                                                <div class="items-grid" id="purchased-offhands-grid">
-                                                    <!-- Purchased offhands will be populated here -->
-                                                </div>
-                                            </div>
-                                            <div class="category-section">
-                                                <h4>Heads</h4>
-                                                <div class="items-grid" id="purchased-heads-grid">
-                                                    <!-- Purchased heads will be populated here -->
-                                                </div>
-                                            </div>
-                                            <div class="category-section">
-                                                <h4>Pilots</h4>
-                                                <div class="items-grid" id="purchased-pilots-grid">
-                                                    <!-- Purchased pilots will be populated here -->
-                                                </div>
-                                            </div>
-                                            <div class="category-section">
-                                                <h4>Accessories</h4>
-                                                <div class="items-grid" id="purchased-accessories-grid">
-                                                    <!-- Purchased accessories will be populated here -->
-                                                </div>
-                                            </div>
+                                            <div class="category-section"><h4>Bodies</h4><div class="items-grid" id="purchased-bodies-grid"></div></div>
+                                            <div class="category-section"><h4>Armors</h4><div class="items-grid" id="purchased-armors-grid"></div></div>
+                                            <div class="category-section"><h4>Hands</h4><div class="items-grid" id="purchased-hands-grid"></div></div>
+                                            <div class="category-section"><h4>Offhands</h4><div class="items-grid" id="purchased-offhands-grid"></div></div>
+                                            <div class="category-section"><h4>Heads</h4><div class="items-grid" id="purchased-heads-grid"></div></div>
+                                            <div class="category-section"><h4>Pilots</h4><div class="items-grid" id="purchased-pilots-grid"></div></div>
+                                            <div class="category-section"><h4>Accessories</h4><div class="items-grid" id="purchased-accessories-grid"></div></div>
                                         </div>
                                     </div>
                                 </div>
@@ -243,146 +179,144 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Battle Screen -->
-            <div id="battle-screen" class="screen">
+            <section id="battle-screen" class="screen" aria-labelledby="battle-heading" aria-hidden="true">
                 <div class="battle-container">
-                    <div class="battle-header">
-                        <h2>Choose Your Battle</h2>
-                        <div class="battle-modes">
-                            <button class="battle-mode-btn active" data-mode="ai">AI Battle</button>
-                            <button class="battle-mode-btn" data-mode="pvp">PvP Battle</button>
+                    <div class="battle-header section-titlebar">
+                        <div><span class="section-index">02</span><h2 id="battle-heading">Battle Control</h2></div>
+                        <div class="battle-modes" role="group" aria-label="Battle settings">
+                            <button type="button" class="battle-mode-btn active" data-mode="ai" aria-pressed="true">AI Battle</button>
+                            <label class="difficulty-control" for="battle-difficulty"><span>Threat</span>
+                                <select id="battle-difficulty" aria-label="AI battle difficulty">
+                                    <option value="rookie">Rookie · 0.8× rewards</option>
+                                    <option value="standard" selected>Standard · 1× rewards</option>
+                                    <option value="elite">Elite · 1.4× rewards</option>
+                                </select>
+                            </label>
+                            <button type="button" class="battle-mode-btn" data-mode="pvp" aria-pressed="false" disabled aria-disabled="true">PvP · Soon</button>
                         </div>
                     </div>
-                    
+
                     <div class="nft-selection">
-                        <h3>Select Your NFT</h3>
-                        <div id="nft-grid" class="nft-grid">
-                            <!-- NFTs will be populated here -->
+                        <div class="panel-heading">
+                            <div><h3>Select Combat Unit</h3><p>Choosing a fighter starts a new battle immediately.</p></div>
+                            <span id="nft-count" class="nft-count">0 fighters</span>
                         </div>
+                        <div id="nft-grid" class="nft-grid"></div>
                         <div class="nft-controls">
-                            <button id="load-more-nfts-btn" class="load-more-btn">
-                                <i class="fas fa-plus"></i>
-                                Load More NFTs
-                            </button>
-                            <span id="nft-count" class="nft-count">Loaded: 0 NFTs</span>
+                            <span>Wallet fighters replace demo units after connection.</span>
+                            <button type="button" id="load-more-nfts-btn" class="load-more-btn">Connect Collection</button>
                         </div>
                     </div>
 
                     <div class="battle-arena" id="battle-arena" style="display: none;">
                         <div class="arena-header">
-                            <h3>Battle Arena</h3>
-                            <div class="battle-timer" id="battle-timer">30</div>
+                            <div><span class="field-label">ACTIVE ENCOUNTER</span><h3>Battle Arena</h3></div>
+                            <div class="battle-timer" id="battle-timer" aria-label="Seconds remaining">30</div>
                         </div>
                         <div class="battle-field">
                             <div class="battle-canvas-container">
-                                <canvas id="battle-canvas" width="800" height="400"></canvas>
+                                <canvas id="battle-canvas" width="800" height="400" aria-label="Bonkler battle arena">Your browser does not support the battle arena.</canvas>
+                                <div class="arena-corner corner-tl" aria-hidden="true"></div><div class="arena-corner corner-br" aria-hidden="true"></div>
                             </div>
                             <div class="battle-health-bars">
                                 <div class="player-health">
-                                    <div class="health-label">Player</div>
-                                    <div class="health-bar">
-                                        <div class="health-fill" id="player-health"></div>
-                                    </div>
+                                    <div class="health-label"><span>PLAYER UNIT</span><strong id="player-health-text"></strong></div>
+                                    <div class="health-bar"><div class="health-fill" id="player-health"></div></div>
                                 </div>
-                                <div class="vs-indicator">VS</div>
+                                <div class="vs-indicator" aria-hidden="true">VS</div>
                                 <div class="enemy-health">
-                                    <div class="health-label">Enemy</div>
-                                    <div class="health-bar">
-                                        <div class="health-fill" id="enemy-health"></div>
-                                    </div>
+                                    <div class="health-label"><span>HOSTILE UNIT</span><strong id="enemy-health-text"></strong></div>
+                                    <div class="health-bar"><div class="health-fill" id="enemy-health"></div></div>
                                 </div>
                             </div>
                         </div>
-                        <div class="battle-controls">
-                            <button class="battle-btn" id="slash-btn">Slash</button>
-                            <button class="battle-btn" id="power-up-btn">Power-up</button>
-                            <button class="battle-btn" id="defend-btn">Defend</button>
-                            <button class="battle-btn" id="dodge-btn">Dodge</button>
-                            <button class="battle-btn special-btn" id="special-btn" style="display: none;">Special</button>
-                            <button class="battle-btn bonkler-beam-btn" id="bonkler-beam-btn" style="display: none;">Beam</button>
+                        <div class="battle-controls" aria-label="Battle actions">
+                            <button type="button" class="battle-btn" id="slash-btn"><svg class="ui-symbol" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-slash"></use></svg>Slash<small>DMG</small></button>
+                            <button type="button" class="battle-btn" id="power-up-btn"><svg class="ui-symbol" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-power"></use></svg>Power-up<small>BUFF</small></button>
+                            <button type="button" class="battle-btn" id="defend-btn"><svg class="ui-symbol" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-defend"></use></svg>Defend<small>GUARD</small></button>
+                            <button type="button" class="battle-btn" id="dodge-btn"><svg class="ui-symbol" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-dodge"></use></svg>Dodge<small>EVADE</small></button>
+                            <button type="button" class="battle-btn special-btn" id="special-btn" style="display: none;"><svg class="ui-symbol" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-special"></use></svg>Special<small>3× PWR</small></button>
+                            <button type="button" class="battle-btn bonkler-beam-btn" id="bonkler-beam-btn" style="display: none;"><svg class="ui-symbol" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-beam"></use></svg>Beam<small>LIMIT 3</small></button>
                         </div>
                         <div class="battle-log">
-                            <div class="battle-log-header">
-                                <h4><i class="fas fa-scroll"></i> Battle Log</h4>
-                                <button class="clear-log-btn" id="clear-log-btn">Clear</button>
-                            </div>
-                            <div class="battle-log-content" id="battle-log-content">
-                                <div class="log-entry">Battle started! Choose your action.</div>
-                            </div>
+                            <div class="battle-log-header"><h4>Battle Event Log</h4><button type="button" class="clear-log-btn" id="clear-log-btn">Clear</button></div>
+                            <div class="battle-log-content" id="battle-log-content" role="log" aria-live="polite"><div class="log-entry">Battle system ready.</div></div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Shop Screen -->
-            <div id="shop-screen" class="screen">
+            <section id="shop-screen" class="screen" aria-labelledby="shop-heading" aria-hidden="true">
                 <div class="shop-container">
-                    <h2>Shop</h2>
-                    <div class="shop-categories">
-                        <button class="category-btn active" data-category="pilots">Pilots</button>
-                        <button class="category-btn" data-category="bodies">Bodies</button>
-                        <button class="category-btn" data-category="armors">Armors</button>
-                        <button class="category-btn" data-category="hands">Hands</button>
-                        <button class="category-btn" data-category="offhands">Offhands</button>
-                        <button class="category-btn" data-category="accessories">Accessories</button>
-                        <button class="category-btn" data-category="skills">Skills</button>
+                    <div class="section-titlebar">
+                        <div><span class="section-index">03</span><h2 id="shop-heading">Component Shop</h2></div>
+                        <p>Parts become available in the selected fighter’s loadout.</p>
                     </div>
-                    <div class="shop-items" id="shop-items">
-                        <!-- Shop items will be populated here -->
+                    <div class="shop-categories" role="tablist" aria-label="Shop categories">
+                        <button type="button" class="category-btn active" data-category="pilots" role="tab" aria-selected="true">Pilots</button>
+                        <button type="button" class="category-btn" data-category="bodies" role="tab" aria-selected="false">Bodies</button>
+                        <button type="button" class="category-btn" data-category="armors" role="tab" aria-selected="false">Armors</button>
+                        <button type="button" class="category-btn" data-category="hands" role="tab" aria-selected="false">Hands</button>
+                        <button type="button" class="category-btn" data-category="offhands" role="tab" aria-selected="false">Offhands</button>
+                        <button type="button" class="category-btn" data-category="accessories" role="tab" aria-selected="false">Accessories</button>
+                        <button type="button" class="category-btn" data-category="skills" role="tab" aria-selected="false">Skills</button>
                     </div>
+                    <div class="shop-items" id="shop-items"></div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Leaderboard Screen -->
-            <div id="leaderboard-screen" class="screen">
+            <section id="leaderboard-screen" class="screen" aria-labelledby="leaderboard-heading" aria-hidden="true">
                 <div class="leaderboard-container">
-                    <h2>Leaderboard</h2>
-                    <div class="leaderboard-tabs">
-                        <button class="tab-btn active" data-tab="global">Global</button>
-                        <button class="tab-btn" data-tab="weekly">Weekly</button>
-                        <button class="tab-btn" data-tab="monthly">Monthly</button>
+                    <div class="leaderboard-header section-titlebar">
+                        <div><span class="section-index">04</span><h2 id="leaderboard-heading">Combat Rankings</h2></div>
+                        <div class="leaderboard-controls">
+                            <div class="leaderboard-status" id="leaderboard-status" aria-live="polite"><span class="status-indicator global"><svg class="ui-symbol" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-global"></use></svg> Global</span></div>
+                            <button type="button" class="refresh-btn" id="refresh-leaderboard-btn" aria-label="Refresh leaderboard"><svg class="ui-symbol" aria-hidden="true"><use href="symbols.svg?v=1.8.1#icon-counter"></use></svg> Refresh</button>
+                        </div>
                     </div>
-                    <div class="leaderboard-list" id="leaderboard-list">
-                        <!-- Leaderboard entries will be populated here -->
+                    <div class="leaderboard-tabs" role="tablist" aria-label="Leaderboard period">
+                        <button type="button" class="tab-btn active" data-tab="global" role="tab" aria-selected="true">All Time</button>
+                        <button type="button" class="tab-btn" data-tab="weekly" role="tab" aria-selected="false">Weekly</button>
+                        <button type="button" class="tab-btn" data-tab="monthly" role="tab" aria-selected="false">Monthly</button>
                     </div>
+                    <div class="leaderboard-list" id="leaderboard-list"></div>
                 </div>
-            </div>
+            </section>
         </main>
 
-        <!-- Hidden Images for Preloading -->
-        <img id="battle-bg-preload" src="battle-bg.png" style="display: none;" alt="Battle Background">
-        
-        <!-- Modals -->
-        <div id="modal-overlay" class="modal-overlay">
+        <footer class="app-statusbar">
+            <span><span class="status-light" aria-hidden="true"></span> BONKLER ENGINE READY</span>
+            <span>LOCAL ASSETS: 161</span>
+            <span class="status-clock" id="status-clock">--:--</span>
+        </footer>
+
+        <img id="battle-bg-preload" hidden alt="">
+
+        <div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
             <div class="modal" id="modal">
-                <div class="modal-header">
-                    <h3 id="modal-title">Modal Title</h3>
-                    <button class="modal-close" id="modal-close">&times;</button>
+                <div class="modal-header window-titlebar">
+                    <h3 id="modal-title">System Message</h3>
+                    <button type="button" class="modal-close" id="modal-close" aria-label="Close dialog">×</button>
                 </div>
-                <div class="modal-content" id="modal-content">
-                    <!-- Modal content will be populated here -->
-                </div>
+                <div class="modal-content" id="modal-content"></div>
+                <div class="modal-actions"><button type="button" class="confirm-btn" id="modal-ok">OK</button></div>
             </div>
         </div>
 
-        <!-- Battle Result Modal -->
-        <div id="battle-result-modal" class="modal-overlay">
+        <div id="battle-result-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="result-title">
             <div class="modal battle-result">
-                <div class="modal-header">
+                <div class="modal-header window-titlebar">
                     <h3 id="result-title">Battle Result</h3>
+                    <button type="button" class="modal-close" id="result-modal-close" aria-label="Close battle result">×</button>
                 </div>
-                <div class="modal-content">
-                    <div class="result-content" id="result-content">
-                        <!-- Battle result content -->
-                    </div>
-                </div>
+                <div class="modal-content"><div class="result-content" id="result-content"></div></div>
             </div>
         </div>
     </div>
 
-    <!-- Game Script -->
-    <script src="game.js"></script>
+    <script src="combat-animations.js?v=1.8.1" defer></script>
+    <script src="game.js?v=1.8.1" defer></script>
 </body>
-</html> 
+</html>

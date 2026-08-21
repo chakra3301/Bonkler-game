@@ -1,9 +1,27 @@
+// Tuned around 5–9 round standard encounters and a meaningful purchase every 4–7 wins.
+const BATTLE_BALANCE = Object.freeze({
+    defenseScale: 160,
+    powerUpPerStack: 0.15,
+    maxPowerStacks: 3,
+    guardReduction: 0.55,
+    dodgeChance: 0.6,
+    difficulties: {
+        rookie: { label: 'Rookie', health: 0.82, attack: 0.8, defense: 0.85, reward: 0.8, actions: [0.62, 0.16] },
+        standard: { label: 'Standard', health: 1, attack: 1.08, defense: 1, reward: 1, actions: [0.55, 0.25] },
+        elite: { label: 'Elite', health: 1.1, attack: 1.1, defense: 1.1, reward: 1.4, actions: [0.5, 0.34] }
+    }
+});
+
 // Game State Management
 class GameState {
     constructor() {
-        this.coins = 1000;
+        this.coins = 1200;
         this.exp = 0;
         this.level = 1;
+        this.isDemoMode = true;
+        this.soundEnabled = false;
+        this.audioContext = null;
+        this.currentShopCategory = 'pilots';
         this.nfts = [];
         this.userNFTs = [];
         this.purchasedItems = [];
@@ -11,6 +29,7 @@ class GameState {
         this.currentFighter = {};
         this.fighterBuilt = false;
         this.battleMode = 'ai';
+        this.battleDifficulty = 'standard';
         this.componentAssets = {};
         this.battleBackground = null;
         this.currentBattle = null;
@@ -23,8 +42,11 @@ class GameState {
             powerUpCount: 0,
             defendActive: false,
             dodgeActive: false,
-            dodgeSuccessRate: 0.7,
-            bonklerBeamUses: 3
+            dodgeSuccessRate: BATTLE_BALANCE.dodgeChance,
+            bonklerBeamUses: 3,
+            enemyDefendActive: false,
+            counterActive: false,
+            healUses: 1
         };
         
         // Skills management
@@ -38,9 +60,8 @@ class GameState {
         this.publicKey = null;
         this.isConnected = false;
         
-        // Bonkler NFT collection info
-        this.bonklerCollectionMint = 'YOUR_COLLECTION_MINT_ADDRESS'; // Replace with actual collection mint
-        this.bonklerProgramId = 'YOUR_PROGRAM_ID'; // Replace with actual program ID
+        // Verified Bonkler collection address used by the wallet filter.
+        this.bonklerCollectionMint = 'HCx8AwY9ivtVNVT6rrht2StyMZgDE3yA3vGtmoRuoaeM';
         
         // Leaderboard data
         this.leaderboardData = [];
@@ -56,22 +77,68 @@ class GameState {
         // Initialize shop data
         this.shopData = {
             skills: [
-                { name: 'Slash', type: 'skill', cost: 0, icon: '⚔️', description: 'Basic light attack', unlocked: true },
-                { name: 'Power-up', type: 'skill', cost: 0, icon: '⬆️', description: 'Increase attack strength', unlocked: true },
-                { name: 'Defend', type: 'skill', cost: 0, icon: '🛡️', description: 'Increase defense', unlocked: true },
-                { name: 'Dodge', type: 'skill', cost: 0, icon: '💨', description: '70% chance to dodge', unlocked: true },
-                { name: 'Special', type: 'skill', cost: 500, icon: '⭐', description: 'Heavy attack (requires 3 power-ups)', unlocked: false },
-                { name: 'Bonkler Beam', type: 'skill', cost: 1000, icon: '⚡', description: 'Devastating beam attack (65% hit rate)', unlocked: false },
-                { name: 'Double Strike', type: 'skill', cost: 300, icon: '⚔️⚔️', description: 'Attack twice in one turn', unlocked: false },
-                { name: 'Counter Attack', type: 'skill', cost: 400, icon: '🔄', description: 'Counter enemy attacks', unlocked: false },
-                { name: 'Heal', type: 'skill', cost: 200, icon: '💚', description: 'Restore 30% health', unlocked: false },
-                { name: 'Critical Strike', type: 'skill', cost: 600, icon: '💥', description: 'High chance of critical damage', unlocked: false }
+                { name: 'Slash', type: 'skill', cost: 0, description: 'Basic light attack', unlocked: true },
+                { name: 'Power-up', type: 'skill', cost: 0, description: 'Add a permanent +15% attack stack', unlocked: true },
+                { name: 'Defend', type: 'skill', cost: 0, description: 'Reduce the next damaging hit by 55%', unlocked: true },
+                { name: 'Dodge', type: 'skill', cost: 0, description: '60% chance to dodge the next attack', unlocked: true },
+                { name: 'Special', type: 'skill', cost: 500, description: 'Heavy attack (requires 3 power-ups)', unlocked: false },
+                { name: 'Bonkler Beam', type: 'skill', cost: 1000, description: 'Devastating beam attack (65% hit rate)', unlocked: false },
+                { name: 'Double Strike', type: 'skill', cost: 300, description: 'Two 0.72x defense-aware hits', unlocked: false },
+                { name: 'Counter Attack', type: 'skill', cost: 400, description: 'Return an 0.85x strike after the next hit', unlocked: false },
+                { name: 'Heal', type: 'skill', cost: 200, description: 'Restore 28% health once per battle', unlocked: false },
+                { name: 'Critical Strike', type: 'skill', cost: 600, description: '60% chance for a 1.9x critical strike', unlocked: false }
             ]
         };
     }
 
+    escapeHTML(value) {
+        return String(value ?? '').replace(/[&<>'"]/g, (character) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        })[character]);
+    }
+
+    symbolMarkup(name, className = '') {
+        const symbol = /^[a-z-]+$/.test(name) ? name : 'package';
+        const classes = String(className).replace(/[^a-z0-9 _-]/gi, '').trim();
+        return `<svg class="ui-symbol${classes ? ` ${classes}` : ''}" aria-hidden="true" viewBox="0 0 24 24" focusable="false"><use href="symbols.svg?v=1.8.1#icon-${symbol}"></use></svg>`;
+    }
+
+    getSkillSymbol(skillName) {
+        return ({
+            Slash: 'slash',
+            'Power-up': 'power',
+            Defend: 'defend',
+            Dodge: 'dodge',
+            Special: 'special',
+            'Bonkler Beam': 'beam',
+            'Double Strike': 'double',
+            'Counter Attack': 'counter',
+            Heal: 'heal',
+            'Critical Strike': 'critical'
+        })[skillName] || 'special';
+    }
+
+    getItemSymbol(item) {
+        if (item?.type === 'skill') return this.getSkillSymbol(item.name);
+        return ({
+            pilot: 'pilot',
+            body: 'body',
+            head: 'head',
+            armor: 'defend',
+            hand: 'hand',
+            hands: 'hand',
+            offhand: 'offhand',
+            accessory: 'accessory'
+        })[item?.type] || 'package';
+    }
+
     // Battle Log Methods
     addBattleLogEntry(message, type = 'battle-event') {
+        message = String(message).replace(/\.\.\./g, '…');
         const logContent = document.getElementById('battle-log-content');
         if (!logContent) return;
 
@@ -170,21 +237,35 @@ class GameState {
         this.updateLoadingProgress(30, 'Loading fighter components...');
         await this.initFighterBuilder();
         
-        // Load NFT bonklers
-        this.updateLoadingProgress(50, 'Loading NFT collection...');
-        await this.loadNFTBonklers();
+        // The full metadata collection loads only after wallet interaction.
+        this.updateLoadingProgress(50, 'Preparing fighter registry...');
+        this.nftCount = 1555;
+        this.currentNFTIndex = 0;
         
-        // Process NFTs with assets
+        // Make the game immediately playable when no wallet is connected.
+        if (!this.isConnected) {
+            this.updateLoadingProgress(62, 'Preparing local demo fighters...');
+            await this.loadTestNFTs(null, false);
+        }
+
+        // Resolve local paths without blocking boot on every component image.
         this.updateLoadingProgress(70, 'Processing NFT data...');
         this.reprocessNFTsWithAssets();
         
         // Populate UI elements
         this.updateLoadingProgress(85, 'Building user interface...');
         this.populateNFTs();
-        this.populateShop();
+        this.updateNFTCount();
+        this.populateShop('pilots');
         this.populateInventory();
         this.updateLeaderboard();
         this.updateUI();
+
+        // Decode fighter previews after the shell is interactive, then redraw cards.
+        this.loadFighterImages(this.userNFTs).then(() => {
+            this.populateNFTs();
+            this.populateInventoryNFTs();
+        });
         
         // Restore last selected NFT if available
         this.restoreSelectedNFT();
@@ -210,7 +291,7 @@ class GameState {
         if (this.fighterBuilt) {
             this.switchScreen('battle');
         }
-        }, 1000);
+        }, 250);
     }
 
     restoreSelectedNFT() {
@@ -282,12 +363,15 @@ class GameState {
                 });
             }
             
-            // Only load progress if user has a connected wallet
-            if (data.publicKey && data.isConnected) {
-                console.log('✅ Loading saved progress for wallet:', data.publicKey);
-                this.coins = data.coins || 1000;
-                this.exp = data.exp || 0;
-                this.level = data.level || 1;
+            // Load connected-wallet progress or the local demo profile.
+            if ((data.publicKey && data.isConnected) || data.isDemoMode) {
+                console.log('Loading saved progress for wallet:', data.publicKey);
+                this.coins = data.coins ?? 1200;
+                this.exp = data.exp ?? 0;
+                this.level = data.level ?? 1;
+                this.battleDifficulty = BATTLE_BALANCE.difficulties[data.battleDifficulty]
+                    ? data.battleDifficulty
+                    : 'standard';
                 this.nfts = data.nfts || [];
                 this.fighterBuilt = data.fighterBuilt || false;
                 this.currentFighter = data.currentFighter || {
@@ -304,40 +388,47 @@ class GameState {
                 
                 // Debug: Check if customized components are loaded
                 if (this.userNFTs.length > 0) {
-                    console.log('📋 Loaded userNFTs from localStorage:', this.userNFTs.length, 'NFTs');
+                    console.log('Loaded userNFTs from localStorage:', this.userNFTs.length, 'NFTs');
                     this.userNFTs.forEach((nft, index) => {
                         if (nft.components && Object.keys(nft.components).length > 0) {
-                            console.log(`🎯 NFT ${index} (${nft.name}) has customized components:`, nft.components);
+                            console.log(`NFT ${index} (${nft.name}) has customized components:`, nft.components);
                         } else {
-                            console.log(`📝 NFT ${index} (${nft.name}) has NO customized components`);
+                            console.log(`NFT ${index} (${nft.name}) has NO customized components`);
                         }
                     });
                 } else {
-                    console.log('❌ No userNFTs found in saved data');
+                    console.log('No userNFTs found in saved data');
                 }
                 
                 this.equippedSkills = data.equippedSkills || ['Slash', 'Power-up', 'Defend', 'Dodge'];
                 this.availableSkills = data.availableSkills || [];
-                
-                // Load wallet state
-                this.publicKey = data.publicKey;
-                this.isConnected = data.isConnected;
-                console.log('✅ Wallet state loaded - publicKey:', this.publicKey, 'isConnected:', this.isConnected);
+                this.playerStats = {
+                    ...this.playerStats,
+                    ...(data.playerStats || {})
+                };
+
+                // Load session state
+                this.publicKey = data.publicKey || null;
+                this.isConnected = Boolean(data.isConnected);
+                this.isDemoMode = !this.isConnected;
+                console.log('Session state loaded - publicKey:', this.publicKey, 'isConnected:', this.isConnected);
             } else {
-                console.log('❌ No connected wallet found, starting fresh');
+                console.log('No connected wallet found, starting fresh');
                 this.resetToFreshStart();
             }
         } else {
-            console.log('❌ No saved data found, starting fresh');
+            console.log('No saved data found, starting fresh');
             this.resetToFreshStart();
         }
     }
     
     resetToFreshStart() {
         // Reset all game state to fresh start
-        this.coins = 0;
+        this.coins = 1200;
         this.exp = 0;
         this.level = 1;
+        this.isDemoMode = true;
+        this.battleDifficulty = 'standard';
         this.nfts = [];
         this.userNFTs = [];
         this.purchasedItems = [];
@@ -370,7 +461,7 @@ class GameState {
     }
     
     clearCachedPaths() {
-        console.log('🔄 Clearing cached paths with old format');
+        console.log('Clearing cached paths with old format');
         // Force browser to reload images by adding a cache-busting parameter
         const images = document.querySelectorAll('img[src*="ARMOR/"]');
         images.forEach(img => {
@@ -414,7 +505,10 @@ class GameState {
             equippedSkills: this.equippedSkills,
             availableSkills: this.availableSkills,
             publicKey: this.publicKey,
-            isConnected: this.isConnected
+            isConnected: this.isConnected,
+            isDemoMode: this.isDemoMode,
+            battleDifficulty: this.battleDifficulty,
+            playerStats: this.playerStats
         };
         
         // Debug: Check what's being saved
@@ -487,7 +581,7 @@ class GameState {
         const countElement = document.getElementById('nft-count');
         if (countElement) {
             const count = this.userNFTs ? this.userNFTs.length : 0;
-            countElement.textContent = `Loaded: ${count} NFTs`;
+            countElement.textContent = `${count} fighter${count === 1 ? '' : 's'}`;
         }
     }
 
@@ -625,7 +719,6 @@ class GameState {
             defense: baseStats.defense,
             health: baseStats.health,
             maxHealth: baseStats.health,
-            avatar: '⚔️',
             components: components,
             isNFT: true,
             tokenId: tokenId.toString(),
@@ -688,24 +781,25 @@ class GameState {
     }
 
     initializeSolanaConnection() {
+        // Wallet discovery works without solana-web3. Legacy metadata helpers use the
+        // public RPC only when the optional browser library is available. NFT loading
+        // itself is proxied by server.js so provider credentials never ship to clients.
+        this.connection = null;
+        if (!window.solanaWeb3) return;
+
         try {
-            // Use Helius RPC endpoint with API key for reliable access
-            const rpcEndpoint = 'https://mainnet.helius-rpc.com/?api-key=681f390e-8fce-4246-85f7-1e515cd5894c';
-            
-            this.connection = new solanaWeb3.Connection(
-                rpcEndpoint,
+            this.connection = new window.solanaWeb3.Connection(
+                'https://api.mainnet-beta.solana.com',
                 'confirmed'
             );
-    
         } catch (error) {
-            console.error('Failed to initialize Solana connection:', error);
+            console.warn('Optional Solana connection unavailable:', error);
         }
     }
 
     async tryAlternativeRPC() {
         // Use Helius RPC as primary fallback, then public endpoints
         const rpcEndpoints = [
-            'https://mainnet.helius-rpc.com/?api-key=681f390e-8fce-4246-85f7-1e515cd5894c',
             'https://api.mainnet-beta.solana.com',
             'https://solana-api.projectserum.com'
         ];
@@ -741,29 +835,28 @@ class GameState {
                             this.publicKey = accounts[0].address;
                             this.wallet = wallet;
                             this.isConnected = true;
-                            
-
+                            this.isDemoMode = false;
         
         // Update wallet button
                             this.updateWalletButton();
                             
                             // Check if we already have saved NFTs for this wallet
                             const savedData = localStorage.getItem('bonklerGameData');
-                            console.log('🔍 Checking saved data for wallet:', this.publicKey);
+                            console.log('Checking saved data for wallet:', this.publicKey);
                             if (savedData) {
                                 const data = JSON.parse(savedData);
-                                console.log('🔍 Saved data publicKey:', data.publicKey);
-                                console.log('🔍 Current publicKey:', this.publicKey);
-                                console.log('🔍 Saved userNFTs count:', data.userNFTs ? data.userNFTs.length : 0);
+                                console.log('Saved data publicKey:', data.publicKey);
+                                console.log('Current publicKey:', this.publicKey);
+                                console.log('Saved userNFTs count:', data.userNFTs ? data.userNFTs.length : 0);
                                 
                                 if (data.publicKey === this.publicKey && data.userNFTs && data.userNFTs.length > 0) {
-                                    console.log('✅ Using saved NFTs from localStorage');
+                                    console.log('Using saved NFTs from localStorage');
                                     this.userNFTs = data.userNFTs;
                                     
                                     // Debug: Check customized components
                                     this.userNFTs.forEach((nft, index) => {
                                         if (nft.components && Object.keys(nft.components).length > 0) {
-                                            console.log(`✅ NFT ${index} has customized components:`, nft.components);
+                                            console.log(`NFT ${index} has customized components:`, nft.components);
                                         }
                                     });
                                     
@@ -806,29 +899,28 @@ class GameState {
                 this.publicKey = response.publicKey.toString();
                 this.wallet = window.solana;
                 this.isConnected = true;
-
-
+                this.isDemoMode = false;
 
                 // Update wallet button
                 this.updateWalletButton();
 
                 // Check if we already have saved NFTs for this wallet
                 const savedData = localStorage.getItem('bonklerGameData');
-                console.log('🔍 Checking saved data for Phantom wallet:', this.publicKey);
+                console.log('Checking saved data for Phantom wallet:', this.publicKey);
                 if (savedData) {
                     const data = JSON.parse(savedData);
-                    console.log('🔍 Saved data publicKey:', data.publicKey);
-                    console.log('🔍 Current publicKey:', this.publicKey);
-                    console.log('🔍 Saved userNFTs count:', data.userNFTs ? data.userNFTs.length : 0);
+                    console.log('Saved data publicKey:', data.publicKey);
+                    console.log('Current publicKey:', this.publicKey);
+                    console.log('Saved userNFTs count:', data.userNFTs ? data.userNFTs.length : 0);
                     
                     if (data.publicKey === this.publicKey && data.userNFTs && data.userNFTs.length > 0) {
-                        console.log('✅ Using saved NFTs from localStorage (Phantom)');
+                        console.log('Using saved NFTs from localStorage (Phantom)');
                         this.userNFTs = data.userNFTs;
                         
                         // Debug: Check customized components
                         this.userNFTs.forEach((nft, index) => {
                             if (nft.components && Object.keys(nft.components).length > 0) {
-                                console.log(`✅ NFT ${index} has customized components:`, nft.components);
+                                console.log(`NFT ${index} has customized components:`, nft.components);
                             }
                         });
                         
@@ -869,7 +961,7 @@ class GameState {
     }
 
         async loadUserNFTs(publicKey) {
-        console.log('🔄 Loading Bonkler NFTs for wallet:', publicKey);
+        console.log('Loading Bonkler NFTs for wallet:', publicKey);
         
         if (!publicKey) {
             console.error('No public key provided');
@@ -877,41 +969,26 @@ class GameState {
         }
 
         try {
-            // Use Helius API to get NFTs
-            const HELIUS_API_KEY = '681f390e-8fce-4246-85f7-1e515cd5894c';
-            const HELIUS_RPC = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
+            console.log('Fetching NFTs through the same-origin collection API...');
 
-            console.log('📡 Fetching NFTs from Helius...');
-
-            const res = await fetch(HELIUS_RPC, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    jsonrpc: '2.0',
-                    id: '1',
-                    method: 'getAssetsByOwner',
-                    params: {
-                        ownerAddress: publicKey,
-                        page: 1,
-                        limit: 1000,
-                        displayOptions: {
-                            showUnverifiedCollections: true
-                        }
-                    }
-                })
-            });
+            const res = await fetch(`/api/nfts/${encodeURIComponent(publicKey)}`);
+            if (!res.ok) {
+                const details = await res.json().catch(() => ({}));
+                throw new Error(details.error || `NFT service returned ${res.status}`);
+            }
 
             const data = await res.json();
+            const items = Array.isArray(data.items) ? data.items : [];
 
-            if (!data.result || !data.result.items || data.result.items.length === 0) {
-                console.warn('⚠️ No NFTs found for wallet:', publicKey);
+            if (items.length === 0) {
+                console.warn('No NFTs found for wallet:', publicKey);
                 await this.loadTestNFTs(publicKey);
                 this.showModal('Test Mode', 'No NFTs found in your wallet. Loaded test NFTs for demonstration.');
                 return;
             }
 
-            const allNFTs = data.result.items;
-            console.log(`📦 Found ${allNFTs.length} total NFTs`);
+            const allNFTs = items;
+            console.log(`Found ${allNFTs.length} total NFTs`);
 
             // Filter for Bonkler NFTs by name or collection address
             const bonklerNFTs = allNFTs.filter(nft => {
@@ -919,9 +996,8 @@ class GameState {
                 const symbol = nft.content?.metadata?.symbol?.toLowerCase() || '';
                 
                 // Check for Bonkler collection address
-                const bonklerCollectionMint = 'HCx8AwY9ivtVNVT6rrht2StyMZgDE3yA3vGtmoRuoaeM';
-                const isBonklerCollection = nft.grouping?.some(group => 
-                    group.group_value === bonklerCollectionMint
+                const isBonklerCollection = nft.grouping?.some((group) =>
+                    group.group_value === this.bonklerCollectionMint
                 );
                 
                 // Check for Bonkler terms in name/symbol
@@ -932,7 +1008,7 @@ class GameState {
                 return isBonklerCollection || hasBonklerTerms;
             });
 
-            console.log(`✅ Found ${bonklerNFTs.length} Bonkler NFTs`);
+            console.log(`Found ${bonklerNFTs.length} Bonkler NFTs`);
 
             // Convert to game format
             // Store existing user NFTs to preserve customized components
@@ -942,7 +1018,7 @@ class GameState {
 
             for (const nft of bonklerNFTs) {
                 try {
-                    console.log(`🎮 Converting NFT: ${nft.content?.metadata?.name}`);
+                    console.log(`Converting NFT: ${nft.content?.metadata?.name}`);
                     
                     // Extract NFT number from the name (e.g., "BONKLER #581" -> "581")
                     const nftName = nft.content?.metadata?.name || '';
@@ -958,12 +1034,12 @@ class GameState {
                             const response = await fetch(`nft-metadata/output-jsons/${nftNumber}.json`);
                 if (response.ok) {
                                 metadata = await response.json();
-                                console.log(`✅ Loaded metadata for NFT #${nftNumber}:`, metadata);
+                                console.log(`Loaded metadata for NFT #${nftNumber}:`, metadata);
                             } else {
-                                console.log(`❌ No metadata file found for NFT #${nftNumber}`);
+                                console.log(`No metadata file found for NFT #${nftNumber}`);
                             }
                         } catch (error) {
-                            console.log(`❌ Failed to load metadata for NFT #${nftNumber}:`, error);
+                            console.log(`Failed to load metadata for NFT #${nftNumber}:`, error);
                         }
                     }
                     
@@ -1036,18 +1112,21 @@ class GameState {
                 }
             }
 
-            console.log(`🎯 Loaded ${loadedCount} Bonkler NFTs for wallet ${publicKey}`);
+            console.log(`Loaded ${loadedCount} Bonkler NFTs for wallet ${publicKey}`);
 
             // Save the updated userNFTs immediately after loading
             this.saveGameData();
-            console.log('✅ Saved updated userNFTs to localStorage');
+            console.log('Saved updated userNFTs to localStorage');
 
-            // Process NFTs with loaded component assets
+            // Process and decode the connected collection's visible previews.
             this.reprocessNFTsWithAssets();
+            await this.loadFighterImages(this.userNFTs);
             
             // Refresh displays
             this.populateInventory();
             this.populateNFTs();
+            this.updateNFTCount();
+            this.updateWalletButton();
 
             if (loadedCount > 0) {
                 this.showModal('NFTs Loaded', `Successfully loaded ${loadedCount} of your Bonkler NFTs!`);
@@ -1058,7 +1137,7 @@ class GameState {
             }
 
             } catch (error) {
-            console.error('❌ Error loading user NFTs:', error);
+            console.error('Error loading user NFTs:', error);
             
             // Fall back to demo NFTs
             console.log('Falling back to demo NFTs');
@@ -1192,8 +1271,10 @@ class GameState {
         return false;
     }
 
-    async loadTestNFTs(publicKey) {
+    async loadTestNFTs(publicKey, loadImages = true) {
         console.log('Loading demo NFTs for testing');
+        this.isDemoMode = true;
+        this.userNFTs = [];
         
         // Create demo NFTs with different configurations
         const demoNFTs = [
@@ -1203,6 +1284,9 @@ class GameState {
                 level: 5,
                 attack: 85,
                 defense: 72,
+                health: 520,
+                maxHealth: 520,
+                description: 'Balanced local test unit with a mithril chassis.',
                 components: {
                     head: { name: 'BONK', path: 'HEADS/BONK.png' },
                     body: { name: 'TEKKEN-KING', path: 'BODIES/TEKKEN-KING.png' },
@@ -1219,6 +1303,9 @@ class GameState {
                 level: 3,
                 attack: 78,
                 defense: 65,
+                health: 460,
+                maxHealth: 460,
+                description: 'Fast utility build tuned for evasive combat.',
                 components: {
                     head: { name: 'SPIRIT', path: 'HEADS/SPIRIT.png' },
                     body: { name: 'RILAKKUMA', path: 'BODIES/RILAKKUMA.png' },
@@ -1234,6 +1321,9 @@ class GameState {
                 level: 7,
                 attack: 92,
                 defense: 88,
+                health: 590,
+                maxHealth: 590,
+                description: 'Heavy alien configuration with high defense.',
                 components: {
                     head: { name: 'ALIEN-BONK', path: 'HEADS/ALIEN-BONK.png' },
                     body: { name: 'BURGER-BONK-LASER', path: 'BODIES/BURGER-BONK-LASER.png' },
@@ -1251,7 +1341,8 @@ class GameState {
             const gameBonkler = {
                 ...demoNFT,
                 isUserNFT: true,
-                owner: publicKey,
+                isDemo: true,
+                owner: publicKey || 'LOCAL-DEMO',
                 mint: demoNFT.id,
                 rarity: 'Rare',
                 exp: demoNFT.level * 100
@@ -1260,10 +1351,15 @@ class GameState {
         }
         
         console.log(`Loaded ${this.userNFTs.length} demo NFTs`);
+        if (loadImages && Object.keys(this.componentAssets || {}).length > 0) {
+            await this.loadFighterImages(this.userNFTs);
+        }
         
         // Refresh displays
         this.populateInventory();
         this.populateNFTs();
+        this.updateNFTCount();
+        this.updateWalletButton();
     }
 
     async disconnectWallet() {
@@ -1272,8 +1368,11 @@ class GameState {
                 await this.wallet.disconnect();
             }
             
-            // Clear all game data when disconnecting
+            // Return to a ready-to-play local profile when disconnecting.
             this.resetToFreshStart();
+            await this.loadTestNFTs(null);
+            this.reprocessNFTsWithAssets();
+            await this.loadFighterImages(this.userNFTs);
             
             // Update wallet button
             this.updateWalletButton();
@@ -1295,14 +1394,25 @@ class GameState {
 
     updateWalletButton() {
         const walletBtn = document.getElementById('wallet-connect-btn');
+        const mode = document.getElementById('session-mode');
+        const copy = document.getElementById('session-copy');
+        const collectionBtn = document.getElementById('load-more-nfts-btn');
+        if (!walletBtn) return;
         
         if (this.isConnected && this.publicKey) {
-            walletBtn.innerHTML = `<i class="fas fa-wallet"></i> ${this.publicKey.slice(0, 4)}...${this.publicKey.slice(-4)}`;
-            walletBtn.disabled = false;
+            walletBtn.innerHTML = `${this.symbolMarkup('wallet')}<span>${this.publicKey.slice(0, 4)}…${this.publicKey.slice(-4)}</span>`;
+            walletBtn.title = 'Disconnect wallet';
+            if (mode) mode.textContent = 'WALLET MODE';
+            if (copy) copy.textContent = `${this.userNFTs.length} collection fighter${this.userNFTs.length === 1 ? '' : 's'} ready`;
+            if (collectionBtn) collectionBtn.textContent = 'Refresh Collection';
         } else {
-            walletBtn.innerHTML = `<i class="fas fa-wallet"></i> Connect Wallet`;
-            walletBtn.disabled = false;
+            walletBtn.innerHTML = `${this.symbolMarkup('wallet')}<span>Connect Wallet</span>`;
+            walletBtn.title = 'Connect a Solana wallet';
+            if (mode) mode.textContent = 'DEMO MODE';
+            if (copy) copy.textContent = `${this.userNFTs.length || 3} local fighters ready`;
+            if (collectionBtn) collectionBtn.textContent = 'Connect Collection';
         }
+        walletBtn.disabled = false;
     }
 
     updateUI() {
@@ -1312,6 +1422,47 @@ class GameState {
         
         // Update wallet button state
         this.updateWalletButton();
+    }
+
+    toggleSound() {
+        this.soundEnabled = !this.soundEnabled;
+        const button = document.getElementById('sound-toggle-btn');
+        if (button) {
+            button.setAttribute('aria-pressed', String(this.soundEnabled));
+            const label = button.querySelector('.sound-label');
+            if (label) label.textContent = this.soundEnabled ? 'SOUND ON' : 'SOUND OFF';
+            button.title = this.soundEnabled ? 'Disable interface sounds' : 'Enable interface sounds';
+        }
+        if (this.soundEnabled) this.playTone(620, 0.06, 'square', 0.025);
+    }
+
+    playTone(frequency = 440, duration = 0.04, type = 'square', volume = 0.018) {
+        if (!this.soundEnabled) return;
+        try {
+            this.audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+            const now = this.audioContext.currentTime;
+            const oscillator = this.audioContext.createOscillator();
+            const gain = this.audioContext.createGain();
+            oscillator.type = type;
+            oscillator.frequency.setValueAtTime(frequency, now);
+            gain.gain.setValueAtTime(volume, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            oscillator.connect(gain).connect(this.audioContext.destination);
+            oscillator.start(now);
+            oscillator.stop(now + duration);
+        } catch (error) {
+            console.warn('Audio feedback unavailable:', error);
+            this.soundEnabled = false;
+        }
+    }
+
+    pulseArena(className = 'impact') {
+        const arena = document.querySelector('.battle-canvas-container');
+        if (!arena || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        arena.classList.remove(className);
+        void arena.offsetWidth;
+        arena.classList.add(className);
+        arena.addEventListener('animationend', () => arena.classList.remove(className), { once: true });
     }
 
     addExp(amount) {
@@ -1345,24 +1496,28 @@ class GameState {
     setupEventListeners() {
         console.log('Setting up event listeners...');
         
-        // Navigation
-        const navButtons = document.querySelectorAll('.nav-btn');
-        console.log('Found navigation buttons:', navButtons.length);
-        navButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                console.log('Navigation button clicked:', e.target.dataset.screen);
-                this.switchScreen(e.target.dataset.screen);
+        document.querySelectorAll('.nav-btn').forEach((button) => {
+            button.addEventListener('click', (event) => {
+                this.switchScreen(event.currentTarget.dataset.screen);
             });
         });
 
-        // Battle mode selection
-        document.querySelectorAll('.battle-mode-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.setBattleMode(e.target.dataset.mode);
-            });
+        document.querySelectorAll('.battle-mode-btn').forEach((button) => {
+            button.addEventListener('click', (event) => this.setBattleMode(event.currentTarget.dataset.mode));
         });
 
-        // Battle controls
+        const difficultySelect = document.getElementById('battle-difficulty');
+        if (difficultySelect) {
+            difficultySelect.value = this.battleDifficulty;
+            difficultySelect.addEventListener('change', (event) => {
+                this.battleDifficulty = BATTLE_BALANCE.difficulties[event.currentTarget.value]
+                    ? event.currentTarget.value
+                    : 'standard';
+                this.saveGameData();
+                this.playTone(260, 0.045, 'square', 0.012);
+            });
+        }
+
         document.getElementById('slash-btn').addEventListener('click', () => this.performSlash());
         document.getElementById('power-up-btn').addEventListener('click', () => this.performPowerUp());
         document.getElementById('defend-btn').addEventListener('click', () => this.performDefend());
@@ -1370,55 +1525,81 @@ class GameState {
         document.getElementById('special-btn').addEventListener('click', () => this.performSpecial());
         document.getElementById('bonkler-beam-btn').addEventListener('click', () => this.performBonklerBeam());
 
-        // Modal close
         document.getElementById('modal-close').addEventListener('click', () => this.closeModal());
-        document.getElementById('modal-overlay').addEventListener('click', (e) => {
-            if (e.target.id === 'modal-overlay') this.closeModal();
+        document.getElementById('modal-ok').addEventListener('click', () => this.closeModal());
+        document.getElementById('modal-overlay').addEventListener('click', (event) => {
+            if (event.target === event.currentTarget) this.closeModal();
         });
 
-        // Shop categories
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.setShopCategory(e.target.dataset.category);
-            });
+        const resultModal = document.getElementById('battle-result-modal');
+        const closeResult = () => resultModal.classList.remove('active');
+        document.getElementById('result-modal-close').addEventListener('click', closeResult);
+        resultModal.addEventListener('click', (event) => {
+            if (event.target === event.currentTarget) closeResult();
         });
 
-        // Inventory tabs
-        document.querySelectorAll('.inventory-tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.setInventoryTab(e.target.dataset.tab);
-            });
+        document.querySelectorAll('.category-btn').forEach((button) => {
+            button.addEventListener('click', (event) => this.setShopCategory(event.currentTarget.dataset.category));
         });
 
-        // Leaderboard tabs
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.setLeaderboardTab(e.target.dataset.tab);
-            });
+        document.querySelectorAll('.inventory-tab-btn').forEach((button) => {
+            button.addEventListener('click', (event) => this.setInventoryTab(event.currentTarget.dataset.tab));
         });
 
-        // Fighter builder controls
-        document.getElementById('confirm-fighter-btn').addEventListener('click', () => {
-            this.confirmFighter();
+        document.querySelectorAll('.tab-btn').forEach((button) => {
+            button.addEventListener('click', (event) => this.setLeaderboardTab(event.currentTarget.dataset.tab));
         });
 
+        document.getElementById('refresh-leaderboard-btn')?.addEventListener('click', () => this.updateLeaderboard());
+        document.getElementById('confirm-fighter-btn')?.addEventListener('click', () => this.confirmFighter());
+        document.getElementById('save-equipment-btn')?.addEventListener('click', () => {
+            this.saveGameData();
+            this.showModal('Loadout Saved', 'This fighter configuration has been saved locally.');
+        });
+        document.getElementById('sound-toggle-btn')?.addEventListener('click', () => this.toggleSound());
 
+        document.getElementById('wallet-connect-btn')?.addEventListener('click', () => {
+            if (this.isConnected) this.disconnectWallet();
+            else this.connectWallet();
+        });
 
-        // Wallet connect/disconnect
-        document.getElementById('wallet-connect-btn').addEventListener('click', () => {
-            if (this.isConnected) {
-                this.disconnectWallet();
-            } else {
-            this.connectWallet();
+        document.getElementById('load-more-nfts-btn')?.addEventListener('click', () => {
+            if (this.isConnected) this.loadUserNFTs(this.publicKey);
+            else this.connectWallet();
+        });
+
+        // One low-volume click cue for the whole native-button interface.
+        document.addEventListener('click', (event) => {
+            if (event.target.closest('button')) this.playTone(260, 0.025, 'square', 0.012);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            const activeDialog = document.querySelector('.modal-overlay.active');
+            if (event.key === 'Escape') {
+                this.closeModal();
+                resultModal.classList.remove('active');
+                return;
+            }
+            if (event.key !== 'Tab' || !activeDialog) return;
+            const focusable = [...activeDialog.querySelectorAll('button:not(:disabled), [href], [tabindex]:not([tabindex="-1"])')];
+            if (!focusable.length) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
             }
         });
 
-
-
-        // Load more NFTs
-        document.getElementById('load-more-nfts-btn').addEventListener('click', () => {
-            this.loadMoreNFTs();
-        });
+        const clock = document.getElementById('status-clock');
+        const updateClock = () => {
+            if (clock) clock.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        };
+        updateClock();
+        this.clockInterval = setInterval(updateClock, 30000);
     }
 
     // Fighter Builder System
@@ -1452,19 +1633,16 @@ class GameState {
     }
 
     async loadComponentAssets() {
-        this.componentAssets = {
-            pilot: await this.loadAssetsFromFolder('PILOT'),
-            body: await this.loadAssetsFromFolder('BODIES'),
-            head: await this.loadAssetsFromFolder('HEADS'),
-            armor: await this.loadAssetsFromFolder('ARMORS'),
-            hands: await this.loadAssetsFromFolder('HANDS'),
-            offhand: await this.loadAssetsFromFolder('OFFHAND'),
-            accessory: await this.loadAssetsFromFolder('ACCESSORIES')
-        };
-        
-
-        
-        // Draw empty builder after assets are loaded
+        const [pilot, body, head, armor, hands, offhand, accessory] = await Promise.all([
+            this.loadAssetsFromFolder('PILOT'),
+            this.loadAssetsFromFolder('BODIES'),
+            this.loadAssetsFromFolder('HEADS'),
+            this.loadAssetsFromFolder('ARMORS'),
+            this.loadAssetsFromFolder('HANDS'),
+            this.loadAssetsFromFolder('OFFHAND'),
+            this.loadAssetsFromFolder('ACCESSORIES')
+        ]);
+        this.componentAssets = { pilot, body, head, armor, hands, offhand, accessory };
         this.drawEmptyBuilder();
     }
 
@@ -1502,54 +1680,46 @@ class GameState {
             
             const files = imageFiles[folderName] || [];
             
-            for (const fileName of files) {
-                const img = new Image();
-                
-                // Create a promise to handle image loading
-                const loadPromise = new Promise((resolve, reject) => {
-                    img.onload = () => resolve(img);
-                    img.onerror = () => {
-                        console.warn(`Failed to load ${fileName}, using placeholder`);
-                        // Create a placeholder if image fails to load
-                        const canvas = document.createElement('canvas');
-                        canvas.width = 100;
-                        canvas.height = 100;
-                        const ctx = canvas.getContext('2d');
-                        
-                        ctx.fillStyle = '#cccccc';
-                        ctx.fillRect(0, 0, 100, 100);
-                        ctx.strokeStyle = '#000000';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(0, 0, 100, 100);
-                        ctx.fillStyle = '#ffffff';
-                        ctx.font = '12px Arial';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(folderName, 50, 45);
-                        ctx.fillText(fileName.replace('.png', ''), 50, 65);
-                        
-                        const placeholderImg = new Image();
-                        placeholderImg.onload = () => resolve(placeholderImg);
-                        placeholderImg.src = canvas.toDataURL();
-                    };
-                });
-                
-                // Try to load the actual image
-                img.src = `${folderPath}/${fileName}`;
-                
-                // Wait for the image to load (or fallback to placeholder)
-                const loadedImg = await loadPromise;
-                
-                assets.push({
-                    name: fileName.replace('.png', ''),
-                    path: `${folderPath}/${fileName}`,
-                    image: loadedImg
-                });
-            }
+            // Build a lightweight manifest. Images decode only for visible fighters,
+            // purchased shop parts, and the active enemy instead of blocking boot.
+            assets.push(...files.map((fileName) => ({
+                name: fileName.replace('.png', ''),
+                path: `${folderPath}/${fileName}`,
+                image: null
+            })));
         } catch (error) {
             console.error(`Error loading assets from ${folderName}:`, error);
         }
         
         return assets;
+    }
+
+    async ensureComponentImage(component) {
+        if (!component?.path) return null;
+        if (component.image?.complete && component.image.naturalWidth > 0) return component.image;
+
+        const image = new Image();
+        image.decoding = 'async';
+        image.src = component.path;
+        try {
+            if (image.decode) await image.decode();
+            else await new Promise((resolve, reject) => {
+                image.onload = resolve;
+                image.onerror = reject;
+            });
+            component.image = image;
+            return image;
+        } catch (error) {
+            console.warn(`Could not decode fighter component: ${component.path}`, error);
+            component.image = null;
+            return null;
+        }
+    }
+
+    async loadFighterImages(fighters) {
+        const list = Array.isArray(fighters) ? fighters : [fighters];
+        const components = list.flatMap((fighter) => Object.values(fighter?.components || {}));
+        await Promise.all(components.map((component) => this.ensureComponentImage(component)));
     }
 
     setupComponentNavigation() {
@@ -1593,7 +1763,7 @@ class GameState {
         const nextBtn = document.querySelector(`[data-category="${category}"].next`);
         
         if (assets.length === 0) {
-            display.innerHTML = '<div class="component-item"><span class="component-icon">❌</span></div>';
+            display.innerHTML = `<div class="component-item"><span class="component-icon">${this.symbolMarkup('error')}</span></div>`;
             info.innerHTML = '<span class="component-name">No items available</span><span class="component-stats"></span>';
             prevBtn.disabled = true;
             nextBtn.disabled = true;
@@ -1604,19 +1774,11 @@ class GameState {
         const currentAsset = assets[currentIndex];
         
         // Update display
-        const icons = {
-            pilot: '👤',
-            body: '👔',
-            head: '🎭',
-            armor: '🛡️',
-            hands: '⚔️',
-            offhand: '💰',
-            accessory: '🎩'
-        };
-        
+        const iconName = this.getItemSymbol({ type: category });
+
         display.innerHTML = `
             <div class="component-item selected">
-                <span class="component-icon">${icons[category] || '⚔️'}</span>
+                <span class="component-icon">${this.symbolMarkup(iconName)}</span>
             </div>
         `;
         
@@ -1820,10 +1982,9 @@ class GameState {
         // Update component display to show NFT's components
         this.updateBuilderComponentDisplayForNFT(nft);
         
-        // Render the NFT as base
+        // Render the NFT as base. The builder itself confirms the selection,
+        // so no blocking dialog is needed here.
         this.renderNFTAsBase(nft);
-        
-        this.showModal('NFT Selected', `You can now customize ${nft.name} with your purchased items!`);
     }
 
     buildComponentsFromNFTMetadata(nft) {
@@ -2078,14 +2239,14 @@ class GameState {
                     }
                     
                     if (asset) {
-                        console.log(`✅ Found asset for ${traitType}: ${asset.name}`);
+                        console.log(`Found asset for ${traitType}: ${asset.name}`);
                         components[category] = {
                             name: asset.name,
                             path: asset.path,
                             image: asset.image
                         };
                     } else {
-                        console.log(`❌ No asset found for ${traitType}: ${value}`);
+                        console.log(`No asset found for ${traitType}: ${value}`);
                         // Create a placeholder component
                         components[category] = {
                             name: value,
@@ -2094,7 +2255,7 @@ class GameState {
                         };
                     }
                 } else {
-                    console.log(`⚠️ Unknown trait type: ${traitType}`);
+                    console.log(`Unknown trait type: ${traitType}`);
                 }
             });
         } else {
@@ -2112,10 +2273,10 @@ class GameState {
                 const img = new Image();
                 img.onload = () => {
                     component.image = img;
-                    console.log(`✅ Loaded fallback image for ${category}: ${component.name}`);
+                    console.log(`Loaded fallback image for ${category}: ${component.name}`);
                 };
                 img.onerror = () => {
-                    console.log(`❌ Failed to load fallback image for ${category}: ${component.path}`);
+                    console.log(`Failed to load fallback image for ${category}: ${component.path}`);
                 };
                 img.src = component.path;
             }
@@ -2131,24 +2292,10 @@ class GameState {
         console.log('renderNFTAsBase called for:', nft.name);
         console.log('Canvas dimensions:', this.canvas.width, 'x', this.canvas.height);
         
-        // Clear canvas with transparent background
+        // Keep the artboard clean; fighter metadata lives in the adjacent UI panel.
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // Debug: Draw a background rectangle to see the canvas area
-        this.ctx.fillStyle = 'rgba(200, 200, 200, 0.3)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // Draw actual NFT components using the built components
+        this.ctx.imageSmoothingEnabled = false;
         this.renderNFTComponentsFromBuilder();
-        
-        // Draw NFT info
-        this.ctx.fillStyle = '#000000';
-        this.ctx.font = '16px Arial';
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText(nft.name, this.canvas.width / 2, 30);
-        this.ctx.font = '12px Arial';
-        this.ctx.fillText(`Attack: ${nft.attack} | Defense: ${nft.defense}`, this.canvas.width / 2, 50);
-        this.ctx.fillText('Select components from the right panel to customize', this.canvas.width / 2, 70);
         
         console.log('renderNFTAsBase completed');
     }
@@ -2375,15 +2522,23 @@ class GameState {
         });
     }
 
+    normalizeComponentType(type) {
+        const aliases = {
+            pilots: 'pilot',
+            bodies: 'body',
+            heads: 'head',
+            armors: 'armor',
+            hand: 'hands',
+            offhands: 'offhand',
+            accessories: 'accessory'
+        };
+        return aliases[type] || type;
+    }
+
     getPurchasedItemsByType(type) {
         if (!this.purchasedItems) return [];
-        
-        // Handle both 'hand' and 'hands' types for backward compatibility
-        if (type === 'hands') {
-            return this.purchasedItems.filter(item => item.type === 'hands' || item.type === 'hand');
-        }
-        
-        return this.purchasedItems.filter(item => item.type === type);
+        const normalized = this.normalizeComponentType(type);
+        return this.purchasedItems.filter((item) => this.normalizeComponentType(item.type) === normalized);
     }
 
     updateComponentDisplayForBuilder(category, availableItems) {
@@ -2453,17 +2608,18 @@ class GameState {
     }
 
     getComponentImagePath(item) {
+        if (item.path) return item.path;
+        const type = this.normalizeComponentType(item.type);
         const folderMap = {
-            'pilot': 'PILOT',
-            'body': 'BODIES',
-            'armor': 'ARMORS',
-            'hand': 'HANDS',
-            'hands': 'HANDS',
-            'offhand': 'OFFHAND',
-            'accessory': 'ACCESSORIES'
+            pilot: 'PILOT',
+            body: 'BODIES',
+            armor: 'ARMORS',
+            head: 'HEADS',
+            hands: 'HANDS',
+            offhand: 'OFFHAND',
+            accessory: 'ACCESSORIES'
         };
-        
-        return `${folderMap[item.type] || item.type.toUpperCase()}/${item.asset}`;
+        return `${folderMap[type] || type.toUpperCase()}/${item.asset || ''}`;
     }
 
     drawEmptyBuilder() {
@@ -2538,70 +2694,70 @@ class GameState {
         this.drawEmptyBuilder();
     }
 
+    setBattleSessionLayout(active) {
+        document.getElementById('game-container')?.classList.toggle('battle-session', Boolean(active));
+        document.getElementById('battle-screen')?.classList.toggle('combat-active', Boolean(active));
+    }
+
     switchScreen(screenName) {
+        if (!screenName) return;
+        if (screenName !== 'battle' && this.battleAnimation) {
+            cancelAnimationFrame(this.battleAnimation);
+            this.battleAnimation = null;
+        }
         console.log('Switching to screen:', screenName);
         
-        // Update navigation buttons
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        const targetNavBtn = document.querySelector(`[data-screen="${screenName}"]`);
-        if (targetNavBtn) {
-            targetNavBtn.classList.add('active');
-            console.log('Updated navigation button');
-        } else {
-            console.error('Navigation button not found for screen:', screenName);
-        }
+        const applyScreen = () => {
+            document.querySelectorAll('.nav-btn').forEach((button) => {
+                const isActive = button.dataset.screen === screenName;
+                button.classList.toggle('active', isActive);
+                if (isActive) button.setAttribute('aria-current', 'page');
+                else button.removeAttribute('aria-current');
+            });
 
-        // Update screens
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.remove('active');
-        });
-        const targetScreen = document.getElementById(`${screenName}-screen`);
-        if (targetScreen) {
-            targetScreen.classList.add('active');
-            console.log('Updated screen display');
-        } else {
-            console.error('Screen not found:', screenName);
-        }
+            document.querySelectorAll('.screen').forEach((screen) => {
+                const isActive = screen.id === `${screenName}-screen`;
+                screen.classList.toggle('active', isActive);
+                screen.setAttribute('aria-hidden', String(!isActive));
+            });
+        };
         
-        // Special handling for builder screen
-        if (screenName === 'builder') {
-            // Ensure canvas is properly initialized
-            if (this.canvas && this.ctx) {
-                if (this.selectedNFT) {
-                    // Re-render the selected NFT
-                    this.renderNFTAsBase(this.selectedNFT);
-                } else {
-                    // Draw empty builder
-                    this.drawEmptyBuilder();
-                }
-            }
-        }
+        applyScreen();
         
-        // Note: Users can now access inventory even after building a fighter
+        this.setBattleSessionLayout(screenName === 'battle' && Boolean(this.currentBattle));
+        if (screenName === 'shop') this.populateShop(this.currentShopCategory);
+        if (screenName === 'leaderboard') this.updateLeaderboard();
+        this.playTone(330, 0.035, 'square', 0.014);
+        window.scrollTo({ top: 0, behavior: 'instant' });
     }
 
     setBattleMode(mode) {
         this.battleMode = mode;
-        document.querySelectorAll('.battle-mode-btn').forEach(btn => {
-            btn.classList.remove('active');
+        document.querySelectorAll('.battle-mode-btn').forEach((button) => {
+            const isActive = button.dataset.mode === mode;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-pressed', String(isActive));
         });
-        document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+        if (mode === 'pvp') this.showModal('PvP In Development', 'Local and wallet AI battles are ready. Network PvP is not yet available.');
     }
 
     setShopCategory(category) {
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.classList.remove('active');
+        this.currentShopCategory = category;
+        document.querySelectorAll('.category-btn').forEach((button) => {
+            const isActive = button.dataset.category === category;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-selected', String(isActive));
         });
-        document.querySelector(`[data-category="${category}"]`).classList.add('active');
         this.populateShop(category);
     }
 
     setInventoryTab(tab) {
         // Update tab buttons
-        document.querySelectorAll('.inventory-tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+        document.querySelectorAll('.inventory-tab-btn').forEach((button) => {
+            const isActive = button.dataset.tab === tab;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-selected', String(isActive));
+        });
         
         // Show/hide sections based on tab
         const nftSection = document.querySelector('.nft-carousel-section');
@@ -2621,10 +2777,11 @@ class GameState {
     }
 
     setLeaderboardTab(tab) {
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active');
+        document.querySelectorAll('.tab-btn').forEach((button) => {
+            const isActive = button.dataset.tab === tab;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-selected', String(isActive));
         });
-        document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
         this.currentLeaderboardTab = tab;
         this.populateLeaderboard(tab);
     }
@@ -2643,7 +2800,7 @@ class GameState {
                         const assets = this.componentAssets[category] || [];
                         const asset = assets.find(a => a.name === component.name);
                         if (asset) {
-                            component.image = asset.image;
+                            component.image = asset.image || component.image || null;
                             component.path = asset.path;
                         }
                     }
@@ -2672,12 +2829,16 @@ class GameState {
         nftGrid.innerHTML = '';
 
         this.userNFTs.forEach(nft => {
-            const nftCard = document.createElement('div');
+            const nftCard = document.createElement('button');
+            nftCard.type = 'button';
             nftCard.className = 'nft-card';
             nftCard.dataset.nftId = nft.id;
             
             // Add NFT indicator if it's an NFT
-            const nftBadge = nft.isNFT ? `<div class="nft-badge">NFT</div>` : '';
+            const nftBadge = nft.isNFT ? '<div class="nft-badge">NFT</div>' : '';
+            const safeName = this.escapeHTML(nft.name);
+            const safeDescription = this.escapeHTML(nft.description || '');
+            const safeTokenId = this.escapeHTML(nft.tokenId || '');
             
             // Always create a fighter preview canvas
             nftCard.innerHTML = `
@@ -2685,14 +2846,14 @@ class GameState {
                     <canvas class="fighter-preview" width="120" height="180"></canvas>
                     ${nftBadge}
                 </div>
-                <div class="nft-name">${nft.name}</div>
-                <div class="nft-description">${nft.description || ''}</div>
+                <div class="nft-name">${safeName}</div>
+                <div class="nft-description">${safeDescription}</div>
                 <div class="nft-stats">
                     <div>Level: ${nft.level}</div>
                     <div>Attack: ${nft.attack}</div>
                     <div>Defense: ${nft.defense}</div>
                     <div>Health: ${nft.health}/${nft.maxHealth}</div>
-                    ${nft.tokenId ? `<div>Token ID: ${nft.tokenId}</div>` : ''}
+                    ${nft.tokenId ? `<div>Token ID: ${safeTokenId}</div>` : ''}
                 </div>
             `;
             
@@ -2741,14 +2902,15 @@ class GameState {
         this.startBattle();
     }
 
-    startBattle() {
+    async startBattle() {
         if (!this.selectedNFT) {
             console.log('No NFT selected for battle');
             return;
         }
 
-        // Switch to battle screen
+        // Switch to battle screen and collapse fighter selection during combat.
         this.switchScreen('battle');
+        document.querySelector('.nft-selection')?.classList.add('battle-running');
         
         // Initialize battle canvas
         this.initBattleCanvas();
@@ -2770,11 +2932,11 @@ class GameState {
         
         this.playerFighter = {
             name: this.selectedNFT.name,
-            level: this.selectedNFT.level,
-            attack: this.selectedNFT.attack,
-            defense: this.selectedNFT.defense,
-            health: this.selectedNFT.health || defaultHealth,
-            maxHealth: this.selectedNFT.maxHealth || defaultMaxHealth,
+            level: Math.max(1, Number(this.selectedNFT.level) || 1),
+            attack: Math.max(35, Math.min(200, Number(this.selectedNFT.attack) || 70)),
+            defense: Math.max(20, Math.min(220, Number(this.selectedNFT.defense) || 50)),
+            health: Math.max(1, Number(this.selectedNFT.health) || defaultHealth),
+            maxHealth: Math.max(1, Number(this.selectedNFT.maxHealth) || defaultMaxHealth),
             components: this.selectedNFT.components || {}
         };
         
@@ -2798,8 +2960,8 @@ class GameState {
             });
             
             // Apply component bonuses
-            this.playerFighter.attack += additionalAttack;
-            this.playerFighter.defense += additionalDefense;
+            this.playerFighter.attack = Math.min(200, this.playerFighter.attack + additionalAttack);
+            this.playerFighter.defense = Math.min(220, this.playerFighter.defense + additionalDefense);
             
             console.log(`Applied component bonuses: +${additionalAttack} ATK, +${additionalDefense} DEF`);
             console.log('Final player fighter stats:', this.playerFighter);
@@ -2812,6 +2974,9 @@ class GameState {
         console.log('Player fighter created:', this.playerFighter);
         console.log('Player fighter components:', this.playerFighter.components);
         
+        // Decode only the 2 active units before the arena becomes visible.
+        await this.loadFighterImages([this.playerFighter, this.enemyFighter]);
+
         // Set up battle state
         this.currentBattle = {
             player: { ...this.playerFighter },
@@ -2819,9 +2984,16 @@ class GameState {
             turn: 'player',
             timer: 30
         };
-        
+        this.setBattleSessionLayout(true);
+
         // Reset battle state
         this.battleState.powerUpCount = 0;
+        this.battleState.powerUpActive = false;
+        this.battleState.defendActive = false;
+        this.battleState.dodgeActive = false;
+        this.battleState.enemyDefendActive = false;
+        this.battleState.counterActive = false;
+        this.battleState.healUses = 1;
         this.battleState.bonklerBeamUses = 3;
 
         // Show battle arena
@@ -2860,12 +3032,38 @@ class GameState {
     initBattleCanvas() {
         this.battleCanvas = document.getElementById('battle-canvas');
         this.battleCtx = this.battleCanvas.getContext('2d');
+        this.battleCtx.imageSmoothingEnabled = false;
+    }
+
+    getDifficultySettings() {
+        return BATTLE_BALANCE.difficulties[this.battleDifficulty]
+            || BATTLE_BALANCE.difficulties.standard;
+    }
+
+    calculateCombatDamage(attack, defense, power = 1) {
+        const safeAttack = Math.max(1, Number(attack) || 1);
+        const safeDefense = Math.max(0, Number(defense) || 0);
+        const mitigation = BATTLE_BALANCE.defenseScale / (BATTLE_BALANCE.defenseScale + safeDefense);
+        const variance = 0.9 + Math.random() * 0.2;
+        return Math.max(1, Math.round(safeAttack * power * mitigation * variance));
+    }
+
+    getPowerUpMultiplier() {
+        return 1 + Math.min(this.battleState.powerUpCount, BATTLE_BALANCE.maxPowerStacks)
+            * BATTLE_BALANCE.powerUpPerStack;
+    }
+
+    applyEnemyGuard(damage) {
+        if (!this.battleState.enemyDefendActive) return damage;
+        this.battleState.enemyDefendActive = false;
+        this.addBattleLogEntry('Enemy guard absorbs part of the hit!', 'enemy-action');
+        return Math.max(1, Math.round(damage * (1 - BATTLE_BALANCE.guardReduction)));
     }
 
     createRandomEnemy() {
         const categories = ['pilot', 'body', 'head', 'armor', 'hands', 'offhand', 'accessory'];
         const enemyComponents = {};
-        
+
         categories.forEach(category => {
             const assets = this.componentAssets[category] || [];
             if (assets.length > 0) {
@@ -2874,41 +3072,46 @@ class GameState {
             }
         });
 
+        const settings = this.getDifficultySettings();
+        const selected = this.selectedNFT || {};
+        const componentBonuses = Object.values(selected.components || {}).reduce((totals, component) => ({
+            attack: totals.attack + (Number(component?.attack) || 0),
+            defense: totals.defense + (Number(component?.defense) || 0)
+        }), { attack: 0, defense: 0 });
+        const playerAttack = Math.max(40, (Number(selected.attack) || 70) + componentBonuses.attack);
+        const playerDefense = Math.max(25, (Number(selected.defense) || 50) + componentBonuses.defense);
+        const playerHealth = Math.max(320, Number(selected.maxHealth) || Number(selected.health) || 400);
+        const combatLevel = Math.max(1, this.level, Number(selected.level) || 1);
+        const enemyLevel = Math.max(1, combatLevel + Math.floor(Math.random() * 3) - 1);
+        const maxHealth = Math.round(playerHealth * (0.88 + Math.random() * 0.12) * settings.health);
+
         return {
-            name: 'Enemy Bonkler',
-            level: Math.floor(Math.random() * 10) + 1,
-            attack: 50 + Math.floor(Math.random() * 30),
-            defense: 30 + Math.floor(Math.random() * 30),
-            health: 400 + Math.floor(Math.random() * 200),
-            maxHealth: 400 + Math.floor(Math.random() * 200),
+            name: `${settings.label} Enemy Bonkler`,
+            level: enemyLevel,
+            attack: Math.round((playerAttack * 0.88 + enemyLevel * 2) * settings.attack),
+            defense: Math.round((playerDefense * 0.72 + enemyLevel * 2) * settings.defense),
+            health: maxHealth,
+            maxHealth,
             components: enemyComponents
         };
     }
 
     renderFighterOnBattleCanvas(fighter, x, y, scale = 0.3, isEnemy = false) {
-        if (!this.battleCtx || !fighter || !fighter.components) {
-            console.log('Cannot render fighter:', { battleCtx: !!this.battleCtx, fighter: !!fighter, components: !!fighter?.components });
-            return;
-        }
+        if (!this.battleCtx || !fighter || !fighter.components) return;
 
-        console.log(`Rendering ${isEnemy ? 'enemy' : 'player'} fighter:`, fighter.name);
-        console.log('Fighter components:', fighter.components);
-
-        // Clear area for this fighter
-        this.battleCtx.clearRect(x - 50, y - 100, 100, 200);
+        this.battleCtx.imageSmoothingEnabled = false;
 
         // Render layers in order: body → armor → hands → offhand → head → pilot → accessories
         const layerOrder = ['body', 'armor', 'hands', 'offhand', 'head', 'pilot', 'accessory'];
-        let renderedComponents = 0;
-        
+
         layerOrder.forEach(layer => {
             const component = fighter.components[layer];
-            console.log(`Checking ${layer} component:`, component);
-            
+
             if (component && component.image && component.image.complete && component.image.naturalWidth > 0) {
-                console.log(`Rendering ${layer} component:`, component.name);
-                const scaledWidth = component.image.width * scale;
-                const scaledHeight = component.image.height * scale;
+                // Keep full-height source layers inside the 800×400 logical arena.
+                const arenaScale = scale * 0.82;
+                const scaledWidth = component.image.width * arenaScale;
+                const scaledHeight = component.image.height * arenaScale;
                 const drawX = x - scaledWidth / 2;
                 const drawY = y - scaledHeight / 2;
                 
@@ -2922,418 +3125,26 @@ class GameState {
                     // Enemy fighter stays as is
                     this.battleCtx.drawImage(component.image, drawX, drawY, scaledWidth, scaledHeight);
                 }
-                renderedComponents++;
-            } else if (component) {
-                console.log(`Component ${layer} has no valid image:`, component);
             }
         });
-        
-        console.log(`Rendered ${renderedComponents} components for ${isEnemy ? 'enemy' : 'player'} fighter`);
     }
 
-    animateAttack(attacker, defender, isPlayerAttacking) {
-        const startX = isPlayerAttacking ? 150 : 650;
-        const endX = isPlayerAttacking ? 650 : 150;
-        const y = 200;
-        
-        let currentX = startX;
-        const step = isPlayerAttacking ? 15 : -15;
-        let particles = [];
-        
-        // Create attack particles
-        for (let i = 0; i < 20; i++) {
-            particles.push({
-                x: startX,
-                y: y + Math.random() * 100 - 50,
-                vx: (Math.random() - 0.5) * 10,
-                vy: (Math.random() - 0.5) * 10,
-                life: 1.0,
-                decay: 0.02 + Math.random() * 0.03,
-                color: `hsl(${Math.random() * 60 + 300}, 100%, 50%)` // Purple to blue
-            });
-        }
-        
-        const animate = () => {
-            // Clear canvas
-            this.battleCtx.clearRect(0, 0, this.battleCanvas.width, this.battleCanvas.height);
-            
-            // Transparent background - no background image
-            // Canvas is already transparent, no need to draw anything
-            
-            // Draw enemy at fixed position
-            this.renderFighterOnBattleCanvas(this.enemyFighter, 650, y, 0.3, true);
-            
-            // Draw player at fixed position
-            this.renderFighterOnBattleCanvas(this.playerFighter, 150, y, 0.3, false);
-            
-            // Draw attacking fighter moving
-            if (Math.abs(currentX - endX) > 5) {
-                currentX += step;
-                this.renderFighterOnBattleCanvas(attacker, currentX, y, 0.3, !isPlayerAttacking);
-                
-                // Update and draw particles
-                particles.forEach((particle, index) => {
-                    particle.x += particle.vx;
-                    particle.y += particle.vy;
-                    particle.life -= particle.decay;
-                    
-                    if (particle.life > 0) {
-                        this.battleCtx.save();
-                        this.battleCtx.globalAlpha = particle.life;
-                        this.battleCtx.fillStyle = particle.color;
-                        this.battleCtx.beginPath();
-                        this.battleCtx.arc(particle.x, particle.y, 3, 0, Math.PI * 2);
-                        this.battleCtx.fill();
-                        this.battleCtx.restore();
-                    }
-                });
-                
-                requestAnimationFrame(animate);
-            } else {
-                // Attack impact effect
-                this.createImpactEffect(endX, y);
-                
-                // Attack animation complete, return to position
-                setTimeout(() => {
-                    this.renderFighterOnBattleCanvas(attacker, startX, y, 0.3, !isPlayerAttacking);
-                }, 300);
-            }
-        };
-        
-        animate();
-    }
-
-    createImpactEffect(x, y) {
-        // Create impact particles
-        const impactParticles = [];
-        for (let i = 0; i < 15; i++) {
-            impactParticles.push({
-                x: x + (Math.random() - 0.5) * 50,
-                y: y + (Math.random() - 0.5) * 50,
-                vx: (Math.random() - 0.5) * 15,
-                vy: (Math.random() - 0.5) * 15,
-                life: 1.0,
-                decay: 0.03 + Math.random() * 0.04,
-                color: `hsl(${Math.random() * 60 + 15}, 100%, 50%)` // Orange to red
-            });
-        }
-        
-        let frame = 0;
-        const maxFrames = 30;
-        
-        const animateImpact = () => {
-            frame++;
-            
-            // Update and draw impact particles
-            impactParticles.forEach((particle) => {
-                particle.x += particle.vx;
-                particle.y += particle.vy;
-                particle.life -= particle.decay;
-                
-                if (particle.life > 0) {
-                    this.battleCtx.save();
-                    this.battleCtx.globalAlpha = particle.life;
-                    this.battleCtx.fillStyle = particle.color;
-                    this.battleCtx.beginPath();
-                    this.battleCtx.arc(particle.x, particle.y, 4, 0, Math.PI * 2);
-                    this.battleCtx.fill();
-                    this.battleCtx.restore();
-                }
-            });
-            
-            if (frame < maxFrames) {
-                requestAnimationFrame(animateImpact);
-            }
-        };
-        
-        animateImpact();
-    }
-
-    animateSpecialAttack(attacker, defender, isPlayerAttacking) {
-        const startX = isPlayerAttacking ? 150 : 650;
-        const endX = isPlayerAttacking ? 650 : 150;
-        const y = 200;
-        
-        let currentX = startX;
-        const step = isPlayerAttacking ? 20 : -20;
-        let specialParticles = [];
-        let frame = 0;
-        
-        // Create special attack particles
-        for (let i = 0; i < 30; i++) {
-            specialParticles.push({
-                x: startX,
-                y: y + Math.random() * 120 - 60,
-                vx: (Math.random() - 0.5) * 15,
-                vy: (Math.random() - 0.5) * 15,
-                life: 1.0,
-                decay: 0.015 + Math.random() * 0.02,
-                color: `hsl(${Math.random() * 120 + 180}, 100%, 50%)`, // Green to cyan
-                size: 2 + Math.random() * 4
-            });
-        }
-        
-        const animate = () => {
-            frame++;
-            
-            // Clear canvas
-            this.battleCtx.clearRect(0, 0, this.battleCanvas.width, this.battleCanvas.height);
-            
-            // Transparent background - no background image
-            // Canvas is already transparent, no need to draw anything
-            
-            // Draw enemy at fixed position
-            this.renderFighterOnBattleCanvas(this.enemyFighter, 650, y, 0.3, true);
-            
-            // Draw player at fixed position
-            this.renderFighterOnBattleCanvas(this.playerFighter, 150, y, 0.3, false);
-            
-            // Draw attacking fighter moving
-            if (Math.abs(currentX - endX) > 5) {
-                currentX += step;
-                this.renderFighterOnBattleCanvas(attacker, currentX, y, 0.3, !isPlayerAttacking);
-                
-                // Update and draw special particles
-                specialParticles.forEach((particle) => {
-                    particle.x += particle.vx;
-                    particle.y += particle.vy;
-                    particle.life -= particle.decay;
-                    
-                    if (particle.life > 0) {
-                        this.battleCtx.save();
-                        this.battleCtx.globalAlpha = particle.life;
-                        this.battleCtx.fillStyle = particle.color;
-                        this.battleCtx.beginPath();
-                        this.battleCtx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-                        this.battleCtx.fill();
-                        
-                        // Add glow effect
-                        this.battleCtx.shadowColor = particle.color;
-                        this.battleCtx.shadowBlur = 10;
-                        this.battleCtx.beginPath();
-                        this.battleCtx.arc(particle.x, particle.y, particle.size * 0.5, 0, Math.PI * 2);
-                        this.battleCtx.fill();
-                        this.battleCtx.restore();
-                    }
-                });
-                
-                requestAnimationFrame(animate);
-            } else {
-                // Special attack impact effect
-                this.createSpecialImpactEffect(endX, y);
-                
-                // Attack animation complete, return to position
-                setTimeout(() => {
-                    this.renderFighterOnBattleCanvas(attacker, startX, y, 0.3, !isPlayerAttacking);
-                }, 500);
-            }
-        };
-        
-        animate();
-    }
-
-    createSpecialImpactEffect(x, y) {
-        // Create special impact particles
-        const specialImpactParticles = [];
-        for (let i = 0; i < 25; i++) {
-            specialImpactParticles.push({
-                x: x + (Math.random() - 0.5) * 80,
-                y: y + (Math.random() - 0.5) * 80,
-                vx: (Math.random() - 0.5) * 20,
-                vy: (Math.random() - 0.5) * 20,
-                life: 1.0,
-                decay: 0.02 + Math.random() * 0.03,
-                color: `hsl(${Math.random() * 60 + 300}, 100%, 50%)`, // Purple to blue
-                size: 3 + Math.random() * 6
-            });
-        }
-        
-        let frame = 0;
-        const maxFrames = 45;
-        
-        const animateSpecialImpact = () => {
-            frame++;
-            
-            // Update and draw special impact particles
-            specialImpactParticles.forEach((particle) => {
-                particle.x += particle.vx;
-                particle.y += particle.vy;
-                particle.life -= particle.decay;
-                
-                if (particle.life > 0) {
-                    this.battleCtx.save();
-                    this.battleCtx.globalAlpha = particle.life;
-                    this.battleCtx.fillStyle = particle.color;
-                    this.battleCtx.shadowColor = particle.color;
-                    this.battleCtx.shadowBlur = 15;
-                    this.battleCtx.beginPath();
-                    this.battleCtx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-                    this.battleCtx.fill();
-                    this.battleCtx.restore();
-                }
-            });
-            
-            if (frame < maxFrames) {
-                requestAnimationFrame(animateSpecialImpact);
-            }
-        };
-        
-        animateSpecialImpact();
-    }
-
-    animateDefend() {
-        if (!this.battleCtx) return;
-        
-        const playerX = 150;
-        const playerY = 200;
-        
-        // Create shield emoji effect
-        const shieldEmoji = '🛡️';
-        const upArrowEmoji = '⬆️';
-        
-        let frame = 0;
-        const maxFrames = 60;
-        
-        const animate = () => {
-            if (frame >= maxFrames) return;
-            
-            // Clear the area around the player
-            this.battleCtx.clearRect(playerX - 50, playerY - 100, 150, 120);
-            
-            // Redraw the player
-            this.renderFighterOnBattleCanvas(this.playerFighter, playerX, playerY, 0.3, false);
-            
-            // Draw shield emoji
-            this.battleCtx.font = '36px Arial';
-            this.battleCtx.fillStyle = '#0066cc';
-            this.battleCtx.textAlign = 'center';
-            
-            const shieldY = playerY - 80 + (frame * 0.5);
-            const shieldOpacity = Math.sin(frame * 0.2) * 0.5 + 0.5;
-            this.battleCtx.globalAlpha = shieldOpacity;
-            this.battleCtx.fillText(shieldEmoji, playerX + 40, shieldY);
-            
-            // Draw up arrow emoji
-            this.battleCtx.fillStyle = '#00cc00';
-            const arrowY = playerY - 60 + (frame * 0.3);
-            this.battleCtx.fillText(upArrowEmoji, playerX + 60, arrowY);
-            
-            this.battleCtx.globalAlpha = 1.0;
-            
-            frame++;
-            requestAnimationFrame(animate);
-        };
-        
-        animate();
-    }
-
-    animatePowerUp() {
-        if (!this.battleCtx) return;
-        
-        const playerX = 150;
-        const playerY = 200;
-        
-        // Create sword and up arrow emoji effect
-        const swordEmoji = '⚔️';
-        const upArrowEmoji = '⬆️';
-        
-        let frame = 0;
-        const maxFrames = 60;
-        
-        const animate = () => {
-            if (frame >= maxFrames) return;
-            
-            // Clear the area around the player
-            this.battleCtx.clearRect(playerX - 50, playerY - 100, 150, 120);
-            
-            // Redraw the player
-            this.renderFighterOnBattleCanvas(this.playerFighter, playerX, playerY, 0.3, false);
-            
-            // Draw sword emoji
-            this.battleCtx.font = '36px Arial';
-            this.battleCtx.fillStyle = '#ff6600';
-            this.battleCtx.textAlign = 'center';
-            
-            const swordY = playerY - 80 + (frame * 0.5);
-            const swordOpacity = Math.sin(frame * 0.2) * 0.5 + 0.5;
-            this.battleCtx.globalAlpha = swordOpacity;
-            this.battleCtx.fillText(swordEmoji, playerX + 40, swordY);
-            
-            // Draw up arrow emoji
-            this.battleCtx.fillStyle = '#ffcc00';
-            const arrowY = playerY - 60 + (frame * 0.3);
-            this.battleCtx.fillText(upArrowEmoji, playerX + 60, arrowY);
-            
-            this.battleCtx.globalAlpha = 1.0;
-            
-            frame++;
-            requestAnimationFrame(animate);
-        };
-        
-        animate();
-    }
-
-    animateBonklerBeam() {
-        if (!this.battleCtx) return;
-        
-        const playerX = 150;
-        const playerY = 200;
-        const enemyX = 650;
-        const enemyY = 200;
-        
-        // Create beam effect
-        const beamEmoji = '⚡';
-        const explosionEmoji = '💥';
-        
-        let frame = 0;
-        const maxFrames = 90;
-        
-        const animate = () => {
-            if (frame >= maxFrames) return;
-            
-            // Clear the entire battle area
-            this.battleCtx.clearRect(0, 0, this.battleCanvas.width, this.battleCanvas.height);
-            
-            // Redraw fighters
-            this.renderFighterOnBattleCanvas(this.playerFighter, playerX, playerY, 0.3, false);
-            this.renderFighterOnBattleCanvas(this.enemyFighter, enemyX, enemyY, 0.3, true);
-            
-            // Draw beam effect
-            this.battleCtx.font = '48px Arial';
-            this.battleCtx.fillStyle = '#ff0000';
-            this.battleCtx.textAlign = 'center';
-            
-            // Beam travels from player to enemy
-            const progress = frame / maxFrames;
-            const beamX = playerX + (enemyX - playerX) * progress;
-            const beamY = playerY + (enemyY - playerY) * progress;
-            
-            // Beam opacity and size
-            const beamOpacity = Math.sin(frame * 0.3) * 0.5 + 0.5;
-            this.battleCtx.globalAlpha = beamOpacity;
-            this.battleCtx.fillText(beamEmoji, beamX, beamY);
-            
-            // Add explosion effect at enemy when beam hits
-            if (progress > 0.8) {
-                this.battleCtx.fillStyle = '#ffff00';
-                this.battleCtx.font = '36px Arial';
-                this.battleCtx.fillText(explosionEmoji, enemyX, enemyY - 50);
-            }
-            
-            this.battleCtx.globalAlpha = 1.0;
-            
-            frame++;
-            requestAnimationFrame(animate);
-        };
-        
-        animate();
-    }
+    // Safe fallbacks are replaced by combat-animations.js before game initialization.
+    animateAttack() { this.renderBattle(); }
+    animateSpecialAttack() { this.renderBattle(); }
+    animateDefend() { this.renderBattle(); }
+    animatePowerUp() { this.renderBattle(); }
+    animateBonklerBeam() { this.renderBattle(); }
+    animateDodge() { this.renderBattle(); }
+    animateRepair() { this.renderBattle(); }
+    animateCounter() { this.renderBattle(); }
 
     renderBattle() {
         if (!this.battleCtx) return;
         
         // Clear canvas
         this.battleCtx.clearRect(0, 0, this.battleCanvas.width, this.battleCanvas.height);
+        this.battleCtx.imageSmoothingEnabled = false;
         
         // Transparent background - no background image
         // Canvas is already transparent, no need to draw anything
@@ -3359,7 +3170,7 @@ class GameState {
         console.log(`Health bar element found:`, healthBar);
         
         if (healthBar) {
-            const healthPercentage = (character.health / character.maxHealth) * 100;
+            const healthPercentage = Math.max(0, Math.min(100, (character.health / character.maxHealth) * 100));
             console.log(`Calculated health percentage: ${healthPercentage}%`);
             healthBar.style.width = `${healthPercentage}%`;
             console.log(`Updated ${side} health bar to ${healthPercentage}% (${character.health}/${character.maxHealth})`);
@@ -3384,24 +3195,19 @@ class GameState {
             btn.disabled = false;
         });
         
-        // Show/hide special button based on level
+        // Advanced actions require both progression and an equipped shop unlock.
         const specialBtn = document.getElementById('special-btn');
         if (specialBtn) {
-            if (this.level >= 5) {
-                specialBtn.style.display = 'block';
-            } else {
-                specialBtn.style.display = 'none';
-            }
+            specialBtn.style.display = this.level >= 5 && this.equippedSkills.includes('Special')
+                ? 'grid'
+                : 'none';
         }
-        
-        // Show/hide beam button based on level
+
         const beamBtn = document.getElementById('bonkler-beam-btn');
         if (beamBtn) {
-            if (this.level >= 10) {
-                beamBtn.style.display = 'block';
-            } else {
-                beamBtn.style.display = 'none';
-            }
+            beamBtn.style.display = this.level >= 10 && this.equippedSkills.includes('Bonkler Beam')
+                ? 'grid'
+                : 'none';
         }
         
         // Show equipped skills dynamically
@@ -3417,14 +3223,16 @@ class GameState {
     performSlash() {
         if (!this.currentBattle || this.currentBattle.turn !== 'player') return;
 
-        // Apply power-up bonus if active
-        let damageMultiplier = 1.0;
-        if (this.battleState.powerUpActive) {
-            damageMultiplier = 1.5;
-            this.addBattleLogEntry(`Power-up bonus applied!`, 'power-up');
+        const damageMultiplier = this.getPowerUpMultiplier();
+        if (this.battleState.powerUpCount > 0) {
+            this.addBattleLogEntry(`Power-up bonus: +${Math.round((damageMultiplier - 1) * 100)}%`, 'power-up');
         }
 
-        const damage = Math.floor(this.currentBattle.player.attack * (0.8 + Math.random() * 0.4) * damageMultiplier);
+        const damage = this.applyEnemyGuard(this.calculateCombatDamage(
+            this.currentBattle.player.attack,
+            this.currentBattle.enemy.defense,
+            damageMultiplier
+        ));
         this.currentBattle.enemy.health = Math.max(0, this.currentBattle.enemy.health - damage);
         
         this.addBattleLogEntry(`You slash the enemy!`, 'player-action');
@@ -3453,11 +3261,14 @@ class GameState {
     performPowerUp() {
         if (!this.currentBattle || this.currentBattle.turn !== 'player') return;
 
+        if (this.battleState.powerUpCount >= BATTLE_BALANCE.maxPowerStacks) {
+            this.addBattleLogEntry('Power-up is already at maximum charge!', 'power-up');
+            return;
+        }
+
         this.battleState.powerUpCount++;
-        this.addBattleLogEntry(`You power up! (${this.battleState.powerUpCount}/3)`, 'player-action');
-        this.addBattleLogEntry(`Attack strength increased for the rest of battle!`, 'power-up');
-        
-        // Activate power-up for the rest of battle
+        this.addBattleLogEntry(`You power up! (${this.battleState.powerUpCount}/${BATTLE_BALANCE.maxPowerStacks})`, 'player-action');
+        this.addBattleLogEntry(`Attack increased by ${Math.round(BATTLE_BALANCE.powerUpPerStack * 100)}%.`, 'power-up');
         this.battleState.powerUpActive = true;
         this.showBattleEffect('power-up', 0);
         
@@ -3473,9 +3284,9 @@ class GameState {
         if (!this.currentBattle || this.currentBattle.turn !== 'player') return;
 
         this.addBattleLogEntry(`You take a defensive stance!`, 'player-action');
-        this.addBattleLogEntry(`Defense increased for the rest of battle!`, 'defend');
-        
-        // Activate defense boost for the rest of battle
+        this.addBattleLogEntry(`The next damaging hit is reduced by ${Math.round(BATTLE_BALANCE.guardReduction * 100)}%.`, 'defend');
+
+        // Guard lasts until the next damaging enemy action.
         this.battleState.defendActive = true;
         this.showBattleEffect('defend', 0);
         
@@ -3491,12 +3302,13 @@ class GameState {
         if (!this.currentBattle || this.currentBattle.turn !== 'player') return;
 
         this.addBattleLogEntry(`You prepare to dodge!`, 'player-action');
-        this.addBattleLogEntry(`70% chance to dodge next attack!`, 'dodge');
+        this.addBattleLogEntry(`${Math.round(this.battleState.dodgeSuccessRate * 100)}% chance to dodge the next attack!`, 'dodge');
         
         // Activate dodge for next enemy attack
         this.battleState.dodgeActive = true;
         this.showBattleEffect('dodge', 0);
-        
+        this.animateDodge?.();
+
         this.currentBattle.turn = 'enemy';
         this.addBattleLogEntry(`Enemy's turn...`, 'enemy-action');
         setTimeout(() => this.enemyTurn(), 1000);
@@ -3505,9 +3317,8 @@ class GameState {
     performSpecial() {
         if (!this.currentBattle || this.currentBattle.turn !== 'player') return;
 
-        // Check if player is level 5 or higher
-        if (this.level < 5) {
-            this.addBattleLogEntry(`Special attack requires level 5!`, 'battle-event');
+        if (this.level < 5 || !this.equippedSkills.includes('Special')) {
+            this.addBattleLogEntry(`Special requires level 5 and an equipped unlock!`, 'battle-event');
             return;
         }
         
@@ -3517,8 +3328,12 @@ class GameState {
             return;
         }
         
-        // Perform the special attack
-        const damage = Math.floor(this.currentBattle.player.attack * (2.0 + Math.random() * 1.0));
+        // Special trades three setup turns for one defense-aware heavy hit.
+        const damage = this.applyEnemyGuard(this.calculateCombatDamage(
+            this.currentBattle.player.attack,
+            this.currentBattle.enemy.defense,
+            2.25
+        ));
         this.currentBattle.enemy.health = Math.max(0, this.currentBattle.enemy.health - damage);
         
         this.addBattleLogEntry(`You unleash a devastating special attack!`, 'player-action');
@@ -3526,7 +3341,8 @@ class GameState {
         
         // Reset power-up count after using special
         this.battleState.powerUpCount = 0;
-        
+        this.battleState.powerUpActive = false;
+
         // Animate the special attack
         this.animateSpecialAttack(this.currentBattle.player, this.currentBattle.enemy, true);
         
@@ -3550,9 +3366,8 @@ class GameState {
     performBonklerBeam() {
         if (!this.currentBattle || this.currentBattle.turn !== 'player') return;
 
-        // Check if player is level 10 or higher
-        if (this.level < 10) {
-            this.addBattleLogEntry(`Bonkler Beam requires level 10!`, 'battle-event');
+        if (this.level < 10 || !this.equippedSkills.includes('Bonkler Beam')) {
+            this.addBattleLogEntry(`Bonkler Beam requires level 10 and an equipped unlock!`, 'battle-event');
             return;
         }
         
@@ -3573,16 +3388,17 @@ class GameState {
             return;
         }
         
-        // Calculate damage based on opponent's stats (up to 56% of max health)
-        const maxDamagePercent = 0.56;
-        const enemyMaxHealth = this.currentBattle.enemy.maxHealth;
-        const baseDamage = Math.floor(enemyMaxHealth * maxDamagePercent);
-        
-        // Adjust damage based on enemy defense
-        const defenseFactor = Math.max(0.3, 1 - (this.currentBattle.enemy.defense / 100));
-        const finalDamage = Math.floor(baseDamage * defenseFactor);
-        
-        // Apply damage
+        // Beam is powerful but remains defense-aware and cannot remove over half a health bar.
+        const damageCap = Math.floor(this.currentBattle.enemy.maxHealth * 0.48);
+        const finalDamage = this.applyEnemyGuard(Math.min(
+            damageCap,
+            this.calculateCombatDamage(
+                this.currentBattle.player.attack,
+                this.currentBattle.enemy.defense,
+                2.8
+            )
+        ));
+
         this.currentBattle.enemy.health = Math.max(0, this.currentBattle.enemy.health - finalDamage);
         
         this.addBattleLogEntry(`BONKLER BEAM!`, 'special');
@@ -3622,15 +3438,17 @@ class GameState {
         
         this.addBattleLogEntry(`DOUBLE STRIKE!`, 'special');
         
-        // Apply power-up bonus if active
-        let damageMultiplier = 1.0;
-        if (this.battleState.powerUpActive) {
-            damageMultiplier = 1.5;
-            this.addBattleLogEntry(`Power-up bonus applied!`, 'power-up');
+        const damageMultiplier = this.getPowerUpMultiplier();
+        if (this.battleState.powerUpCount > 0) {
+            this.addBattleLogEntry(`Power-up bonus: +${Math.round((damageMultiplier - 1) * 100)}%`, 'power-up');
         }
-        
-        // First strike
-        const firstDamage = Math.floor(this.currentBattle.player.attack * (0.8 + Math.random() * 0.4) * damageMultiplier);
+
+        // Two lighter hits total roughly 45% more damage than Slash.
+        const firstDamage = this.applyEnemyGuard(this.calculateCombatDamage(
+            this.currentBattle.player.attack,
+            this.currentBattle.enemy.defense,
+            0.72 * damageMultiplier
+        ));
         this.currentBattle.enemy.health = Math.max(0, this.currentBattle.enemy.health - firstDamage);
         this.addBattleLogEntry(`First strike deals ${firstDamage} damage!`, 'damage');
         
@@ -3650,7 +3468,11 @@ class GameState {
         
         // Second strike after a short delay
         setTimeout(() => {
-            const secondDamage = Math.floor(this.currentBattle.player.attack * (0.8 + Math.random() * 0.4) * damageMultiplier);
+            const secondDamage = this.calculateCombatDamage(
+                this.currentBattle.player.attack,
+                this.currentBattle.enemy.defense,
+                0.72 * damageMultiplier
+            );
             this.currentBattle.enemy.health = Math.max(0, this.currentBattle.enemy.health - secondDamage);
             this.addBattleLogEntry(`Second strike deals ${secondDamage} damage!`, 'damage');
             
@@ -3675,6 +3497,74 @@ class GameState {
         }, 1000);
     }
 
+    performCounterAttack() {
+        if (!this.currentBattle || this.currentBattle.turn !== 'player') return;
+        if (!this.equippedSkills.includes('Counter Attack')) return;
+        if (this.battleState.counterActive) {
+            this.addBattleLogEntry('Counter stance is already armed!', 'battle-event');
+            return;
+        }
+
+        this.battleState.counterActive = true;
+        this.addBattleLogEntry('Counter stance armed for the next damaging attack!', 'defend');
+        this.animateCounter?.();
+        this.currentBattle.turn = 'enemy';
+        setTimeout(() => this.enemyTurn(), 900);
+    }
+
+    performHeal() {
+        if (!this.currentBattle || this.currentBattle.turn !== 'player') return;
+        if (!this.equippedSkills.includes('Heal')) return;
+        if (this.battleState.healUses <= 0) {
+            this.addBattleLogEntry('Repair charge already spent!', 'battle-event');
+            return;
+        }
+        if (this.currentBattle.player.health >= this.currentBattle.player.maxHealth) {
+            this.addBattleLogEntry('Your fighter is already at full health.', 'battle-event');
+            return;
+        }
+
+        const healing = Math.min(
+            this.currentBattle.player.maxHealth - this.currentBattle.player.health,
+            Math.round(this.currentBattle.player.maxHealth * 0.28)
+        );
+        this.currentBattle.player.health += healing;
+        this.battleState.healUses--;
+        this.updateCharacterDisplay('player', this.currentBattle.player);
+        this.addBattleLogEntry(`Field repair restores ${healing} health!`, 'heal');
+        this.playTone(520, 0.12, 'sine', 0.025);
+        this.animateRepair?.();
+        this.currentBattle.turn = 'enemy';
+        setTimeout(() => this.enemyTurn(), 900);
+    }
+
+    performCriticalStrike() {
+        if (!this.currentBattle || this.currentBattle.turn !== 'player') return;
+        if (!this.equippedSkills.includes('Critical Strike')) return;
+
+        const critical = Math.random() < 0.6;
+        const power = critical ? 1.9 : 0.8;
+        const damage = this.applyEnemyGuard(this.calculateCombatDamage(
+            this.currentBattle.player.attack,
+            this.currentBattle.enemy.defense,
+            power * this.getPowerUpMultiplier()
+        ));
+        this.currentBattle.enemy.health = Math.max(0, this.currentBattle.enemy.health - damage);
+        this.addBattleLogEntry(critical ? 'CRITICAL STRIKE!' : 'Critical timing missed — glancing hit.', critical ? 'special' : 'player-action');
+        this.addBattleLogEntry(`Dealt ${damage} damage!`, 'damage');
+        this.animateAttack(this.currentBattle.player, this.currentBattle.enemy, true);
+        this.updateCharacterDisplay('enemy', this.currentBattle.enemy);
+        this.showBattleEffect(critical ? 'special' : 'attack', damage);
+
+        if (this.currentBattle.enemy.health <= 0) {
+            this.addBattleLogEntry('Enemy defeated!', 'battle-event');
+            setTimeout(() => this.endBattle('victory'), 2000);
+        } else {
+            this.currentBattle.turn = 'enemy';
+            setTimeout(() => this.enemyTurn(), 1200);
+        }
+    }
+
     showEquippedSkills() {
         const battleControls = document.querySelector('.battle-controls');
         if (!battleControls) return;
@@ -3694,14 +3584,17 @@ class GameState {
                 const skillButton = document.createElement('button');
                 skillButton.className = 'battle-btn dynamic-skill-btn';
                 skillButton.id = `${skillName.toLowerCase().replace(/\s+/g, '-')}-btn`;
-                skillButton.textContent = skillName;
-                
+                skillButton.innerHTML = `${this.symbolMarkup(this.getSkillSymbol(skillName))}<span>${this.escapeHTML(skillName)}</span><small>SKILL</small>`;
+
                 // Add click event listener
                 skillButton.addEventListener('click', () => {
-                    if (skillName === 'Double Strike') {
-                        this.performDoubleStrike();
-                    }
-                    // Add more skill functions here as needed
+                    const handlers = {
+                        'Double Strike': () => this.performDoubleStrike(),
+                        'Counter Attack': () => this.performCounterAttack(),
+                        Heal: () => this.performHeal(),
+                        'Critical Strike': () => this.performCriticalStrike()
+                    };
+                    handlers[skillName]?.();
                 });
                 
                 battleControls.appendChild(skillButton);
@@ -3715,19 +3608,28 @@ class GameState {
         console.log('Enemy turn started');
         console.log('Current battle state:', this.currentBattle);
         
-        const actions = ['attack', 'special', 'defend'];
-        const action = actions[Math.floor(Math.random() * actions.length)];
-        
+        const settings = this.getDifficultySettings();
+        const actionRoll = Math.random();
+        const action = actionRoll < settings.actions[0]
+            ? 'attack'
+            : actionRoll < settings.actions[0] + settings.actions[1] ? 'special' : 'defend';
+
         console.log('Enemy turn - Action:', action, 'Enemy attack:', this.currentBattle.enemy.attack);
-        
+
         let damage = 0;
         if (action === 'attack') {
-            damage = Math.floor(this.currentBattle.enemy.attack * (0.8 + Math.random() * 0.4));
-            console.log('Enemy attack damage:', damage);
+            damage = this.calculateCombatDamage(
+                this.currentBattle.enemy.attack,
+                this.currentBattle.player.defense,
+                1
+            );
             this.addBattleLogEntry(`Enemy attacks!`, 'enemy-action');
         } else if (action === 'special') {
-            damage = Math.floor(this.currentBattle.enemy.attack * (1.2 + Math.random() * 0.6));
-            console.log('Enemy special damage:', damage);
+            damage = this.calculateCombatDamage(
+                this.currentBattle.enemy.attack,
+                this.currentBattle.player.defense,
+                1.35
+            );
             this.addBattleLogEntry(`Enemy uses a special attack!`, 'enemy-action');
         }
         
@@ -3746,15 +3648,17 @@ class GameState {
         
         // Apply defense bonus if active
         if (this.battleState.defendActive && damage > 0) {
-            damage = Math.floor(damage * 0.5); // Reduce damage by 50%
-            this.addBattleLogEntry(`Defense bonus reduced damage!`, 'defend');
+            damage = Math.max(1, Math.round(damage * (1 - BATTLE_BALANCE.guardReduction)));
+            this.battleState.defendActive = false;
+            this.addBattleLogEntry(`Guard reduced the hit by ${Math.round(BATTLE_BALANCE.guardReduction * 100)}%!`, 'defend');
         }
         
         // Always show some effect for enemy actions
         if (action === 'defend') {
             // Enemy defends - no damage but show effect
             console.log('Enemy defends');
-            this.addBattleLogEntry(`Enemy takes a defensive stance!`, 'enemy-action');
+            this.battleState.enemyDefendActive = true;
+            this.addBattleLogEntry(`Enemy guards against your next hit!`, 'enemy-action');
             this.showBattleEffect('enemy-defend', 0);
         } else if (damage > 0) {
             // Enemy attacks
@@ -3776,7 +3680,25 @@ class GameState {
         } else {
             console.log('Enemy action but no damage dealt');
         }
-        
+
+        if (this.battleState.counterActive && damage > 0 && this.currentBattle.player.health > 0) {
+            this.battleState.counterActive = false;
+            const counterDamage = this.applyEnemyGuard(this.calculateCombatDamage(
+                this.currentBattle.player.attack,
+                this.currentBattle.enemy.defense,
+                0.85
+            ));
+            this.currentBattle.enemy.health = Math.max(0, this.currentBattle.enemy.health - counterDamage);
+            this.addBattleLogEntry(`Counter attack returns ${counterDamage} damage!`, 'special');
+            this.updateCharacterDisplay('enemy', this.currentBattle.enemy);
+            this.animateAttack(this.currentBattle.player, this.currentBattle.enemy, true);
+            if (this.currentBattle.enemy.health <= 0) {
+                this.addBattleLogEntry('Enemy defeated by the counter!', 'battle-event');
+                setTimeout(() => this.endBattle('victory'), 2000);
+                return;
+            }
+        }
+
         // Check for player death
         console.log('Player health after enemy action:', this.currentBattle.player.health);
         console.log('Player maxHealth:', this.currentBattle.player.maxHealth);
@@ -3834,16 +3756,18 @@ class GameState {
             this.addBattleLogEntry(`Battle ended in a draw!`, 'battle-event');
         }
         
-        // Hide battle arena
+        // Hide battle arena and restore fighter selection.
         document.getElementById('battle-arena').style.display = 'none';
+        document.querySelector('.nft-selection')?.classList.remove('battle-running');
         
         // Calculate rewards
         let expReward = 0;
         let coinReward = 0;
         
+        const rewardMultiplier = this.getDifficultySettings().reward;
         if (result === 'victory') {
-            expReward = 50 + (this.currentBattle.enemy.level * 10);
-            coinReward = 25 + (this.currentBattle.enemy.level * 5);
+            expReward = Math.round((35 + this.currentBattle.enemy.level * 10) * rewardMultiplier);
+            coinReward = Math.round((45 + this.currentBattle.enemy.level * 10) * rewardMultiplier);
             this.addExp(expReward);
             this.addCoins(coinReward);
             
@@ -3855,8 +3779,10 @@ class GameState {
                 this.playerStats.highestLevel = this.level;
             }
         } else if (result === 'defeat') {
-            expReward = 10;
+            expReward = Math.round((10 + this.currentBattle.enemy.level * 2) * rewardMultiplier);
+            coinReward = Math.round((8 + this.currentBattle.enemy.level * 2) * rewardMultiplier);
             this.addExp(expReward);
+            this.addCoins(coinReward);
             
             // Update player stats
             this.playerStats.losses++;
@@ -3864,7 +3790,8 @@ class GameState {
             this.playerStats.totalExp += expReward;
         }
         
-        // Save player stats and update leaderboard
+        // Persist demo and wallet progression before updating the global leaderboard.
+        this.saveGameData();
         this.savePlayerStats();
         this.updateLeaderboard();
         
@@ -3872,6 +3799,7 @@ class GameState {
         this.showBattleResult(result, expReward, coinReward);
         
         this.currentBattle = null;
+        this.setBattleSessionLayout(false);
     }
 
     showBattleResult(result, expReward, coinReward) {
@@ -3882,7 +3810,7 @@ class GameState {
         if (result === 'victory') {
             resultTitle.textContent = 'Victory!';
             resultContent.innerHTML = `
-                <div class="result-icon victory">🏆</div>
+                <div class="result-icon victory">${this.symbolMarkup('victory')}</div>
                 <div class="result-title">You Won!</div>
                 <div class="rewards">
                     <div class="reward-item">
@@ -3898,19 +3826,23 @@ class GameState {
         } else if (result === 'defeat') {
             resultTitle.textContent = 'Defeat';
             resultContent.innerHTML = `
-                <div class="result-icon defeat">💀</div>
+                <div class="result-icon defeat">${this.symbolMarkup('defeat')}</div>
                 <div class="result-title">You Lost!</div>
                 <div class="rewards">
                     <div class="reward-item">
                         <span class="reward-label">Experience:</span>
                         <span class="reward-value">+${expReward}</span>
                     </div>
+                    <div class="reward-item">
+                        <span class="reward-label">Recovery Coins:</span>
+                        <span class="reward-value">+${coinReward}</span>
+                    </div>
                 </div>
             `;
         } else {
             resultTitle.textContent = 'Time Out';
             resultContent.innerHTML = `
-                <div class="result-icon defeat">⏰</div>
+                <div class="result-icon defeat">${this.symbolMarkup('time')}</div>
                 <div class="result-title">Time's Up!</div>
                 <div class="rewards">
                     <div class="reward-item">
@@ -3922,211 +3854,308 @@ class GameState {
         }
         
         modal.classList.add('active');
-        
-        // Auto close after 3 seconds
-        setTimeout(() => {
-            modal.classList.remove('active');
-        }, 3000);
+        requestAnimationFrame(() => document.getElementById('result-modal-close')?.focus());
     }
 
     // Shop System
-    populateShop(category = 'weapons') {
+    getBalancedShopCost(item) {
+        if (!item || item.cost === 0) return 0;
+
+        const skillCosts = {
+            Special: 450,
+            'Bonkler Beam': 900,
+            'Double Strike': 350,
+            'Counter Attack': 450,
+            Heal: 300,
+            'Critical Strike': 650
+        };
+        if (item.type === 'skill') return skillCosts[item.name] ?? item.cost;
+
+        const attack = Math.max(0, Number(item.attack) || 0);
+        const defense = Math.max(0, Number(item.defense) || 0);
+        const rawCost = {
+            pilot: 150 + attack * 65,
+            body: 100 + defense * 32,
+            armor: 100 + defense * 36,
+            hand: 120 + attack * 62,
+            offhand: 90 + attack * 60 + defense * 38,
+            accessory: 100 + attack * 60 + defense * 45,
+            head: 120 + attack * 62
+        }[item.type] ?? item.cost;
+
+        return Math.max(100, Math.round(rawCost / 25) * 25);
+    }
+
+    prepareShopPreview(image) {
+        if (!image || image.dataset.previewPrepared === 'true') return;
+
+        const cropTransparentPadding = () => {
+            try {
+                const sampleWidth = 100;
+                const sampleHeight = Math.max(1, Math.round((image.naturalHeight / image.naturalWidth) * sampleWidth));
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d', { willReadFrequently: true });
+                canvas.width = sampleWidth;
+                canvas.height = sampleHeight;
+                context.imageSmoothingEnabled = false;
+                context.drawImage(image, 0, 0, sampleWidth, sampleHeight);
+
+                const pixels = context.getImageData(0, 0, sampleWidth, sampleHeight).data;
+                let minX = sampleWidth;
+                let minY = sampleHeight;
+                let maxX = -1;
+                let maxY = -1;
+
+                for (let y = 0; y < sampleHeight; y++) {
+                    for (let x = 0; x < sampleWidth; x++) {
+                        if (pixels[(y * sampleWidth + x) * 4 + 3] > 12) {
+                            minX = Math.min(minX, x);
+                            minY = Math.min(minY, y);
+                            maxX = Math.max(maxX, x);
+                            maxY = Math.max(maxY, y);
+                        }
+                    }
+                }
+
+                if (maxX < minX || maxY < minY) return;
+
+                const contentWidth = maxX - minX + 1;
+                const contentHeight = maxY - minY + 1;
+                const contentCenterX = ((minX + maxX + 1) / 2 / sampleWidth) * 100;
+                const contentCenterY = ((minY + maxY + 1) / 2 / sampleHeight) * 100;
+                const previewFrame = image.closest('.item-icon');
+                const frameAspect = previewFrame?.clientWidth > 0
+                    ? previewFrame.clientHeight / previewFrame.clientWidth
+                    : 1;
+                const previewWidth = Math.min(
+                    380,
+                    Math.max(72, Math.min(
+                        86 * sampleWidth / contentWidth,
+                        86 * frameAspect * sampleWidth / contentHeight
+                    ))
+                );
+
+                image.style.setProperty('--preview-width', `${previewWidth}%`);
+                image.style.setProperty('--preview-shift-x', `${-contentCenterX}%`);
+                image.style.setProperty('--preview-shift-y', `${-contentCenterY}%`);
+                image.dataset.previewPrepared = 'true';
+                image.classList.add('is-ready');
+                image.closest('.item-icon')?.classList.add('has-preview');
+            } catch (error) {
+                console.warn('Unable to crop shop preview:', image.currentSrc, error);
+                image.classList.add('is-ready');
+                image.closest('.item-icon')?.classList.add('has-preview');
+            }
+        };
+
+        if (image.complete && image.naturalWidth > 0) {
+            cropTransparentPadding();
+        } else {
+            image.addEventListener('load', cropTransparentPadding, { once: true });
+        }
+    }
+
+    populateShop(category = this.currentShopCategory || 'pilots') {
+        this.currentShopCategory = category;
         const shopItems = document.getElementById('shop-items');
         shopItems.innerHTML = '';
 
         const shopData = {
             pilots: [
-                { name: 'Alien Milady', type: 'pilot', attack: 6, cost: 600, icon: '👤', asset: 'ALIEN-MILADY.png' },
-                { name: 'Binky', type: 'pilot', attack: 4, cost: 400, icon: '👤', asset: 'BINKY.png' },
-                { name: 'Beauty Beast Bunny', type: 'pilot', attack: 7, cost: 700, icon: '👤', asset: 'BEAUTY-BEAST-BUNNY.png' },
-                { name: 'Black Frost', type: 'pilot', attack: 8, cost: 800, icon: '👤', asset: 'BLACK-FROST.png' },
-                { name: 'Bonk Bat', type: 'pilot', attack: 9, cost: 900, icon: '👤', asset: 'BONK-BAT.png' },
-                { name: 'Charlie\'s Dog', type: 'pilot', attack: 5, cost: 500, icon: '👤', asset: 'CHARLIE\'S-DOG.png' },
-                { name: 'Dancing Man Emoji', type: 'pilot', attack: 3, cost: 300, icon: '👤', asset: 'DANCING-MAN-EMOJI.png' },
-                { name: 'Dr Kawashima', type: 'pilot', attack: 6, cost: 600, icon: '👤', asset: 'DR-KAWASHIMA.png' },
-                { name: 'Guitar Bear', type: 'pilot', attack: 7, cost: 700, icon: '👤', asset: 'GUITAR-BEAR.png' },
-                { name: 'Hamtaro', type: 'pilot', attack: 5, cost: 500, icon: '👤', asset: 'HAMTARO.png' },
-                { name: 'Kasane Teto', type: 'pilot', attack: 8, cost: 800, icon: '👤', asset: 'KASANE-TETO.png' },
-                { name: 'Maple Story', type: 'pilot', attack: 10, cost: 1000, icon: '👤', asset: 'MAPLE-STORY.png' },
-                { name: 'Mew', type: 'pilot', attack: 9, cost: 900, icon: '👤', asset: 'MEW.png' },
-                { name: 'Milady', type: 'pilot', attack: 6, cost: 600, icon: '👤', asset: 'MILADY.png' },
-                { name: 'Minifig', type: 'pilot', attack: 4, cost: 400, icon: '👤', asset: 'MINIFIG.png' },
-                { name: 'Neko', type: 'pilot', attack: 5, cost: 500, icon: '👤', asset: 'NEKO.png' },
-                { name: 'Okshia Mikan', type: 'pilot', attack: 7, cost: 700, icon: '👤', asset: 'OKSHIA-MIKAN-UWASA-FRUIT-JUICER.png' },
-                { name: 'Pikmin', type: 'pilot', attack: 6, cost: 600, icon: '👤', asset: 'PIKMIN.png' },
-                { name: 'Rei', type: 'pilot', attack: 5, cost: 500, icon: '👤', asset: 'REI.png' },
-                { name: 'Rover', type: 'pilot', attack: 7, cost: 700, icon: '👤', asset: 'ROVER.png' },
-                { name: 'Shakoki Dogu', type: 'pilot', attack: 8, cost: 800, icon: '👤', asset: 'SHAKOKI-DOGU.png' },
-                { name: 'Snoopy Plush', type: 'pilot', attack: 4, cost: 400, icon: '👤', asset: 'SNOOPY-PLUSH.png' },
-                { name: 'Sprite Autograph', type: 'pilot', attack: 3, cost: 300, icon: '👤', asset: 'SPRITE-AUTOGRAPH.png' },
-                { name: 'Stuart', type: 'pilot', attack: 6, cost: 600, icon: '👤', asset: 'STUART.png' },
-                { name: 'Tivo', type: 'pilot', attack: 8, cost: 800, icon: '👤', asset: 'TIVO.png' },
-                { name: 'Wolfie', type: 'pilot', attack: 5, cost: 500, icon: '👤', asset: 'WOLFIE.png' },
-                { name: 'Zatsune Miku', type: 'pilot', attack: 9, cost: 900, icon: '👤', asset: 'ZATSUNE-MIKU.png' }
+                { name: 'Alien Milady', type: 'pilot', attack: 6, cost: 600, asset: 'ALIEN-MILADY.png' },
+                { name: 'Binky', type: 'pilot', attack: 4, cost: 400, asset: 'BINKY.png' },
+                { name: 'Beauty Beast Bunny', type: 'pilot', attack: 7, cost: 700, asset: 'BEAUTY-BEAST-BUNNY.png' },
+                { name: 'Black Frost', type: 'pilot', attack: 8, cost: 800, asset: 'BLACK-FROST.png' },
+                { name: 'Bonk Bat', type: 'pilot', attack: 9, cost: 900, asset: 'BONK-BAT.png' },
+                { name: 'Charlie\'s Dog', type: 'pilot', attack: 5, cost: 500, asset: 'CHARLIE\'S-DOG.png' },
+                { name: 'Dancing Man Emoji', type: 'pilot', attack: 3, cost: 300, asset: 'DANCING-MAN-EMOJI.png' },
+                { name: 'Dr Kawashima', type: 'pilot', attack: 6, cost: 600, asset: 'DR-KAWASHIMA.png' },
+                { name: 'Guitar Bear', type: 'pilot', attack: 7, cost: 700, asset: 'GUITAR-BEAR.png' },
+                { name: 'Hamtaro', type: 'pilot', attack: 5, cost: 500, asset: 'HAMTARO.png' },
+                { name: 'Kasane Teto', type: 'pilot', attack: 8, cost: 800, asset: 'KASANE-TETO.png' },
+                { name: 'Maple Story', type: 'pilot', attack: 10, cost: 1000, asset: 'MAPLE-STORY.png' },
+                { name: 'Mew', type: 'pilot', attack: 9, cost: 900, asset: 'MEW.png' },
+                { name: 'Milady', type: 'pilot', attack: 6, cost: 600, asset: 'MILADY.png' },
+                { name: 'Minifig', type: 'pilot', attack: 4, cost: 400, asset: 'MINIFIG.png' },
+                { name: 'Neko', type: 'pilot', attack: 5, cost: 500, asset: 'NEKO.png' },
+                { name: 'Okshia Mikan', type: 'pilot', attack: 7, cost: 700, asset: 'OKSHIA-MIKAN-UWASA-FRUIT-JUICER.png' },
+                { name: 'Pikmin', type: 'pilot', attack: 6, cost: 600, asset: 'PIKMIN.png' },
+                { name: 'Rei', type: 'pilot', attack: 5, cost: 500, asset: 'REI.png' },
+                { name: 'Rover', type: 'pilot', attack: 7, cost: 700, asset: 'ROVER.png' },
+                { name: 'Shakoki Dogu', type: 'pilot', attack: 8, cost: 800, asset: 'SHAKOKI-DOGU.png' },
+                { name: 'Snoopy Plush', type: 'pilot', attack: 4, cost: 400, asset: 'SNOOPY-PLUSH.png' },
+                { name: 'Sprite Autograph', type: 'pilot', attack: 3, cost: 300, asset: 'SPRITE-AUTOGRAPH.png' },
+                { name: 'Stuart', type: 'pilot', attack: 6, cost: 600, asset: 'STUART.png' },
+                { name: 'Tivo', type: 'pilot', attack: 8, cost: 800, asset: 'TIVO.png' },
+                { name: 'Wolfie', type: 'pilot', attack: 5, cost: 500, asset: 'WOLFIE.png' },
+                { name: 'Zatsune Miku', type: 'pilot', attack: 9, cost: 900, asset: 'ZATSUNE-MIKU.png' }
             ],
             bodies: [
-                { name: 'Another Freaking Machine', type: 'body', defense: 12, cost: 500, icon: '🤖', asset: 'ANOTHER-FREAKING-MACHINE.png' },
-                { name: 'Beetle', type: 'body', defense: 8, cost: 300, icon: '🪲', asset: 'BEETLE.png' },
-                { name: 'BRG Vol1', type: 'body', defense: 10, cost: 400, icon: '📚', asset: 'BRG-VOL1.png' },
-                { name: 'Burger Bonk Laser', type: 'body', defense: 15, cost: 600, icon: '🍔', asset: 'BURGER-BONK-LASER.png' },
-                { name: 'Burner Phone', type: 'body', defense: 6, cost: 250, icon: '📱', asset: 'BURNER-PHONE.png' },
-                { name: 'Chinese Sprite', type: 'body', defense: 11, cost: 450, icon: '🥤', asset: 'CHINESE-SPRITE.png' },
-                { name: 'Cosmic Ray Detectors', type: 'body', defense: 18, cost: 700, icon: '🔬', asset: 'COSMIC-RAY-DETECTORS.png' },
-                { name: 'Dark Magician Girl', type: 'body', defense: 14, cost: 550, icon: '🃏', asset: 'DARK-MAGICIAN-GIRL.png' },
-                { name: 'Fire Bonk Laser', type: 'body', defense: 16, cost: 650, icon: '🔥', asset: 'FIRE-BONKER-LASER.png' },
-                { name: 'Fragile Hearts', type: 'body', defense: 9, cost: 350, icon: '💔', asset: 'FRAGILE-HEARTS.png' },
-                { name: 'Guam', type: 'body', defense: 7, cost: 280, icon: '🏝️', asset: 'GUAM.png' },
-                { name: 'Harajuku Motorola', type: 'body', defense: 8, cost: 320, icon: '📱', asset: 'HARAJUKU-MOTOROLA.png' },
-                { name: 'Jacob Jensen', type: 'body', defense: 9, cost: 360, icon: '👨‍💼', asset: 'JACOB-JENSEN.png' },
-                { name: 'Jade Cabbage', type: 'body', defense: 13, cost: 520, icon: '🥬', asset: 'JADE-CABBAGE.png' },
-                { name: 'Judd Chair', type: 'body', defense: 5, cost: 200, icon: '🪑', asset: 'JUDD-CHAIR.png' },
-                { name: 'Lego Skeleton', type: 'body', defense: 7, cost: 290, icon: '🦴', asset: 'LEGO-SKELETON.png' },
-                { name: 'Noctua Heatsink', type: 'body', defense: 10, cost: 410, icon: '❄️', asset: 'NOCTUA-HEATSINK.png' },
-                { name: 'Orion Can', type: 'body', defense: 17, cost: 680, icon: '🥫', asset: 'ORION-CAN.png' },
-                { name: 'Pelican Terminal', type: 'body', defense: 15, cost: 580, icon: '💻', asset: 'PELICAN-TERMINAL.png' },
-                { name: 'Red and Blue Chair', type: 'body', defense: 6, cost: 240, icon: '🪑', asset: 'RED-AND-BLUE-CHAIR.png' },
-                { name: 'Rei Lighter', type: 'body', defense: 8, cost: 330, icon: '🔥', asset: 'REI-LIGHTER.png' },
-                { name: 'Rilakkuma', type: 'body', defense: 8, cost: 300, icon: '🐻', asset: 'RILAKKUMA.png' },
-                { name: 'Rug Pull', type: 'body', defense: 19, cost: 750, icon: '🏃', asset: 'RUG-PULL.png' },
-                { name: 'Rummikub', type: 'body', defense: 9, cost: 340, icon: '🎲', asset: 'RUMMIKUB.png' },
-                { name: 'Sony CD Player', type: 'body', defense: 6, cost: 260, icon: '💿', asset: 'SONY-CD-PLAYER.png' },
-                { name: 'Sony Pocket Station', type: 'body', defense: 7, cost: 270, icon: '🎮', asset: 'SONY-POCKET-STATION.png' },
-                { name: 'Sony Tablet', type: 'body', defense: 8, cost: 310, icon: '📱', asset: 'SONY-TABLET.png' },
-                { name: 'Sony TV', type: 'body', defense: 12, cost: 500, icon: '📺', asset: 'SONY-TV.png' },
-                { name: 'Suit', type: 'body', defense: 10, cost: 400, icon: '👔', asset: 'SUIT.png' },
-                { name: 'Tekken King', type: 'body', defense: 15, cost: 600, icon: '👑', asset: 'TEKKEN-KING.png' },
-                { name: 'Valet Chair', type: 'body', defense: 5, cost: 220, icon: '🪑', asset: 'VALET-CHAIR.png' },
-                { name: 'Vending Machine', type: 'body', defense: 11, cost: 460, icon: '🥤', asset: 'VENDING-MACHINE.png' },
-                { name: 'YMO Tour', type: 'body', defense: 14, cost: 560, icon: '🎵', asset: 'YMO-TOUR.png' }
+                { name: 'Another Freaking Machine', type: 'body', defense: 12, cost: 500, asset: 'ANOTHER-FREAKING-MACHINE.png' },
+                { name: 'Beetle', type: 'body', defense: 8, cost: 300, asset: 'BEETLE.png' },
+                { name: 'BRG Vol1', type: 'body', defense: 10, cost: 400, asset: 'BRG-VOL1.png' },
+                { name: 'Burger Bonk Laser', type: 'body', defense: 15, cost: 600, asset: 'BURGER-BONK-LASER.png' },
+                { name: 'Burner Phone', type: 'body', defense: 6, cost: 250, asset: 'BURNER-PHONE.png' },
+                { name: 'Chinese Sprite', type: 'body', defense: 11, cost: 450, asset: 'CHINESE-SPRITE.png' },
+                { name: 'Cosmic Ray Detectors', type: 'body', defense: 18, cost: 700, asset: 'COSMIC-RAY-DETECTORS.png' },
+                { name: 'Dark Magician Girl', type: 'body', defense: 14, cost: 550, asset: 'DARK-MAGICIAN-GIRL.png' },
+                { name: 'Fire Bonk Laser', type: 'body', defense: 16, cost: 650, asset: 'FIRE-BONKER-LASER.png' },
+                { name: 'Fragile Hearts', type: 'body', defense: 9, cost: 350, asset: 'FRAGILE-HEARTS.png' },
+                { name: 'Guam', type: 'body', defense: 7, cost: 280, asset: 'GUAM.png' },
+                { name: 'Harajuku Motorola', type: 'body', defense: 8, cost: 320, asset: 'HARAJUKU-MOTOROLA.png' },
+                { name: 'Jacob Jensen', type: 'body', defense: 9, cost: 360, asset: 'JACOB-JENSEN.png' },
+                { name: 'Jade Cabbage', type: 'body', defense: 13, cost: 520, asset: 'JADE-CABBAGE.png' },
+                { name: 'Judd Chair', type: 'body', defense: 5, cost: 200, asset: 'JUDD-CHAIR.png' },
+                { name: 'Lego Skeleton', type: 'body', defense: 7, cost: 290, asset: 'LEGO-SKELETON.png' },
+                { name: 'Noctua Heatsink', type: 'body', defense: 10, cost: 410, asset: 'NOCTUA-HEATSINK.png' },
+                { name: 'Orion Can', type: 'body', defense: 17, cost: 680, asset: 'ORION-CAN.png' },
+                { name: 'Pelican Terminal', type: 'body', defense: 15, cost: 580, asset: 'PELICAN-TERMINAL.png' },
+                { name: 'Red and Blue Chair', type: 'body', defense: 6, cost: 240, asset: 'RED-AND-BLUE-CHAIR.png' },
+                { name: 'Rei Lighter', type: 'body', defense: 8, cost: 330, asset: 'REI-LIGHTER.png' },
+                { name: 'Rilakkuma', type: 'body', defense: 8, cost: 300, asset: 'RILAKKUMA.png' },
+                { name: 'Rug Pull', type: 'body', defense: 19, cost: 750, asset: 'RUG-PULL.png' },
+                { name: 'Rummikub', type: 'body', defense: 9, cost: 340, asset: 'RUMMIKUB.png' },
+                { name: 'Sony CD Player', type: 'body', defense: 6, cost: 260, asset: 'SONY-CD-PLAYER.png' },
+                { name: 'Sony Pocket Station', type: 'body', defense: 7, cost: 270, asset: 'SONY-POCKET-STATION.png' },
+                { name: 'Sony Tablet', type: 'body', defense: 8, cost: 310, asset: 'SONY-TABLET.png' },
+                { name: 'Sony TV', type: 'body', defense: 12, cost: 500, asset: 'SONY-TV.png' },
+                { name: 'Suit', type: 'body', defense: 10, cost: 400, asset: 'SUIT.png' },
+                { name: 'Tekken King', type: 'body', defense: 15, cost: 600, asset: 'TEKKEN-KING.png' },
+                { name: 'Valet Chair', type: 'body', defense: 5, cost: 220, asset: 'VALET-CHAIR.png' },
+                { name: 'Vending Machine', type: 'body', defense: 11, cost: 460, asset: 'VENDING-MACHINE.png' },
+                { name: 'YMO Tour', type: 'body', defense: 14, cost: 560, asset: 'YMO-TOUR.png' }
             ],
 
             armors: [
-                { name: 'Adamantine Armor', type: 'armor', defense: 25, cost: 1000, icon: '🛡️', asset: 'ArmorAdamantine.png' },
-                { name: 'Black Armor', type: 'armor', defense: 18, cost: 400, icon: '🛡️', asset: 'ArmorBlack.png' },
-                { name: 'Black Trim Armor', type: 'armor', defense: 20, cost: 500, icon: '🛡️', asset: 'ArmorBlack-Trim.png' },
-                { name: 'Bronze Armor', type: 'armor', defense: 12, cost: 300, icon: '🛡️', asset: 'ArmorBronze.png' },
-                { name: 'Bronze Trim Armor', type: 'armor', defense: 14, cost: 350, icon: '🛡️', asset: 'ArmorBronze-Trim.png' },
-                { name: 'Coal Armor', type: 'armor', defense: 10, cost: 250, icon: '🛡️', asset: 'ArmorCoal.png' },
-                { name: 'Comme Des Garcons Armor', type: 'armor', defense: 30, cost: 1200, icon: '🛡️', asset: 'ArmorComme-Des-Garcons-Homme-Plus-FW18-Dover-Street-Market-Installation-Dinosaur-Bones.png' },
-                { name: 'Dragon Armor', type: 'armor', defense: 28, cost: 1100, icon: '🛡️', asset: 'ArmorDragon.png' },
-                { name: 'Glory Armor', type: 'armor', defense: 35, cost: 1500, icon: '🛡️', asset: 'ArmorGlory.png' },
-                { name: 'Handycam Armor', type: 'armor', defense: 22, cost: 600, icon: '🛡️', asset: 'ArmorHandycam.png' },
-                { name: 'Harajuku Sticker Armor', type: 'armor', defense: 16, cost: 450, icon: '🛡️', asset: 'ArmorHarajuku-Sticker.png' },
-                { name: 'Jade Armor', type: 'armor', defense: 25, cost: 800, icon: '🛡️', asset: 'ArmorJade.png' },
-                { name: 'Mithril Armor', type: 'armor', defense: 26, cost: 900, icon: '🛡️', asset: 'ArmorMithril.png' },
-                { name: 'Mithril Trim Armor', type: 'armor', defense: 28, cost: 950, icon: '🛡️', asset: 'ArmorMithril-Trim.png' },
-                { name: 'Phantom Armor', type: 'armor', defense: 15, cost: 380, icon: '🛡️', asset: 'ArmorPhantom.png' },
-                { name: 'Steel Armor', type: 'armor', defense: 20, cost: 500, icon: '🛡️', asset: 'ArmorSteel.png' },
-                { name: 'Steel Trim Armor', type: 'armor', defense: 22, cost: 550, icon: '🛡️', asset: 'ArmorSteel-Trim.png' },
-                { name: 'Terminator Armor', type: 'armor', defense: 32, cost: 1300, icon: '🛡️', asset: 'ArmorTerminator.png' },
-                { name: 'Terminator Recolor Armor', type: 'armor', defense: 30, cost: 1250, icon: '🛡️', asset: 'ArmorTerminator-Recolor.png' },
-                { name: 'White Armor', type: 'armor', defense: 15, cost: 300, icon: '🛡️', asset: 'ArmorWhite.png' },
-                { name: 'White Trim Armor', type: 'armor', defense: 17, cost: 350, icon: '🛡️', asset: 'ArmorWhite-Trim.png' }
+                { name: 'Adamantine Armor', type: 'armor', defense: 25, cost: 1000, asset: 'ArmorAdamantine.png' },
+                { name: 'Black Armor', type: 'armor', defense: 18, cost: 400, asset: 'ArmorBlack.png' },
+                { name: 'Black Trim Armor', type: 'armor', defense: 20, cost: 500, asset: 'ArmorBlack-Trim.png' },
+                { name: 'Bronze Armor', type: 'armor', defense: 12, cost: 300, asset: 'ArmorBronze.png' },
+                { name: 'Bronze Trim Armor', type: 'armor', defense: 14, cost: 350, asset: 'ArmorBronze-Trim.png' },
+                { name: 'Coal Armor', type: 'armor', defense: 10, cost: 250, asset: 'ArmorCoal.png' },
+                { name: 'Comme Des Garcons Armor', type: 'armor', defense: 30, cost: 1200, asset: 'ArmorComme-Des-Garcons-Homme-Plus-FW18-Dover-Street-Market-Installation-Dinosaur-Bones.png' },
+                { name: 'Dragon Armor', type: 'armor', defense: 28, cost: 1100, asset: 'ArmorDragon.png' },
+                { name: 'Glory Armor', type: 'armor', defense: 35, cost: 1500, asset: 'ArmorGlory.png' },
+                { name: 'Handycam Armor', type: 'armor', defense: 22, cost: 600, asset: 'ArmorHandycam.png' },
+                { name: 'Harajuku Sticker Armor', type: 'armor', defense: 16, cost: 450, asset: 'ArmorHarajuku-Sticker.png' },
+                { name: 'Jade Armor', type: 'armor', defense: 25, cost: 800, asset: 'ArmorJade.png' },
+                { name: 'Mithril Armor', type: 'armor', defense: 26, cost: 900, asset: 'ArmorMithril.png' },
+                { name: 'Mithril Trim Armor', type: 'armor', defense: 28, cost: 950, asset: 'ArmorMithril-Trim.png' },
+                { name: 'Phantom Armor', type: 'armor', defense: 15, cost: 380, asset: 'ArmorPhantom.png' },
+                { name: 'Steel Armor', type: 'armor', defense: 20, cost: 500, asset: 'ArmorSteel.png' },
+                { name: 'Steel Trim Armor', type: 'armor', defense: 22, cost: 550, asset: 'ArmorSteel-Trim.png' },
+                { name: 'Terminator Armor', type: 'armor', defense: 32, cost: 1300, asset: 'ArmorTerminator.png' },
+                { name: 'Terminator Recolor Armor', type: 'armor', defense: 30, cost: 1250, asset: 'ArmorTerminator-Recolor.png' },
+                { name: 'White Armor', type: 'armor', defense: 15, cost: 300, asset: 'ArmorWhite.png' },
+                { name: 'White Trim Armor', type: 'armor', defense: 17, cost: 350, asset: 'ArmorWhite-Trim.png' }
             ],
             hands: [
-                { name: 'Aghanim Scepter', type: 'hand', attack: 8, cost: 600, icon: '⚔️', asset: 'AGHANIM-SCEPTER.png' },
-                { name: 'American Flag', type: 'hand', attack: 3, cost: 200, icon: '🇺🇸', asset: 'AMERICAN-FLAG.png' },
-                { name: 'Ancient Godsword', type: 'hand', attack: 12, cost: 800, icon: '⚔️', asset: 'ANCIENT-GODSWORD.png' },
-                { name: 'Ape Escape Net', type: 'hand', attack: 6, cost: 400, icon: '🕸️', asset: 'APE-ESCAPE-NET.png' },
-                { name: 'Armed Threat', type: 'hand', attack: 7, cost: 500, icon: '🔫', asset: 'ARMED-THREAT.png' },
-                { name: 'Atarashiki Mura', type: 'hand', attack: 5, cost: 350, icon: '🏘️', asset: 'ATARASHIKI-MURA.png' },
-                { name: 'Balloon', type: 'hand', attack: 2, cost: 150, icon: '🎈', asset: 'BALLOON.png' },
-                { name: 'Bionicle Axe', type: 'hand', attack: 4, cost: 300, icon: '⚔️', asset: 'BIONICLE-AXE.png' },
-                { name: 'Blade of the Immortal', type: 'hand', attack: 9, cost: 650, icon: '⚔️', asset: 'BLADE-OF-THE-IMMORTAL.png' },
-                { name: 'Bludgeoning Angel', type: 'hand', attack: 6, cost: 420, icon: '👼', asset: 'BLUDGEONING-ANGEL.png' },
-                { name: 'Boom Mic', type: 'hand', attack: 3, cost: 220, icon: '🎤', asset: 'BOOM-MIC.png' },
-                { name: 'Cattle Gun', type: 'hand', attack: 8, cost: 580, icon: '🔫', asset: 'CATTLE-GUN.png' },
-                { name: 'Dreamcast Fishing Controller', type: 'hand', attack: 4, cost: 280, icon: '🎮', asset: 'DREAMCAST-FISHING-CONTROLLER.png' },
-                { name: 'Energy Sword', type: 'hand', attack: 7, cost: 480, icon: '⚔️', asset: 'ENERGY-SWORD.png' },
-                { name: 'Evolved Antenna', type: 'hand', attack: 5, cost: 320, icon: '📡', asset: 'EVOLVED-ANTENNA.png' },
-                { name: 'Golden Axe', type: 'hand', attack: 6, cost: 400, icon: '⚔️', asset: 'GOLDEN-AXE.png' },
-                { name: 'Ikebana', type: 'hand', attack: 10, cost: 700, icon: '🌸', asset: 'IKEBANA.png' },
-                { name: 'Insanity Catalyst', type: 'hand', attack: 5, cost: 340, icon: '💊', asset: 'INSANITY-CATALYST.png' },
-                { name: 'Jordan', type: 'hand', attack: 8, cost: 550, icon: '👟', asset: 'JORDAN.png' },
-                { name: 'K\'NEX', type: 'hand', attack: 6, cost: 420, icon: '🧱', asset: 'K\'NEX.png' },
-                { name: 'Newjeans Hammer', type: 'hand', attack: 11, cost: 750, icon: '🔨', asset: 'NEWJEANS-HAMMER.png' },
-                { name: 'Phone Flail', type: 'hand', attack: 7, cost: 480, icon: '📱', asset: 'PHONE-FLAIL.png' },
-                { name: 'Porsche Suspension', type: 'hand', attack: 6, cost: 400, icon: '🚗', asset: 'PORSCHE-SUSPENSION.png' },
-                { name: 'Ribbon Staff', type: 'hand', attack: 8, cost: 520, icon: '🎀', asset: 'RIBBON-STAFF.png' },
-                { name: 'Sir Fetch\'d', type: 'hand', attack: 5, cost: 320, icon: '🐕', asset: 'SIR-FETCH\'D.png' },
-                { name: 'Skylander Sword', type: 'hand', attack: 7, cost: 450, icon: '⚔️', asset: 'SKYLANDER-SWORD.png' },
-                { name: 'Sly Cooper Cane', type: 'hand', attack: 4, cost: 280, icon: '🦝', asset: 'SLY-COOPER-CANE.png' },
-                { name: 'Stygian Reaver', type: 'hand', attack: 12, cost: 850, icon: '⚔️', asset: 'STYGIAN-REAVER.png' },
-                { name: 'Velvet Crowe', type: 'hand', attack: 13, cost: 900, icon: '⚔️', asset: 'VELVET-CROWE.png' },
-                { name: 'Water Pistol', type: 'hand', attack: 3, cost: 200, icon: '🔫', asset: 'WATER-PISTOL.png' },
-                { name: 'Winged Staff Gold', type: 'hand', attack: 9, cost: 650, icon: '⚔️', asset: 'WINGED-STAFF-GOLD.png' }
+                { name: 'Aghanim Scepter', type: 'hand', attack: 8, cost: 600, asset: 'AGHANIM-SCEPTER.png' },
+                { name: 'American Flag', type: 'hand', attack: 3, cost: 200, asset: 'AMERICAN-FLAG.png' },
+                { name: 'Ancient Godsword', type: 'hand', attack: 12, cost: 800, asset: 'ANCIENT-GODSWORD.png' },
+                { name: 'Ape Escape Net', type: 'hand', attack: 6, cost: 400, asset: 'APE-ESCAPE-NET.png' },
+                { name: 'Armed Threat', type: 'hand', attack: 7, cost: 500, asset: 'ARMED-THREAT.png' },
+                { name: 'Atarashiki Mura', type: 'hand', attack: 5, cost: 350, asset: 'ATARASHIKI-MURA.png' },
+                { name: 'Balloon', type: 'hand', attack: 2, cost: 150, asset: 'BALLOON.png' },
+                { name: 'Bionicle Axe', type: 'hand', attack: 4, cost: 300, asset: 'BIONICLE-AXE.png' },
+                { name: 'Blade of the Immortal', type: 'hand', attack: 9, cost: 650, asset: 'BLADE-OF-THE-IMMORTAL.png' },
+                { name: 'Bludgeoning Angel', type: 'hand', attack: 6, cost: 420, asset: 'BLUDGEONING-ANGEL.png' },
+                { name: 'Boom Mic', type: 'hand', attack: 3, cost: 220, asset: 'BOOM-MIC.png' },
+                { name: 'Cattle Gun', type: 'hand', attack: 8, cost: 580, asset: 'CATTLE-GUN.png' },
+                { name: 'Dreamcast Fishing Controller', type: 'hand', attack: 4, cost: 280, asset: 'DREAMCAST-FISHING-CONTROLLER.png' },
+                { name: 'Energy Sword', type: 'hand', attack: 7, cost: 480, asset: 'ENERGY-SWORD.png' },
+                { name: 'Evolved Antenna', type: 'hand', attack: 5, cost: 320, asset: 'EVOLVED-ANTENNA.png' },
+                { name: 'Golden Axe', type: 'hand', attack: 6, cost: 400, asset: 'GOLDEN-AXE.png' },
+                { name: 'Ikebana', type: 'hand', attack: 10, cost: 700, asset: 'IKEBANA.png' },
+                { name: 'Insanity Catalyst', type: 'hand', attack: 5, cost: 340, asset: 'INSANITY-CATALYST.png' },
+                { name: 'Jordan', type: 'hand', attack: 8, cost: 550, asset: 'JORDAN.png' },
+                { name: 'K\'NEX', type: 'hand', attack: 6, cost: 420, asset: 'K\'NEX.png' },
+                { name: 'Newjeans Hammer', type: 'hand', attack: 11, cost: 750, asset: 'NEWJEANS-HAMMER.png' },
+                { name: 'Phone Flail', type: 'hand', attack: 7, cost: 480, asset: 'PHONE-FLAIL.png' },
+                { name: 'Porsche Suspension', type: 'hand', attack: 6, cost: 400, asset: 'PORSCHE-SUSPENSION.png' },
+                { name: 'Ribbon Staff', type: 'hand', attack: 8, cost: 520, asset: 'RIBBON-STAFF.png' },
+                { name: 'Sir Fetch\'d', type: 'hand', attack: 5, cost: 320, asset: 'SIR-FETCH\'D.png' },
+                { name: 'Skylander Sword', type: 'hand', attack: 7, cost: 450, asset: 'SKYLANDER-SWORD.png' },
+                { name: 'Sly Cooper Cane', type: 'hand', attack: 4, cost: 280, asset: 'SLY-COOPER-CANE.png' },
+                { name: 'Stygian Reaver', type: 'hand', attack: 12, cost: 850, asset: 'STYGIAN-REAVER.png' },
+                { name: 'Velvet Crowe', type: 'hand', attack: 13, cost: 900, asset: 'VELVET-CROWE.png' },
+                { name: 'Water Pistol', type: 'hand', attack: 3, cost: 200, asset: 'WATER-PISTOL.png' },
+                { name: 'Winged Staff Gold', type: 'hand', attack: 9, cost: 650, asset: 'WINGED-STAFF-GOLD.png' }
             ],
                          offhands: [
-                 { name: 'Yen', type: 'offhand', attack: 2, cost: 150, icon: '💰', asset: 'YEN-store.png' },
-                 { name: 'VAX Pass', type: 'offhand', attack: 3, cost: 200, icon: '🎫', asset: 'VAX-PASS-store.png' },
-                 { name: 'Tornado', type: 'offhand', attack: 8, cost: 600, icon: '🌪️', asset: 'TORNADO-2-store.png' },
-                 { name: 'Tokyo Manhole Cover', type: 'offhand', defense: 10, cost: 800, icon: '🕳️', asset: 'TOKYO-MANHOLE-COVER-store.png' },
-                 { name: 'Teddy Bear Anniversary', type: 'offhand', defense: 5, cost: 200, icon: '🧸', asset: 'TEDDY-BEAR-ANNIVERSARY-store.png' },
-                 { name: 'Super Lover Watch', type: 'offhand', attack: 4, cost: 300, icon: '⌚', asset: 'SUPER-LOVER-WATCH-store.png' },
-                 { name: 'Submarine Cable', type: 'offhand', defense: 7, cost: 500, icon: '🔌', asset: 'SUBMARINE-CABLE-store.png' },
-                 { name: 'Shooting Star', type: 'offhand', attack: 6, cost: 400, icon: '⭐', asset: 'SHOOTING-STAR-store.png' },
-                 { name: 'RX-78', type: 'offhand', attack: 5, cost: 350, icon: '🤖', asset: 'RX-78-store.png' },
-                 { name: 'Remilia Films', type: 'offhand', attack: 3, cost: 250, icon: '🎬', asset: 'REMILIA-FILMS-store.png' },
-                 { name: 'Remilia Engineering', type: 'offhand', defense: 6, cost: 450, icon: '⚙️', asset: 'REMILIA-ENGINEERING-store.png' },
-                 { name: 'Remilia Crest', type: 'offhand', defense: 4, cost: 300, icon: '🛡️', asset: 'REMILIA-CREST-store.png' },
-                 { name: 'Quad Damage', type: 'offhand', attack: 9, cost: 700, icon: '💥', asset: 'QUAD-DAMAGE-store.png' },
-                 { name: 'Rayman Shield', type: 'offhand', defense: 8, cost: 600, icon: '🛡️', asset: 'RAYMAN-M-STEAL-SHIELD-store.png' },
-                 { name: 'Pokewalker', type: 'offhand', attack: 2, cost: 150, icon: '👟', asset: 'POKEWALKER-store.png' },
-                 { name: 'Pocket Pet', type: 'offhand', attack: 1, cost: 100, icon: '🐾', asset: 'POCKET-PET-store.png' },
-                 { name: 'Palette', type: 'offhand', attack: 3, cost: 200, icon: '🎨', asset: 'PALETTE-store.png' },
-                 { name: 'Nautilus', type: 'offhand', defense: 5, cost: 350, icon: '🐚', asset: 'NAUTILUS-store.png' },
-                 { name: 'Ketamine', type: 'offhand', attack: 7, cost: 550, icon: '💊', asset: 'KETAMINE-store.png' },
-                 { name: 'Hauchiwa', type: 'offhand', defense: 9, cost: 750, icon: '🍃', asset: 'HAUCHIWA-store.png' },
-                 { name: 'Hand Clock', type: 'offhand', defense: 2, cost: 120, icon: '⏰', asset: 'HAND-CLOCK-store.png' },
-                 { name: 'Gutenberg Bible', type: 'offhand', defense: 6, cost: 400, icon: '📖', asset: 'GUTENBERG-BIBLE-store.png' },
-                 { name: 'Game & Watch', type: 'offhand', attack: 4, cost: 280, icon: '🎮', asset: 'GAME-AND-WATCH-store.png' },
-                 { name: 'Foobar', type: 'offhand', attack: 3, cost: 220, icon: '🎵', asset: 'FOOBAR-store.png' },
-                 { name: 'G-Shock', type: 'offhand', defense: 3, cost: 100, icon: '⌚', asset: 'G-SHOCK-store.png' },
-                 { name: 'FBI Badge', type: 'offhand', defense: 7, cost: 500, icon: '🕵️', asset: 'FBI-BADGE-store.png' },
-                 { name: 'Final Fantasy', type: 'offhand', attack: 8, cost: 650, icon: '⚔️', asset: 'FINAL-FANTASY-store.png' },
-                 { name: 'Daihatsu Midget', type: 'offhand', defense: 4, cost: 320, icon: '🚗', asset: 'DAIHATSU-MIDGET-store.png' },
-                 { name: 'Dwarf Fortress Blueprint', type: 'offhand', defense: 3, cost: 180, icon: '📋', asset: 'DWARF-FORTRESS-GREEK-BEDROOM-BLUEPRINT-store.png' },
-                 { name: 'Carlo Bugatti Chair', type: 'offhand', defense: 5, cost: 380, icon: '🪑', asset: 'CARLO-BUGATTI-CHAIR-store.png' },
-                 { name: 'Clover', type: 'offhand', attack: 2, cost: 160, icon: '🍀', asset: 'CLOVER-store.png' },
-                 { name: 'Cookie', type: 'offhand', attack: 1, cost: 80, icon: '🍪', asset: 'COOKIE-store.png' },
-                 { name: 'Beetle Game', type: 'offhand', attack: 5, cost: 360, icon: '🪲', asset: 'BEETLE-GAME-store.png' },
-                 { name: 'Beyblade', type: 'offhand', attack: 6, cost: 420, icon: '🌀', asset: 'BEYBLADE-store.png' },
-                 { name: 'Briefcase', type: 'offhand', defense: 2, cost: 110, icon: '💼', asset: 'BREIFCASE-store.png' },
-                 { name: 'Adventure of Cookie and Cream', type: 'offhand', attack: 4, cost: 290, icon: '🍪', asset: 'ADVENTURE-OF-COOKIE-AND-CREAM-store.png' },
-                 { name: 'Amex Platinum', type: 'offhand', defense: 8, cost: 600, icon: '💳', asset: 'AMEX-PLATINUM-store.png' },
-                 { name: 'Beat Happening', type: 'offhand', attack: 3, cost: 240, icon: '🎸', asset: 'BEAT-HAPPENING-store.png' },
-                 { name: '48 Laws of Power', type: 'offhand', defense: 6, cost: 450, icon: '📚', asset: '48-LAWS-OF-POWER-store.png' }
+                 { name: 'Yen', type: 'offhand', attack: 2, cost: 150, asset: 'YEN-store.png' },
+                 { name: 'VAX Pass', type: 'offhand', attack: 3, cost: 200, asset: 'VAX-PASS-store.png' },
+                 { name: 'Tornado', type: 'offhand', attack: 8, cost: 600, asset: 'TORNADO-2-store.png' },
+                 { name: 'Tokyo Manhole Cover', type: 'offhand', defense: 10, cost: 800, asset: 'TOKYO-MANHOLE-COVER-store.png' },
+                 { name: 'Teddy Bear Anniversary', type: 'offhand', defense: 5, cost: 200, asset: 'TEDDY-BEAR-ANNIVERSARY-store.png' },
+                 { name: 'Super Lover Watch', type: 'offhand', attack: 4, cost: 300, asset: 'SUPER-LOVER-WATCH-store.png' },
+                 { name: 'Submarine Cable', type: 'offhand', defense: 7, cost: 500, asset: 'SUBMARINE-CABLE-store.png' },
+                 { name: 'Shooting Star', type: 'offhand', attack: 6, cost: 400, asset: 'SHOOTING-STAR-store.png' },
+                 { name: 'RX-78', type: 'offhand', attack: 5, cost: 350, asset: 'RX-78-store.png' },
+                 { name: 'Remilia Films', type: 'offhand', attack: 3, cost: 250, asset: 'REMILIA-FILMS-store.png' },
+                 { name: 'Remilia Engineering', type: 'offhand', defense: 6, cost: 450, asset: 'REMILIA-ENGINEERING-store.png' },
+                 { name: 'Remilia Crest', type: 'offhand', defense: 4, cost: 300, asset: 'REMILIA-CREST-store.png' },
+                 { name: 'Quad Damage', type: 'offhand', attack: 9, cost: 700, asset: 'QUAD-DAMAGE-store.png' },
+                 { name: 'Rayman Shield', type: 'offhand', defense: 8, cost: 600, asset: 'RAYMAN-M-STEAL-SHIELD-store.png' },
+                 { name: 'Pokewalker', type: 'offhand', attack: 2, cost: 150, asset: 'POKEWALKER-store.png' },
+                 { name: 'Pocket Pet', type: 'offhand', attack: 1, cost: 100, asset: 'POCKET-PET-store.png' },
+                 { name: 'Palette', type: 'offhand', attack: 3, cost: 200, asset: 'PALETTE-store.png' },
+                 { name: 'Nautilus', type: 'offhand', defense: 5, cost: 350, asset: 'NAUTILUS-store.png' },
+                 { name: 'Ketamine', type: 'offhand', attack: 7, cost: 550, asset: 'KETAMINE-store.png' },
+                 { name: 'Hauchiwa', type: 'offhand', defense: 9, cost: 750, asset: 'HAUCHIWA-store.png' },
+                 { name: 'Hand Clock', type: 'offhand', defense: 2, cost: 120, asset: 'HAND-CLOCK-store.png' },
+                 { name: 'Gutenberg Bible', type: 'offhand', defense: 6, cost: 400, asset: 'GUTENBERG-BIBLE-store.png' },
+                 { name: 'Game & Watch', type: 'offhand', attack: 4, cost: 280, asset: 'GAME-AND-WATCH-store.png' },
+                 { name: 'Foobar', type: 'offhand', attack: 3, cost: 220, asset: 'FOOBAR-store.png' },
+                 { name: 'G-Shock', type: 'offhand', defense: 3, cost: 100, asset: 'G-SHOCK-store.png' },
+                 { name: 'FBI Badge', type: 'offhand', defense: 7, cost: 500, asset: 'FBI-BADGE-store.png' },
+                 { name: 'Final Fantasy', type: 'offhand', attack: 8, cost: 650, asset: 'FINAL-FANTASY-store.png' },
+                 { name: 'Daihatsu Midget', type: 'offhand', defense: 4, cost: 320, asset: 'DAIHATSU-MIDGET-store.png' },
+                 { name: 'Dwarf Fortress Blueprint', type: 'offhand', defense: 3, cost: 180, asset: 'DWARF-FORTRESS-GREEK-BEDROOM-BLUEPRINT-store.png' },
+                 { name: 'Carlo Bugatti Chair', type: 'offhand', defense: 5, cost: 380, asset: 'CARLO-BUGATTI-CHAIR-store.png' },
+                 { name: 'Clover', type: 'offhand', attack: 2, cost: 160, asset: 'CLOVER-store.png' },
+                 { name: 'Cookie', type: 'offhand', attack: 1, cost: 80, asset: 'COOKIE-store.png' },
+                 { name: 'Beetle Game', type: 'offhand', attack: 5, cost: 360, asset: 'BEETLE-GAME-store.png' },
+                 { name: 'Beyblade', type: 'offhand', attack: 6, cost: 420, asset: 'BEYBLADE-store.png' },
+                 { name: 'Briefcase', type: 'offhand', defense: 2, cost: 110, asset: 'BREIFCASE-store.png' },
+                 { name: 'Adventure of Cookie and Cream', type: 'offhand', attack: 4, cost: 290, asset: 'ADVENTURE-OF-COOKIE-AND-CREAM-store.png' },
+                 { name: 'Amex Platinum', type: 'offhand', defense: 8, cost: 600, asset: 'AMEX-PLATINUM-store.png' },
+                 { name: 'Beat Happening', type: 'offhand', attack: 3, cost: 240, asset: 'BEAT-HAPPENING-store.png' },
+                 { name: '48 Laws of Power', type: 'offhand', defense: 6, cost: 450, asset: '48-LAWS-OF-POWER-store.png' }
              ],
             heads: [
-                { name: 'Bonk', type: 'head', attack: 5, cost: 300, icon: '👤', asset: 'BONK.png' },
-                { name: 'Evil Bonk', type: 'head', attack: 7, cost: 500, icon: '👤', asset: 'EVIL-BONK.png' },
-                { name: 'Alien Bonk', type: 'head', attack: 8, cost: 600, icon: '👤', asset: 'ALIEN-BONK.png' },
-                { name: 'Spirit', type: 'head', attack: 6, cost: 400, icon: '👤', asset: 'SPIRIT.png' },
-                { name: 'White', type: 'head', attack: 4, cost: 250, icon: '👤', asset: 'WHITE.png' }
+                { name: 'Bonk', type: 'head', attack: 5, cost: 300, asset: 'BONK.png' },
+                { name: 'Evil Bonk', type: 'head', attack: 7, cost: 500, asset: 'EVIL-BONK.png' },
+                { name: 'Alien Bonk', type: 'head', attack: 8, cost: 600, asset: 'ALIEN-BONK.png' },
+                { name: 'Spirit', type: 'head', attack: 6, cost: 400, asset: 'SPIRIT.png' },
+                { name: 'White', type: 'head', attack: 4, cost: 250, asset: 'WHITE.png' }
             ],
             accessories: [
-                { name: 'Raver Cap', type: 'accessory', attack: 3, cost: 250, icon: '🎩', asset: 'RAVER-CAP.png' },
-                { name: 'Halo', type: 'accessory', defense: 5, cost: 400, icon: '😇', asset: 'HALO.png' },
-                { name: 'Droid', type: 'accessory', attack: 4, cost: 350, icon: '🤖', asset: 'DROID.png' },
-                { name: 'BK', type: 'accessory', attack: 2, cost: 150, icon: '🍔', asset: 'BK.png' },
-                { name: 'Hikkikomori', type: 'accessory', defense: 3, cost: 200, icon: '🏠', asset: 'HIKKIKOMORI.png' }
+                { name: 'Raver Cap', type: 'accessory', attack: 3, cost: 250, asset: 'RAVER-CAP.png' },
+                { name: 'Halo', type: 'accessory', defense: 5, cost: 400, asset: 'HALO.png' },
+                { name: 'Droid', type: 'accessory', attack: 4, cost: 350, asset: 'DROID.png' },
+                { name: 'BK', type: 'accessory', attack: 2, cost: 150, asset: 'BK.png' },
+                { name: 'Hikkikomori', type: 'accessory', defense: 3, cost: 200, asset: 'HIKKIKOMORI.png' }
             ],
             skills: [
-                { name: 'Slash', type: 'skill', cost: 0, icon: '⚔️', description: 'Basic light attack', unlocked: true },
-                { name: 'Power-up', type: 'skill', cost: 0, icon: '⬆️', description: 'Increase attack strength', unlocked: true },
-                { name: 'Defend', type: 'skill', cost: 0, icon: '🛡️', description: 'Increase defense', unlocked: true },
-                { name: 'Dodge', type: 'skill', cost: 0, icon: '💨', description: '70% chance to dodge', unlocked: true },
-                { name: 'Special', type: 'skill', cost: 500, icon: '⭐', description: 'Heavy attack (requires 3 power-ups)', unlocked: false },
-                { name: 'Bonkler Beam', type: 'skill', cost: 1000, icon: '⚡', description: 'Devastating beam attack (65% hit rate)', unlocked: false },
-                { name: 'Double Strike', type: 'skill', cost: 300, icon: '⚔️⚔️', description: 'Attack twice in one turn', unlocked: false },
-                { name: 'Counter Attack', type: 'skill', cost: 400, icon: '🔄', description: 'Counter enemy attacks', unlocked: false },
-                { name: 'Heal', type: 'skill', cost: 200, icon: '💚', description: 'Restore 30% health', unlocked: false },
-                { name: 'Critical Strike', type: 'skill', cost: 600, icon: '💥', description: 'High chance of critical damage', unlocked: false }
+                { name: 'Slash', type: 'skill', cost: 0, description: 'Basic light attack', unlocked: true },
+                { name: 'Power-up', type: 'skill', cost: 0, description: 'Add a permanent +15% attack stack', unlocked: true },
+                { name: 'Defend', type: 'skill', cost: 0, description: 'Reduce the next damaging hit by 55%', unlocked: true },
+                { name: 'Dodge', type: 'skill', cost: 0, description: '60% chance to dodge the next attack', unlocked: true },
+                { name: 'Special', type: 'skill', cost: 500, description: 'Heavy attack (requires 3 power-ups)', unlocked: false },
+                { name: 'Bonkler Beam', type: 'skill', cost: 1000, description: 'Devastating beam attack (65% hit rate)', unlocked: false },
+                { name: 'Double Strike', type: 'skill', cost: 300, description: 'Two 0.72x defense-aware hits', unlocked: false },
+                { name: 'Counter Attack', type: 'skill', cost: 400, description: 'Return an 0.85x strike after the next hit', unlocked: false },
+                { name: 'Heal', type: 'skill', cost: 200, description: 'Restore 28% health once per battle', unlocked: false },
+                { name: 'Critical Strike', type: 'skill', cost: 600, description: '60% chance for a 1.9x critical strike', unlocked: false }
             ]
         };
 
-        const items = shopData[category] || [];
-        
+        const items = (shopData[category] || []).map((item) => ({
+            ...item,
+            cost: this.getBalancedShopCost(item)
+        }));
+
         items.forEach(item => {
             const shopItem = document.createElement('div');
             shopItem.className = 'shop-item';
@@ -4152,7 +4181,7 @@ class GameState {
             
             shopItem.innerHTML = `
                 <div class="item-icon">
-                    ${item.asset ? `<img src="${item.type === 'offhand' ? 'OFFHAND store' : item.type === 'accessory' ? 'store accessories' : item.type === 'pilot' ? 'store pilot' : item.type === 'body' ? 'BODIES' : item.type === 'armor' ? 'ARMORS' : item.type === 'hand' ? 'store hands' : item.type.toUpperCase()}/${item.asset}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;">` : item.icon}
+                    ${item.asset ? `<span class="item-fallback" aria-hidden="true">${this.symbolMarkup(this.getItemSymbol(item))}</span><img class="shop-preview-image" src="${item.type === 'offhand' ? 'OFFHAND store' : item.type === 'accessory' ? 'store accessories' : item.type === 'pilot' ? 'store pilot' : item.type === 'body' ? 'BODIES' : item.type === 'armor' ? 'ARMORS' : item.type === 'hand' ? 'store hands' : item.type.toUpperCase()}/${item.asset}" alt="${item.name}" width="1000" height="1528" loading="lazy" decoding="async">` : this.symbolMarkup(this.getItemSymbol(item), 'skill-symbol')}
                 </div>
                 <div class="item-name">${item.name}</div>
                 <div class="item-description">${description}</div>
@@ -4171,6 +4200,9 @@ class GameState {
             }
             
             shopItems.appendChild(shopItem);
+
+            const shopPreview = shopItem.querySelector('.shop-preview-image');
+            if (shopPreview) this.prepareShopPreview(shopPreview);
         });
     }
 
@@ -4188,7 +4220,7 @@ class GameState {
             if (!this.componentAssets) {
                 this.componentAssets = {};
             }
-            const assetKey = item.type === 'hand' ? 'hands' : item.type + 's';
+            const assetKey = this.normalizeComponentType(item.type);
             if (!this.componentAssets[assetKey]) {
                 this.componentAssets[assetKey] = [];
             }
@@ -4219,12 +4251,13 @@ class GameState {
                 folderPath = item.type.toUpperCase();
             }
             
-            console.log('🔧 Creating purchased item with path:', `${folderPath}/${regularAssetName}`);
+            console.log('Creating purchased item with path:', `${folderPath}/${regularAssetName}`);
             
             const componentAsset = {
                 name: item.name,
+                asset: regularAssetName,
                 path: `${folderPath}/${regularAssetName}`,
-                type: item.type,
+                type: this.normalizeComponentType(item.type),
                 attack: item.attack || 0,
                 defense: item.defense || 0,
                 cost: item.cost
@@ -4238,19 +4271,6 @@ class GameState {
                 id: Date.now() + Math.random(), // Unique ID
                 purchasedAt: new Date().toISOString()
             };
-            
-            // Fix the type for hands items to match the expected category
-            if (item.type === 'hand') {
-                purchasedItem.type = 'hands';
-            }
-            // Fix the type for offhand items to match the expected category
-            if (item.type === 'offhand') {
-                purchasedItem.type = 'offhands';
-            }
-            // Fix the type for armor items to match the expected category
-            if (item.type === 'armor') {
-                purchasedItem.type = 'armors';
-            }
             
             this.purchasedItems.push(purchasedItem);
             
@@ -4284,7 +4304,7 @@ class GameState {
         
         this.updateUI();
         this.saveGameData();
-        this.populateShop();
+        this.populateShop(this.currentShopCategory);
         this.populateInventory();
         
         // Refresh purchased items in builder if it's currently visible
@@ -4312,8 +4332,8 @@ class GameState {
             return;
         }
         
-        // Carousel settings
-        const itemsPerPage = 5;
+        // Keep fighter cards usable instead of squeezing five across every viewport.
+        const itemsPerPage = window.innerWidth < 560 ? 1 : window.innerWidth < 900 ? 2 : 4;
         const totalPages = Math.ceil(this.userNFTs.length / itemsPerPage);
         
         // Create carousel pages
@@ -4321,8 +4341,6 @@ class GameState {
             const pageContainer = document.createElement('div');
             pageContainer.className = 'carousel-page';
             pageContainer.style.display = 'flex';
-            pageContainer.style.gap = '8px';
-            pageContainer.style.minWidth = '100%';
             
             // Add NFTs for this page
             for (let i = 0; i < itemsPerPage; i++) {
@@ -4330,14 +4348,17 @@ class GameState {
                 if (nftIndex >= this.userNFTs.length) break;
                 
                 const nft = this.userNFTs[nftIndex];
-                const nftCard = document.createElement('div');
+                const nftCard = document.createElement('button');
+                nftCard.type = 'button';
                 nftCard.className = 'nft-card';
                 nftCard.dataset.nftId = nft.id;
-                nftCard.style.flex = '1';
-                nftCard.style.minWidth = '120px';
+
                 
                 // Add NFT indicator if it's an NFT
-                const nftBadge = nft.isNFT ? `<div class="nft-badge">NFT</div>` : '';
+                const nftBadge = nft.isNFT ? '<div class="nft-badge">NFT</div>' : '';
+                const safeName = this.escapeHTML(nft.name);
+                const safeDescription = this.escapeHTML(nft.description || '');
+                const safeTokenId = this.escapeHTML(nft.tokenId || '');
                 
                 // Create canvas for NFT preview
                 const canvas = document.createElement('canvas');
@@ -4350,14 +4371,14 @@ class GameState {
                         ${canvas.outerHTML}
                         ${nftBadge}
                     </div>
-                    <div class="nft-name">${nft.name}</div>
-                    <div class="nft-description">${nft.description || ''}</div>
+                    <div class="nft-name">${safeName}</div>
+                    <div class="nft-description">${safeDescription}</div>
                     <div class="nft-stats">
                         <div>Level: ${nft.level}</div>
                         <div>Attack: ${nft.attack}</div>
                         <div>Defense: ${nft.defense}</div>
                         <div>Health: ${nft.health}/${nft.maxHealth}</div>
-                        ${nft.tokenId ? `<div>Token ID: ${nft.tokenId}</div>` : ''}
+                        ${nft.tokenId ? `<div>Token ID: ${safeTokenId}</div>` : ''}
                     </div>
                 `;
                 
@@ -4389,8 +4410,10 @@ class GameState {
         // Create indicators
         if (indicators && totalPages > 1) {
             for (let i = 0; i < totalPages; i++) {
-                const indicator = document.createElement('div');
+                const indicator = document.createElement('button');
+                indicator.type = 'button';
                 indicator.className = 'carousel-indicator';
+                indicator.setAttribute('aria-label', `Show fighter page ${i + 1}`);
                 if (i === 0) indicator.classList.add('active');
                 indicator.dataset.page = i;
                 
@@ -4412,9 +4435,7 @@ class GameState {
         // Set up back button
         const backBtn = document.getElementById('back-to-nfts-btn');
         if (backBtn) {
-            backBtn.addEventListener('click', () => {
-                this.showCarouselView();
-            });
+            backBtn.onclick = () => this.showCarouselView();
         }
     }
 
@@ -4450,15 +4471,11 @@ class GameState {
         const nextBtn = document.getElementById('nft-next-btn');
         
         if (prevBtn) {
-            prevBtn.addEventListener('click', () => {
-                this.goToCarouselPage(this.currentCarouselPage - 1);
-            });
+            prevBtn.onclick = () => this.goToCarouselPage(this.currentCarouselPage - 1);
         }
         
         if (nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                this.goToCarouselPage(this.currentCarouselPage + 1);
-            });
+            nextBtn.onclick = () => this.goToCarouselPage(this.currentCarouselPage + 1);
         }
     }
     
@@ -4551,20 +4568,11 @@ class GameState {
             
             grid.innerHTML = '';
             
-            // Get purchased items for this category
-            const categoryItems = this.purchasedItems.filter(item => {
-                let itemType = item.type;
-                // Handle special case for hands
-                if (item.type === 'hand') {
-                    itemType = 'hands';
-                }
-                // Handle special case for offhand
-                if (item.type === 'offhand') {
-                    itemType = 'offhands';
-                }
-                console.log(`Filtering item ${item.name} (type: ${item.type}) for category ${category} -> itemType: ${itemType}`);
-                return itemType === category;
-            });
+            // Normalize legacy plural item types before matching each UI category.
+            const categoryType = this.normalizeComponentType(category);
+            const categoryItems = this.purchasedItems.filter((item) =>
+                this.normalizeComponentType(item.type) === categoryType
+            );
             
             console.log(`Category ${category}:`, categoryItems);
             console.log(`Category ${category} items count:`, categoryItems.length);
@@ -4591,7 +4599,7 @@ class GameState {
                     } else if (item.type === 'hand') {
                         imagePath = `HANDS/${item.asset}`;
                     } else if (item.type === 'offhand') {
-                        imagePath = `OFFHAND/${item.asset}`;
+                        imagePath = `OFFHAND store/${item.asset}`;
                     } else if (item.type === 'head') {
                         imagePath = `HEADS/${item.asset}`;
                     } else if (item.type === 'pilot') {
@@ -4602,18 +4610,16 @@ class GameState {
                 }
                 
                 // Check if this item is currently equipped
-                const itemCategory = item.type === 'hand' ? 'hands' : item.type;
+                const itemCategory = this.normalizeComponentType(item.type);
                 const isCurrentlyEquipped = this.builderComponents[itemCategory] && 
                     this.builderComponents[itemCategory].name === item.name;
                 
-                const buttonText = isCurrentlyEquipped ? 'Equipped' : 'Equip';
-                const buttonDisabled = isCurrentlyEquipped ? 'disabled' : '';
-                const buttonStyle = isCurrentlyEquipped ? 'style="background: #808080; color: #c0c0c0;"' : '';
-                
+                const buttonText = isCurrentlyEquipped ? 'Unequip' : 'Equip';
+                const buttonDisabled = '';
                 itemElement.innerHTML = `
-                    <img src="${imagePath}" alt="${item.name}">
+                    <img src="${imagePath}" alt="${item.name}" loading="lazy" decoding="async">
                     <div class="purchased-item-name">${item.name}</div>
-                    <button class="equip-btn" data-category="${item.type}" data-item="${item.name}" ${buttonDisabled} ${buttonStyle}>${buttonText}</button>
+                    <button class="equip-btn" data-category="${item.type}" data-item="${item.name}" ${buttonDisabled}>${buttonText}</button>
                 `;
                 
                 // Add click handler for equip button
@@ -4622,7 +4628,7 @@ class GameState {
                     e.stopPropagation();
                     
                     // Check current state dynamically
-                    const currentItemCategory = item.type === 'hand' ? 'hands' : item.type;
+                    const currentItemCategory = this.normalizeComponentType(item.type);
                     const isCurrentlyEquipped = this.builderComponents[currentItemCategory] && 
                         this.builderComponents[currentItemCategory].name === item.name;
                     
@@ -4647,14 +4653,7 @@ class GameState {
         }
         
         // Update the builder components
-        let category = item.type;
-        if (item.type === 'hand') {
-            category = 'hands';
-        } else if (item.type === 'armors') {
-            category = 'armor'; // Convert from plural to singular for rendering
-        }
-        
-
+        const category = this.normalizeComponentType(item.type);
         
         // Check if there's already an item equipped in this category
         const currentlyEquipped = this.builderComponents[category];
@@ -4669,10 +4668,12 @@ class GameState {
         
         image.onload = () => {
             
-            // Store the component with the loaded image
+            // Store the component with the canonical, non-store asset path.
+            const componentPath = this.getComponentImagePath(item);
+
             this.builderComponents[category] = {
                 name: item.name,
-                path: item.path,
+                path: componentPath,
                 image: image,
                 attack: item.attack || 0,
                 defense: item.defense || 0
@@ -4685,7 +4686,7 @@ class GameState {
                 }
                 this.selectedNFT.components[category] = {
                     name: item.name,
-                    path: item.path,
+                    path: componentPath,
                     image: image,
                     attack: item.attack || 0,
                     defense: item.defense || 0
@@ -4712,10 +4713,12 @@ class GameState {
         image.onerror = (error) => {
             console.error(`Failed to load image for ${item.name}:`, error);
             
-            // Still store the component but without image
+            // Still store the component without an image so it can be retried later.
+            const componentPath = this.getComponentImagePath(item);
+
             this.builderComponents[category] = {
                 name: item.name,
-                path: item.path,
+                path: componentPath,
                 image: null,
                 attack: item.attack || 0,
                 defense: item.defense || 0
@@ -4728,10 +4731,11 @@ class GameState {
             this.updateEquipButtonState(item.name, true);
         };
         
-        // Start loading the image
-        image.src = item.path;
+        // Start loading the canonical image.
+        const imageSrc = this.getComponentImagePath(item);
+        image.src = imageSrc;
         
-        console.log('Starting image load for:', item.path);
+        console.log('Starting image load for:', imageSrc);
     }
     
     updateEquipButtonState(itemName, isEquipped) {
@@ -4740,15 +4744,13 @@ class GameState {
         
         equipBtns.forEach(btn => {
             if (isEquipped) {
-                btn.textContent = 'Equipped';
-                btn.disabled = false; // Allow clicking to unequip
-                btn.style.background = '#808080';
-                btn.style.color = '#c0c0c0';
+                btn.textContent = 'Unequip';
+                btn.disabled = false;
+                btn.classList.add('equipped');
             } else {
                 btn.textContent = 'Equip';
                 btn.disabled = false;
-                btn.style.background = '#c0c0c0';
-                btn.style.color = '#000000';
+                btn.classList.remove('equipped');
             }
         });
     }
@@ -4759,12 +4761,7 @@ class GameState {
             return;
         }
         
-        let category = item.type;
-        if (item.type === 'hand') {
-            category = 'hands';
-        } else if (item.type === 'armors') {
-            category = 'armor'; // Convert from plural to singular for rendering
-        }
+        const category = this.normalizeComponentType(item.type);
         console.log(`Unequipping ${item.name} from category ${category}`);
         
         // Remove the component from builder components
@@ -4914,18 +4911,18 @@ class GameState {
     populateInventoryPurchased() {
         const purchasedGrid = document.getElementById('inventory-purchased-grid');
         if (!purchasedGrid) {
-            console.error('❌ inventory-purchased-grid element not found');
+            console.error('inventory-purchased-grid element not found');
             return;
         }
         
-        console.log('🔍 populateInventoryPurchased called');
-        console.log('📦 purchasedItems array:', this.purchasedItems);
-        console.log('📦 purchasedItems length:', this.purchasedItems.length);
+        console.log('populateInventoryPurchased called');
+        console.log('purchasedItems array:', this.purchasedItems);
+        console.log('purchasedItems length:', this.purchasedItems.length);
         
         purchasedGrid.innerHTML = '';
         
         if (this.purchasedItems.length === 0) {
-            console.log('❌ No purchased items found');
+            console.log('No purchased items found');
             purchasedGrid.innerHTML = '<div class="inventory-empty">No purchased items found. Buy items from the shop to see them here.</div>';
             return;
         }
@@ -4952,11 +4949,11 @@ class GameState {
                 description = `Accessory component with +${item.attack || item.defense} ${item.attack ? 'attack' : 'defense'}`;
             }
             
-            console.log('🖼️ Creating item element for:', item.name, 'with path:', item.path);
+            console.log('Creating item element for:', item.name, 'with path:', item.path);
             
             itemElement.innerHTML = `
                 <div class="item-icon">
-                    ${item.path ? `<img src="${item.path}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;" onerror="console.error('❌ Failed to load image:', this.src);" onload="console.log('✅ Image loaded successfully:', this.src);">` : item.icon || '📦'}
+                    ${item.path ? `<img src="${item.path}" alt="${item.name}" loading="lazy" decoding="async">` : this.symbolMarkup(this.getItemSymbol(item), 'skill-symbol')}
                 </div>
                 <div class="item-name">${item.name}</div>
                 <div class="item-description">${description}</div>
@@ -5011,15 +5008,12 @@ class GameState {
             const skillElement = document.createElement('div');
             skillElement.className = 'shop-item equipped';
             skillElement.dataset.skill = skillName;
-            
+
             const skillData = this.shopData.skills.find(s => s.name === skillName);
-            const icon = skillData ? skillData.icon : '⚔️';
             const description = skillData ? skillData.description : 'Skill';
-            
+
             skillElement.innerHTML = `
-                <div class="item-icon">
-                    <div style="font-size: 48px; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">${icon}</div>
-                </div>
+                <div class="item-icon">${this.symbolMarkup(this.getSkillSymbol(skillName), 'skill-symbol')}</div>
                 <div class="item-name">${skillName}</div>
                 <div class="item-description">${description}</div>
                 <div class="item-price">Equipped</div>
@@ -5047,15 +5041,12 @@ class GameState {
             const skillElement = document.createElement('div');
             skillElement.className = 'shop-item available';
             skillElement.dataset.skill = skillName;
-            
+
             const skillData = this.shopData.skills.find(s => s.name === skillName);
-            const icon = skillData ? skillData.icon : '⚔️';
             const description = skillData ? skillData.description : 'Skill';
-            
+
             skillElement.innerHTML = `
-                <div class="item-icon">
-                    <div style="font-size: 48px; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">${icon}</div>
-                </div>
+                <div class="item-icon">${this.symbolMarkup(this.getSkillSymbol(skillName), 'skill-symbol')}</div>
                 <div class="item-name">${skillName}</div>
                 <div class="item-description">${description}</div>
                 <div class="item-price">Available</div>
@@ -5102,7 +5093,7 @@ class GameState {
         
         const playerData = {
             walletAddress: this.publicKey,
-            name: this.publicKey.substring(0, 8) + '...' + this.publicKey.substring(this.publicKey.length - 4),
+            name: this.publicKey.substring(0, 8) + '…' + this.publicKey.substring(this.publicKey.length - 4),
             level: this.level,
             exp: this.exp,
             totalExp: this.playerStats.totalExp,
@@ -5114,47 +5105,120 @@ class GameState {
             lastUpdated: Date.now()
         };
         
-        // Save to localStorage
+        // Save to localStorage for offline access
         localStorage.setItem('bonkler_player_stats', JSON.stringify(playerData));
         
-        // Update leaderboard data
-        this.updateLeaderboardData(playerData);
+        // Submit to global leaderboard
+        this.submitToGlobalLeaderboard(playerData);
     }
     
-    updateLeaderboardData(playerData) {
-        // Load existing leaderboard data
+    // Submit player data to global leaderboard
+    async submitToGlobalLeaderboard(playerData) {
+        try {
+            const response = await fetch('/api/leaderboard/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(playerData)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Score submitted to global leaderboard:', result.message);
+
+                // Show rank notification if available
+                if (result.rank) {
+                    this.showModal?.('Global Rank Updated!', `Your current global rank: #${result.rank}`);
+                }
+
+                // Refresh leaderboard to show updated data
+                this.updateLeaderboard();
+            } else {
+                console.error('Failed to submit score to global leaderboard');
+            }
+        } catch (error) {
+            console.error('Error submitting to global leaderboard:', error);
+            // Fallback to local storage if server is unavailable
+            this.updateLocalLeaderboardData(playerData);
+        }
+    }
+
+    // Fallback to local storage if server is unavailable
+    updateLocalLeaderboardData(playerData) {
         const existingData = localStorage.getItem('bonkler_leaderboard');
         let leaderboardData = existingData ? JSON.parse(existingData) : [];
         
-        // Find if player already exists
         const existingIndex = leaderboardData.findIndex(p => p.walletAddress === playerData.walletAddress);
         
         if (existingIndex !== -1) {
-            // Update existing player
             leaderboardData[existingIndex] = { ...leaderboardData[existingIndex], ...playerData };
         } else {
-            // Add new player
             leaderboardData.push(playerData);
         }
         
-        // Sort by total experience (descending)
         leaderboardData.sort((a, b) => b.totalExp - a.totalExp);
-        
-        // Keep only top 100 players
         leaderboardData = leaderboardData.slice(0, 100);
         
-        // Save updated leaderboard
         localStorage.setItem('bonkler_leaderboard', JSON.stringify(leaderboardData));
         this.leaderboardData = leaderboardData;
     }
     
-    updateLeaderboard() {
-        // Load current leaderboard data
-        const existingData = localStorage.getItem('bonkler_leaderboard');
-        this.leaderboardData = existingData ? JSON.parse(existingData) : [];
+    // Get current player's global rank
+    async getPlayerGlobalRank() {
+        if (!this.publicKey) return null;
+
+        try {
+            const response = await fetch(`/api/leaderboard/rank/${encodeURIComponent(this.publicKey)}`);
+
+            if (response.ok) {
+                const result = await response.json();
+                return result.rank;
+            }
+        } catch (error) {
+            console.error('Error getting global rank:', error);
+        }
+
+        return null;
+    }
+
+    async updateLeaderboard() {
+        try {
+            // Try to fetch from global leaderboard first
+            const response = await fetch('/api/leaderboard');
+
+            if (response.ok) {
+                const globalData = await response.json();
+                this.leaderboardData = globalData;
+                console.log('Loaded global leaderboard:', globalData.length, 'players');
+                this.updateLeaderboardStatus('global');
+            } else {
+                throw new Error('Failed to fetch global leaderboard');
+            }
+        } catch (error) {
+            console.warn('Using local leaderboard (server unavailable):', error.message);
+            // Fallback to local storage
+            const existingData = localStorage.getItem('bonkler_leaderboard');
+            this.leaderboardData = existingData ? JSON.parse(existingData) : [];
+            this.updateLeaderboardStatus('local');
+        }
         
         // Update the display
         this.populateLeaderboard(this.currentLeaderboardTab);
+    }
+
+    // Update leaderboard status indicator
+    updateLeaderboardStatus(status) {
+        const statusElement = document.getElementById('leaderboard-status');
+        if (!statusElement) return;
+
+        const indicator = statusElement.querySelector('.status-indicator');
+        if (indicator) {
+            indicator.className = `status-indicator ${status}`;
+            indicator.innerHTML = status === 'global'
+                ? `${this.symbolMarkup('global')} Global`
+                : `${this.symbolMarkup('local')} Local`;
+        }
     }
     
     populateLeaderboard(tab = 'global') {
@@ -5207,7 +5271,7 @@ class GameState {
             entry.innerHTML = `
                 <div class="rank ${rankClass}">#${index + 1}</div>
                 <div class="player-info">
-                    <div class="player-avatar">👤</div>
+                    <div class="player-avatar">${this.symbolMarkup('pilot')}</div>
                     <div class="player-details">
                         <h3>${player.name}</h3>
                         <p>Level ${player.level}</p>
@@ -5228,13 +5292,18 @@ class GameState {
 
     // Modal System
     showModal(title, content) {
+        this.lastFocusedElement = document.activeElement;
         document.getElementById('modal-title').textContent = title;
         document.getElementById('modal-content').textContent = content;
         document.getElementById('modal-overlay').classList.add('active');
+        requestAnimationFrame(() => document.getElementById('modal-ok')?.focus());
     }
 
     closeModal() {
-        document.getElementById('modal-overlay').classList.remove('active');
+        const overlay = document.getElementById('modal-overlay');
+        if (!overlay?.classList.contains('active')) return;
+        overlay.classList.remove('active');
+        this.lastFocusedElement?.focus?.();
     }
 
     // Loading Screen Methods
@@ -5242,38 +5311,28 @@ class GameState {
         this.loadingProgress = 0;
         this.assetIndex = 0;
         this.loadingBonklers = [];
-        
-        // Generate random Bonklers for loading screen
-        this.generateLoadingBonklers();
-        
-        this.cycleAssetPreview();
+        this.renderLoadingMark();
     }
 
-    generateLoadingBonklers() {
-        // Available components for random generation
-        const components = {
-            pilot: ['WOLFIE', 'ALIEN-MILADY', 'BEAUTY-BEAST-BUNNY', 'BINKY', 'BLACK-FROST', 'BONK-BAT', 'CHARLIE\'S-DOG', 'DANCING-MAN-EMOJI', 'DR-KAWASHIMA', 'GUITAR-BEAR', 'HAMTARO', 'KASANE-TETO', 'MAPLE-STORY', 'MEW', 'MILADY', 'MINIFIG', 'NEKO', 'OKSHIA-MIKAN-UWASA-FRUIT-JUICER', 'PIKMIN', 'REI', 'ROVER', 'SHAKOKI-DOGU', 'SNOOPY-PLUSH', 'SPRITE-AUTOGRAPH', 'STUART', 'TIVO', 'ZATSUNE-MIKU'],
-            body: ['ANOTHER-FREAKING-MACHINE', 'BEETLE', 'BRG-VOL1', 'BURGER-BONK-LASER', 'BURNER-PHONE', 'CHINESE-SPRITE', 'COSMIC-RAY-DETECTORS', 'DARK-MAGICIAN-GIRL', 'FIRE-BONKER-LASER', 'FRAGILE-HEARTS', 'GUAM', 'HARAJUKU-MOTOROLA', 'JACOB-JENSEN', 'JADE-CABBAGE', 'JUDD-CHAIR', 'LEGO-SKELETON', 'NOCTUA-HEATSINK', 'ORION-CAN', 'PELICAN-TERMINAL', 'RED-AND-BLUE-CHAIR', 'REI-LIGHTER', 'RILAKKUMA', 'RUG-PULL', 'RUMMIKUB', 'SONY-CD-PLAYER', 'SONY-POCKET-STATION', 'SONY-TABLET', 'SONY-TV', 'SUIT', 'TEKKEN-KING', 'VALET-CHAIR', 'VENDING-MACHINE', 'YMO-TOUR'],
-            armor: ['ArmorAdamantine', 'ArmorBlack', 'ArmorBlack-Trim', 'ArmorBronze', 'ArmorBronze-Trim', 'ArmorCoal', 'ArmorComme-Des-Garcons-Homme-Plus-FW18-Dover-Street-Market-Installation-Dinosaur-Bones', 'ArmorDragon', 'ArmorGlory', 'ArmorHandycam', 'ArmorHarajuku-Sticker', 'ArmorJade', 'ArmorMithril', 'ArmorMithril-Trim', 'ArmorPhantom', 'ArmorSteel', 'ArmorSteel-Trim', 'ArmorTerminator', 'ArmorTerminator-Recolor', 'ArmorWhite', 'ArmorWhite-Trim'],
-            hands: ['AGHANIM-SCEPTER', 'AMERICAN-FLAG', 'ANCIENT-GODSWORD', 'APE-ESCAPE-NET', 'ARMED-THREAT', 'ATARASHIKI-MURA', 'BALLOON', 'BIONICLE-AXE', 'BLADE-OF-THE-IMMORTAL', 'BLUDGEONING-ANGEL', 'BOOM-MIC', 'CATTLE-GUN', 'DREAMCAST-FISHING-CONTROLLER', 'ENERGY-SWORD', 'EVOLVED-ANTENNA', 'GOLDEN-AXE', 'IKEBANA', 'INSANITY-CATALYST', 'JORDAN', 'K\'NEX', 'NEWJEANS-HAMMER', 'PHONE-FLAIL', 'PORSCHE-SUSPENSION', 'RIBBON-STAFF', 'SIR-FETCH\'D', 'SKYLANDER-SWORD', 'SLY-COOPER-CANE', 'STYGIAN-REAVER', 'VELVET-CROWE', 'WATER-PISTOL', 'WINGED-STAFF-GOLD'],
-            offhand: ['48-LAWS-OF-POWER', 'ADVENTURE-OF-COOKIE-AND-CREAM', 'AMEX-PLATINUM', 'BEAT-HAPPENING', 'BEETLE-GAME', 'BEYBLADE', 'BREIFCASE', 'CARLO-BUGATTI-CHAIR', 'CLOVER', 'COOKIE', 'DAIHATSU-MIDGET', 'DWARF-FORTRESS-GREEK-BEDROOM-BLUEPRINT', 'FBI-BADGE', 'FINAL-FANTASY', 'FOOBAR', 'G-SHOCK', 'GAME-AND-WATCH', 'GUTENBERG-BIBLE', 'HAND-CLOCK', 'HAUCHIWA', 'KETAMINE', 'NAUTILUS', 'PALETTE', 'POCKET-PET', 'POKEWALKER', 'QUAD-DAMAGE', 'RAYMAN-M-STEAL-SHIELD', 'REMILIA-CREST', 'REMILIA-ENGINEERING', 'REMILIA-FILMS', 'RX-78', 'SHOOTING-STAR', 'SUBMARINE-CABLE', 'SUPER-LOVER-WATCH', 'TEDDY-BEAR-ANNIVERSARY', 'TOKYO-MANHOLE-COVER', 'TORNADO-2', 'VAX-PASS', 'YEN'],
-            accessory: ['BK', 'DROID', 'HALO', 'HIKKIKOMORI', 'RAVER-CAP'],
-            head: ['ALIEN-BONK', 'BONK', 'EVIL-BONK', 'SPIRIT', 'WHITE']
+    renderLoadingMark() {
+        const canvas = document.getElementById('asset-preview-canvas');
+        const label = document.getElementById('asset-preview-text');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const logo = new Image();
+        logo.onload = () => {
+            ctx.drawImage(logo, 104, 74, 92, 95);
+            ctx.fillStyle = '#000b78';
+            ctx.font = '700 18px Tahoma';
+            ctx.textAlign = 'center';
+            ctx.fillText('BONKLER OS', 150, 204);
+            ctx.font = '11px monospace';
+            ctx.fillText('COMBAT BIOS v1.8.1', 150, 225);
         };
-
-        // Generate 5 random Bonklers
-        for (let i = 0; i < 5; i++) {
-            const randomBonkler = {
-                pilot: components.pilot[Math.floor(Math.random() * components.pilot.length)],
-                body: components.body[Math.floor(Math.random() * components.body.length)],
-                armor: components.armor[Math.floor(Math.random() * components.armor.length)],
-                hands: components.hands[Math.floor(Math.random() * components.hands.length)],
-                offhand: components.offhand[Math.floor(Math.random() * components.offhand.length)],
-                accessory: components.accessory[Math.floor(Math.random() * components.accessory.length)],
-                head: components.head[Math.floor(Math.random() * components.head.length)]
-            };
-            this.loadingBonklers.push(randomBonkler);
-        }
+        logo.src = 'favicon.png';
+        if (label) label.textContent = 'Checking local combat modules…';
     }
 
     updateLoadingProgress(progress, text) {
@@ -5286,6 +5345,7 @@ class GameState {
         
         if (loadingBarFill) {
             loadingBarFill.style.width = `${progress}%`;
+            loadingBarFill.parentElement?.setAttribute('aria-valuenow', String(progress));
         }
         
         if (loadingText) {
@@ -5293,112 +5353,8 @@ class GameState {
         }
         
         if (loadingTip) {
-            loadingTip.textContent = text;
+            loadingTip.textContent = String(text).replace(/\.\.\./g, '…');
         }
-    }
-
-    cycleAssetPreview() {
-        if (this.assetIndex >= this.loadingBonklers.length) {
-            this.assetIndex = 0;
-        }
-        
-        const bonkler = this.loadingBonklers[this.assetIndex];
-        const previewCanvas = document.getElementById('asset-preview-canvas');
-        const previewText = document.getElementById('asset-preview-text');
-        
-        if (previewCanvas && previewText) {
-            // Render random Bonkler on canvas
-            this.renderLoadingBonkler(previewCanvas, bonkler);
-            previewText.textContent = `Loading Bonkler ${this.assetIndex + 1}...`;
-            
-            // Show next Bonkler after 2 seconds
-            setTimeout(() => {
-                this.assetIndex++;
-                if (this.loadingProgress < 100) {
-                    this.cycleAssetPreview();
-                }
-            }, 2000);
-        }
-        
-        // Continue cycling if still loading
-        if (this.loadingProgress < 100) {
-            setTimeout(() => this.cycleAssetPreview(), 3000);
-        }
-    }
-
-    renderLoadingBonkler(canvas, bonkler) {
-        const ctx = canvas.getContext('2d');
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        
-        // Clear canvas with transparent background
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-        
-        // Set up drawing context
-        ctx.imageSmoothingEnabled = false;
-        
-        // Calculate scale and position for centered rendering
-        const scale = 0.25; // Reduced scale to fit everything
-        const centerX = canvasWidth / 2;
-        const centerY = canvasHeight / 2;
-        
-        // Render each component
-        const components = ['pilot', 'body', 'armor', 'hands', 'offhand', 'accessory', 'head'];
-        
-        components.forEach(componentType => {
-            const componentName = bonkler[componentType];
-            if (componentName) {
-                const img = new Image();
-                img.onload = () => {
-                    // Calculate position based on component type
-                    let x = centerX;
-                    let y = centerY;
-                    
-                    // Adjust position for different components - more conservative positioning
-                    if (componentType === 'pilot') {
-                        y = centerY - 15;
-                    } else if (componentType === 'body') {
-                        y = centerY;
-                    } else if (componentType === 'armor') {
-                        y = centerY;
-                    } else if (componentType === 'hands') {
-                        x = centerX - 20;
-                        y = centerY + 5;
-                    } else if (componentType === 'offhand') {
-                        x = centerX + 20;
-                        y = centerY + 5;
-                    } else if (componentType === 'accessory') {
-                        y = centerY - 25;
-                    } else if (componentType === 'head') {
-                        y = centerY - 35;
-                    }
-                    
-                    // Draw the component
-                    const scaledWidth = img.width * scale;
-                    const scaledHeight = img.height * scale;
-                    
-                    // Ensure the component stays within canvas bounds
-                    const drawX = Math.max(0, Math.min(canvasWidth - scaledWidth, x - scaledWidth / 2));
-                    const drawY = Math.max(0, Math.min(canvasHeight - scaledHeight, y - scaledHeight / 2));
-                    
-                    ctx.drawImage(img, drawX, drawY, scaledWidth, scaledHeight);
-                };
-                
-                // Set image source based on component type
-                const folderMap = {
-                    'pilot': 'PILOT',
-                    'body': 'BODIES',
-                    'armor': 'ARMORS',
-                    'hands': 'HANDS',
-                    'offhand': 'OFFHAND',
-                    'accessory': 'ACCESSORIES',
-                    'head': 'HEADS'
-                };
-                
-                const folder = folderMap[componentType];
-                img.src = `${folder}/${componentName}.png`;
-            }
-        });
     }
 
     hideLoadingScreen() {
@@ -5407,14 +5363,14 @@ class GameState {
         
         if (loadingScreen) {
             loadingScreen.style.opacity = '0';
-            loadingScreen.style.transition = 'opacity 0.5s ease';
+            loadingScreen.style.transition = 'opacity 180ms ease';
             
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
                 if (gameContainer) {
-                    gameContainer.style.display = 'block';
+                    gameContainer.style.display = 'flex';
                 }
-            }, 500);
+            }, 180);
         }
     }
 
@@ -5442,6 +5398,9 @@ class GameState {
         }, 2000); // Check every 2 seconds
     }
 }
+
+// Replace the legacy canvas effects with the custom geometric combat renderer.
+window.installCombatAnimations?.(GameState);
 
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', async () => {
@@ -5474,4 +5433,4 @@ style.textContent = `
         }
     }
 `;
-document.head.appendChild(style); 
+document.head.appendChild(style);

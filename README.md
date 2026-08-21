@@ -1,143 +1,79 @@
-# Bonkler Game
+# Bonkler Battle
 
-A web-based fighting game where players can build custom fighters using NFT components and battle against each other.
+A retro browser fighting game for building layered Bonkler units, buying components, and battling AI opponents. The interface keeps its Windows 2000-style shell while supporting modern responsive, keyboard, and reduced-motion behavior.
+
+[View the Bonklers collection on Magic Eden](https://magiceden.io/marketplace/bonklers)
 
 ## Features
 
-- **Fighter Builder**: Create custom fighters by selecting different components (pilot, body, head, armor, hands, offhand, accessories)
-- **NFT Integration**: Load and display NFT characters from metadata files
-- **Inventory System**: View your NFT collection and purchased items
-- **Battle System**: Turn-based combat with custom fighters
-- **Shop System**: Purchase new components and items
-- **Responsive Design**: Works on desktop and mobile devices
+- Instant **Demo Mode** with 3 playable fighters and 1,200 starter coins
+- Optional Solana wallet connection and Bonkler collection loading
+- Layered fighter builder with purchased equipment
+- Turn-based AI battles with Rookie, Standard, and Elite threat levels
+- Defense-aware damage, stackable power-ups, guard/counter/repair skills, and scaled rewards
+- Custom geometric symbol set with no platform-dependent emoji rendering
+- Canvas combat sequences for slash, overdrive, guard, dodge, repair, counter, and beam attacks
+- Viewport-fitted battle console with arena, controls, health, and live log visible together
+- Stat-priced component economy and persistent local progression
+- Database-backed global leaderboard with PostgreSQL and SQLite support
+- Responsive desktop/mobile interface and optional synthesized UI audio
 
-## Setup
+## Run Locally
 
-### Prerequisites
-- A modern web browser
-- Python 3.x (for local server)
-- Git
+Node.js 22 or newer is recommended for the zero-config SQLite development database.
 
-### Installation
-
-1. Clone the repository:
 ```bash
-git clone https://github.com/chakra3301/Bonkler-game.git
-cd Bonkler-game
+npm install
+npm start
 ```
 
-2. **Important: NFT Metadata Setup**
-   
-   The game requires NFT metadata files to function properly. The repository includes sample files, but for the full experience you need the complete dataset:
+Open [http://localhost:3001](http://localhost:3001).
 
-   **Option A: Use Sample Data (Quick Start)**
-   - The repository includes 3 sample NFT files (`sample-0.json`, `sample-1.json`, `sample-2.json`)
-   - The game will work with these samples for testing
+Demo Mode works without credentials. To enable wallet NFT loading, copy the environment template and add a server-side Helius key:
 
-   **Option B: Add Full NFT Dataset**
-   - Place your complete NFT metadata files in `nft-metadata/output-jsons/`
-   - The full dataset should contain 1500+ JSON files (0.json to 1499.json)
-   - Each file should contain NFT attributes like pilot, body, head, armor, etc.
-
-   **Option C: Generate Sample Data**
-   - If you don't have the full dataset, you can create additional sample files
-   - Copy the existing sample files and modify the attributes as needed
-
-3. Start the local server:
 ```bash
-python -m http.server 3001
+cp .env.example .env
+# Add HELIUS_API_KEY to .env, then export it or load it in your host.
+HELIUS_API_KEY="your-key" npm start
 ```
 
-4. Open your browser and navigate to:
-```
-http://localhost:3001
-```
+The provider key is used only by `server.js`; it is never exposed in browser code.
 
-## Game Structure
+## Main Files
 
-### Core Files
-- `index.html` - Main game interface
-- `game.js` - Game logic and NFT integration
-- `styles.css` - Styling and responsive design
+- `index.html` — game interface and accessible application shell
+- `styles.css` — token-driven Windows 2000 visual system and responsive layouts
+- `game.js` — state, inventory, shop, builder, wallet, and battle systems
+- `combat-animations.js` — cancellable geometric canvas combat animation engine
+- `symbols.svg` — custom interface and skill symbol sprite
+- `server.js` — static server, NFT proxy, and leaderboard API
+- `leaderboard-store.js` — PostgreSQL/SQLite leaderboard storage adapter
+- `design-tokens.json` — color, type, spacing, and motion decisions
+- `nft-metadata/output-jsons/` — local Bonkler metadata
+- `ACCESSORIES/`, `ARMORS/`, `BODIES/`, `HANDS/`, `HEADS/`, `OFFHAND/`, `PILOT/` — layered fighter art
 
-### Asset Directories
-- `ACCESSORIES/` - Accessory component images
-- `ARMORS/` - Armor component images
-- `BODIES/` - Body component images
-- `HANDS/` - Hand/weapon component images
-- `HEADS/` - Head component images
-- `OFFHAND/` - Offhand component images
-- `PILOT/` - Pilot component images
+## API
 
-### NFT Metadata
-- `nft-metadata/output-jsons/` - NFT metadata files
-- `NFT_INTEGRATION.md` - Documentation for NFT integration
+- `GET /api/health`
+- `GET /api/nfts/:walletAddress`
+- `GET /api/leaderboard`
+- `POST /api/leaderboard/submit`
+- `GET /api/leaderboard/rank/:walletAddress`
 
-## How to Play
+Without `DATABASE_URL`, scores are stored in `data/bonkler.sqlite`. Existing `leaderboard-data.json` entries are imported automatically on the first database boot.
 
-1. **Inventory Screen**: View your NFT collection and purchased items
-2. **Fighter Builder**: Create your custom fighter by selecting components
-3. **Battle Screen**: Select your fighter and battle against opponents
-4. **Shop**: Purchase new components and items
+For production, configure a managed PostgreSQL database:
 
-## NFT Integration
-
-The game loads NFT metadata from JSON files and converts them into playable fighters. Each NFT contains attributes that map to game components:
-
-```json
-{
-  "attributes": [
-    {"trait_type": "Pilot", "value": "HAMTARO"},
-    {"trait_type": "Body", "value": "YMO-TOUR"},
-    {"trait_type": "Head", "value": "BONK"},
-    {"trait_type": "Armor", "value": "ArmorCoal"},
-    {"trait_type": "Hands", "value": "EVOLVED-ANTENNA"},
-    {"trait_type": "Offhand", "value": "POCKET-PET"},
-    {"trait_type": "Accessories", "value": "RAVER-CAP"}
-  ]
-}
+```bash
+DATABASE_URL="postgresql://user:password@host:5432/bonkler" npm start
 ```
 
-## Development
+The table and ranking index are created automatically. Set `DATABASE_SSL=require` when required by the provider.
 
-### Adding New Components
-1. Add component images to the appropriate asset directory
-2. Update the game logic in `game.js` to handle new components
-3. Test the component selection in the fighter builder
+## Production Notes
 
-### Modifying NFT Loading
-- Edit the `loadNFTBonklers()` function in `game.js`
-- Modify the `convertNFTToGameFormat()` function for different attribute structures
-- Update asset mapping logic as needed
-
-## Troubleshooting
-
-### NFT Images Not Loading
-- Ensure all asset directories contain the required PNG files
-- Check that NFT attribute values match asset filenames
-- Verify the asset loading sequence in `game.js`
-
-### Game Not Starting
-- Check browser console for JavaScript errors
-- Ensure all required files are present
-- Verify the local server is running on the correct port
-
-### Missing NFT Data
-- Add sample NFT files to `nft-metadata/output-jsons/`
-- Or obtain the full NFT dataset and place files in the metadata directory
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-This project is open source and available under the MIT License.
-
-## Support
-
-For issues or questions, please open an issue on the GitHub repository. 
+- Set `HELIUS_API_KEY` in the deployment environment.
+- Serve through HTTPS for wallet extensions.
+- Set `DATABASE_URL` to persistent PostgreSQL storage; local SQLite is intended for a single durable server.
+- Static assets are cached; text responses are compressed.
+- The game honors `prefers-reduced-motion` and does not enable sound until requested.

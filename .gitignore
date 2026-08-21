@@ -21,10 +21,16 @@ Thumbs.db
 *.swp
 *.swo
 
-# Logs
+# Environment secrets and logs
+.env
+.env.*
+!.env.example
 *.log
 
-# Runtime data
+# Runtime data and local visual-audit output
+leaderboard-data.json
+data/*.sqlite*
+.previews/
 pids
 *.pid
 *.seed
